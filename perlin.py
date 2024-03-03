@@ -87,15 +87,21 @@ def setWaterLevel(map, seaLevel=0):
     
     return seaMap, colorMap
 
+def ppcm_of_list(l):
+    ppcm = 1
+    for i in l:
+        ppcm = np.lcm(i,ppcm)
+    return ppcm
+
 SEED = rd.randint(0, 1000000000000)
 print("SEED =", SEED)
 
 rd.seed(SEED)
 
 
-GRID_SIZE = 1+np.array([5,8,10,15,20])
-ppcm = 360
-SIZE_FACTOR = np.array([int(ppcm/(g-1)) for g in GRID_SIZE])
+GRID_SIZE = np.array([5,8,10,15,20,36])
+ppcm = ppcm_of_list(GRID_SIZE)
+SIZE_FACTOR = np.array([int(ppcm/g) for g in GRID_SIZE])
 N = len(GRID_SIZE)
 GRIDS = [0] * N
 MAPS = [0] * N
@@ -115,7 +121,7 @@ fig.suptitle("SEED = " + str(SEED) + " | BASE_GRID_SIZE x BASE_SIZE_FACTOR = " +
 
 
 for i in range(N):
-    GRIDS[i] = randomGradGrid2D([GRID_SIZE[i], GRID_SIZE[i]])
+    GRIDS[i] = randomGradGrid2D([GRID_SIZE[i]+1, GRID_SIZE[i]+1])
     MAPS[i] = generateMap2D(GRIDS[i], SIZE_FACTOR[i])
     for j in range(M):
         CMAPS[j][i] = BASE_VALUE_FACTOR[j] * np.array(MAPS[0]) + SECOND_VALUE_FACTOR[j] * np.array(MAPS[i])
