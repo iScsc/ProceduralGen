@@ -106,7 +106,7 @@ N = len(GRID_SIZE)
 GRIDS = [0] * N
 MAPS = [0] * N
 
-BASE_VALUE_FACTOR = np.array([.5,.8])
+BASE_VALUE_FACTOR = np.array([.8])
 M = len(BASE_VALUE_FACTOR)
 SECOND_VALUE_FACTOR = 1 - BASE_VALUE_FACTOR
 
@@ -116,7 +116,8 @@ CMAPS = [[0] * N] * M
 enhmap = [[0] * N] * M
 colormap = [[0] * N] * M
 
-fig, axs = plt.subplots(M, N, figsize =(20,10))
+fig, axs =plt.subplots(M, N, figsize =(20,10)) 
+
 fig.suptitle("SEED = " + str(SEED) + " | BASE_GRID_SIZE x BASE_SIZE_FACTOR = " + str((GRID_SIZE[0], SIZE_FACTOR[0])) + " | SEA_LEVEL = " + str(SEA_LEVEL) )
 
 
@@ -127,10 +128,17 @@ for i in range(N):
         CMAPS[j][i] = BASE_VALUE_FACTOR[j] * np.array(MAPS[0]) + SECOND_VALUE_FACTOR[j] * np.array(MAPS[i])
         enhmap[j][i], colormap[j][i] = setWaterLevel(CMAPS[j][i], SEA_LEVEL) 
     
-        axs[j,i].imshow(colormap[j][i])
-        if i != 0:
-            axs[j,i].set_title("GRID_SIZE x SIZE_FACTOR = \n" + str((GRID_SIZE[i], SIZE_FACTOR[i])) + "\nBASE_VALUE_FACTOR =" + str(BASE_VALUE_FACTOR[j]))
-        else :
-            axs[j,i].set_title("BASE_GRID")
+        if M==1:
+            axs[i].imshow(colormap[j][i])
+            if i != 0:
+                axs[i].set_title("GRID_SIZE x SIZE_FACTOR = \n" + str((GRID_SIZE[i], SIZE_FACTOR[i])) + "\nBASE_VALUE_FACTOR =" + str(BASE_VALUE_FACTOR[j]))
+            else :
+                axs[i].set_title("BASE_GRID")
+        else:
+            axs[j,i].imshow(colormap[j][i])
+            if i != 0:
+                axs[j,i].set_title("GRID_SIZE x SIZE_FACTOR = \n" + str((GRID_SIZE[i], SIZE_FACTOR[i])) + "\nBASE_VALUE_FACTOR =" + str(BASE_VALUE_FACTOR[j]))
+            else :
+                axs[j,i].set_title("BASE_GRID")
 
 plt.show()
