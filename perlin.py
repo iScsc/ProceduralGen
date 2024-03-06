@@ -65,11 +65,12 @@ def generateMap2D(grid, sizeFactor = 10):
     
     return map
 
-def colorize(value, seaLevel=0):
-    i = int((value + 1) * 255/2)
+def colorize(value, seaLevel=0,min_value = -1, max_value = 1):
+    i = 255-int((value - min_value) * 255/(max_value - min_value))
+    s = int((value - min_value) * 200/(seaLevel - min_value))
     
     if value <= seaLevel:
-        return (50, 50, i)
+        return (50, 50, s)
     else:
         return (i, i, i)
 
@@ -79,62 +80,65 @@ def setWaterLevel(map, seaLevel=0):
     
     seaMap = [[max(map[i][j], seaLevel) for j in range(J)] for i in range(I)]
     
-    colorMap = [[colorize(map[i][j], seaLevel) for j in range(J)] for i in range(I)]
+    min_value = min([ min(v) for v in map])
+    max_value = max([ max(v) for v in map])
+    
+    colorMap = [[colorize(map[i][j],seaLevel, min_value,max_value) for j in range(J)] for i in range(I)]
     
     return seaMap, colorMap
+
+def ppcm_of_list(l):
+    ppcm = 1
+    for i in l:
+        ppcm = np.lcm(i,ppcm)
+    return ppcm
 
 SEED = rd.randint(0, 1000000000000)
 print("SEED =", SEED)
 
 rd.seed(SEED)
 
-BASE_GRID_SIZE = 1 + 6
-BASE_SIZE_FACTOR = 60
-BASE_GRID = randomGradGrid2D([BASE_GRID_SIZE, BASE_GRID_SIZE])
-baseMap = generateMap2D(BASE_GRID, BASE_SIZE_FACTOR)
 
-SECOND_GRID_SIZE = 1 + 20
-SECOND_SIZE_FACTOR = 18
-SECOND_GRID = randomGradGrid2D((SECOND_GRID_SIZE, SECOND_GRID_SIZE))
-secondMap = generateMap2D(SECOND_GRID, SECOND_SIZE_FACTOR)
+GRID_SIZE = np.array([5,8,10,15,20,36])
+ppcm = ppcm_of_list(GRID_SIZE)
+SIZE_FACTOR = np.array([int(ppcm/g) for g in GRID_SIZE])
+N = len(GRID_SIZE)
+GRIDS = [0] * N
+MAPS = [0] * N
 
-SECOND_GRID_SIZEa = 1 + 15
-SECOND_SIZE_FACTORa = 24
-SECOND_GRIDa = randomGradGrid2D((SECOND_GRID_SIZEa, SECOND_GRID_SIZEa))
-secondMapa = generateMap2D(SECOND_GRIDa, SECOND_SIZE_FACTORa)
-
-SECOND_GRID_SIZEb = 1 + 10
-SECOND_SIZE_FACTORb = 36
-SECOND_GRIDb = randomGradGrid2D((SECOND_GRID_SIZEb, SECOND_GRID_SIZEb))
-secondMapb = generateMap2D(SECOND_GRIDb, SECOND_SIZE_FACTORb)
-
-BASE_VALUE_FACTOR = .8
-SECOND_VALUE_FACTOR = .2
+BASE_VALUE_FACTOR = np.array([.8])
+M = len(BASE_VALUE_FACTOR)
+SECOND_VALUE_FACTOR = 1 - BASE_VALUE_FACTOR
 
 SEA_LEVEL = -0.15
 
-map1 = BASE_VALUE_FACTOR * np.array(baseMap) + SECOND_VALUE_FACTOR * np.array(secondMap)
+CMAPS = [[0] * N] * M
+enhmap = [[0] * N] * M
+colormap = [[0] * N] * M
 
-map1a = BASE_VALUE_FACTOR * np.array(baseMap) + SECOND_VALUE_FACTOR * np.array(secondMapa)
+fig, axs =plt.subplots(M, N, figsize =(20,10)) 
 
-map1b = BASE_VALUE_FACTOR * np.array(baseMap) + SECOND_VALUE_FACTOR * np.array(secondMapb)
-
-enhmap1, colormap1 = setWaterLevel(map1, SEA_LEVEL)
-
-enhmap1a, colormap1a = setWaterLevel(map1a, SEA_LEVEL)
-
-enhmap1b, colormap1b = setWaterLevel(map1b, SEA_LEVEL)
+fig.suptitle("SEED = " + str(SEED) + " | BASE_GRID_SIZE x BASE_SIZE_FACTOR = " + str((GRID_SIZE[0], SIZE_FACTOR[0])) + " | SEA_LEVEL = " + str(SEA_LEVEL) )
 
 
-fig, axs = plt.subplots(1, 3)
-fig.suptitle("SEED = " + str(SEED) + " | BASE_GRID_SIZE x BASE_SIZE_FACTOR = " + str((BASE_GRID_SIZE, BASE_SIZE_FACTOR)) + " | SEA_LEVEL = " + str(SEA_LEVEL) + " | BASE_VALUE_FACTOR = " + str(BASE_VALUE_FACTOR) + " | SECOND_VALUE_FACTOR = " + str(SECOND_VALUE_FACTOR))
+for i in range(N):
+    GRIDS[i] = randomGradGrid2D([GRID_SIZE[i]+1, GRID_SIZE[i]+1])
+    MAPS[i] = generateMap2D(GRIDS[i], SIZE_FACTOR[i])
+    for j in range(M):
+        CMAPS[j][i] = BASE_VALUE_FACTOR[j] * np.array(MAPS[0]) + SECOND_VALUE_FACTOR[j] * np.array(MAPS[i])
+        enhmap[j][i], colormap[j][i] = setWaterLevel(CMAPS[j][i], SEA_LEVEL) 
+    
+        if M==1:
+            axs[i].imshow(colormap[j][i])
+            if i != 0:
+                axs[i].set_title("GRID_SIZE x SIZE_FACTOR = \n" + str((GRID_SIZE[i], SIZE_FACTOR[i])) + "\nBASE_VALUE_FACTOR =" + str(BASE_VALUE_FACTOR[j]))
+            else :
+                axs[i].set_title("BASE_GRID")
+        else:
+            axs[j,i].imshow(colormap[j][i])
+            if i != 0:
+                axs[j,i].set_title("GRID_SIZE x SIZE_FACTOR = \n" + str((GRID_SIZE[i], SIZE_FACTOR[i])) + "\nBASE_VALUE_FACTOR =" + str(BASE_VALUE_FACTOR[j]))
+            else :
+                axs[j,i].set_title("BASE_GRID")
 
-axs[0].imshow(colormap1)
-axs[0].set_title("SECOND_GRID_SIZE x SECOND_SIZE_FACTOR = " + str((SECOND_GRID_SIZE, SECOND_SIZE_FACTOR)))
-
-axs[1].imshow(colormap1a)
-axs[1].set_title("SECOND_GRID_SIZE x SECOND_SIZE_FACTOR = " + str((SECOND_GRID_SIZEa, SECOND_SIZE_FACTORa)))
-
-axs[2].imshow(colormap1b)
-axs[2].set_title("SECOND_GRID_SIZE x SECOND_SIZE_FACTOR = " + str((SECOND_GRID_SIZEb, SECOND_SIZE_FACTORb)))
 plt.show()
