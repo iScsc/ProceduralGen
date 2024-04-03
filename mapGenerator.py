@@ -19,8 +19,12 @@ HORIZONTAL_RECTANGLE_CHAR = u"\u25ac"
 # (general) https://en.wikipedia.org/wiki/Unicode_block
 
 def ppcm_of_list(l):
-    if type(l) not in [list, np.ndarray]:
+    if type(l) not in [list, tuple, np.ndarray]:
         return l
+    # try:
+    #     len(l)
+    # except:
+    #     return l
     
     ppcm = 1
     for i in l:
@@ -102,7 +106,7 @@ class mapGenerator:
     
     
     
-    def randomGradGrid2D(size, display_loading : bool = False):
+    def randomGradGrid2D(size : tuple[int], display_loading : bool = False):
         
         I, J = size
         
@@ -267,9 +271,11 @@ class mapGenerator:
         
         n = 1
         ppcm = grid_sizes * 10
-        if type(grid_sizes) in [list, tuple]:
+        if type(grid_sizes) in [list, tuple, np.ndarray]:
             n = len(grid_sizes)
             ppcm = ppcm_of_list(grid_sizes)
+        
+        print("ppcm = ", ppcm)
         
         if display_loading:
             print("Generation of the " + str(n) + " map(s)... ")
@@ -301,7 +307,6 @@ class mapGenerator:
             y = np.linspace(0, 1, ppcm)
             x, y = np.meshgrid(x, y)
 
-            print(np.shape(y), np.shape(x), np.shape(water_map), np.shape(color_map))
             surf = ax3D.plot_surface(y, x, np.array(water_map), facecolors=np.array(color_map))
             
             ax3D.set_zlim(-1, 1)
