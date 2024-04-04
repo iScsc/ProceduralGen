@@ -238,7 +238,7 @@ class mapGenerator:
                 for j in range(J):
                     final_map = np.array(mapGenerator.generateMap2D(global_grid[i][j], display_loading=display_loading))
                     
-                    global_map[i][j] = np.copy(final_map)
+                    global_map[i][j] = final_map
                     
                     if display_loading:
                         print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
@@ -263,41 +263,74 @@ class mapGenerator:
                 return mapGenerator.get2DMap(grid_sizes[0], map_factors[0])
             # real list
             elif n > 1:
+                I, J = map_size
                 ppcm = ppcm_of_list(grid_sizes)
                 
-                global_grid = [None for i in range(n)]
-                maps = [None for i in range(n)]
+                global_grid = [[None for j in range(J)] for i in range(I)]
+                global_map = [[None for j in range(J)] for i in range(I)]
                 
-                for i in range(n):
-                    gsi = grid_sizes[i]
-                    
-                    if display_loading:
-                        print("Generating noise map " + str(i + 1) + " of size " + str(gsi) + "...  ")
-                    
-                    global_grid[i] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading))
-                    if display_loading:
-                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
-                    
-                    maps[i] = np.array(mapGenerator.generateMap2D(global_grid[i], ppcm//gsi, display_loading=display_loading))
-                    if display_loading:
-                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+                for i in range(I):
+                    for j in range(J):
                 
-                factor_tot = map_factors[0]
-                global_map = map_factors[0] * maps[0]
+                        gradGrids = [None for k in range(n)]
+                        
+                        for k in range(n):
+                            gsi = grid_sizes[k]
+                            
+                            if display_loading:
+                                print("Generating noise map " + str(k + 1) + " of size " + str(gsi) + "...  ")
+                            
+                            gradGrids[k] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading))
+                            
+                            if i != 0:
+                                gradGrids[k][0, :] = global_grid[i - 1][j][k][-1, :]
+                            
+                            if j != 0:
+                                gradGrids[k][:, 0] = global_grid[i][j - 1][k][:, -1]
+                            
+                            if display_loading:
+                                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+                        
+                        global_grid[i][j] = gradGrids
+                
+                
+                for i in range(I):
+                    for j in range(J):
+                        
+                        maps = [None for k in range(n)]
+                        
+                        for k in range(n):
+                            gsi = grid_sizes[k]
+                            
+                            maps[k] = np.array(mapGenerator.generateMap2D(global_grid[i][j][k], ppcm//gsi, display_loading=display_loading))
+                            if display_loading:
+                                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+                        
+                        factor_tot = map_factors[0]
+                        final_map = map_factors[0] * maps[0]
 
-                for i in range(1, n):
-                    factor_tot += map_factors[i]
-                    global_map += map_factors[i] * maps[i]
+                        for k in range(1, n):
+                            factor_tot += map_factors[k]
+                            final_map += map_factors[k] * maps[k]
+                        
+                        final_map /= factor_tot
+                        
+                        global_map[i][j] = final_map
                 
-                global_map /= factor_tot
-        
-            return global_grid, global_map
+                
+                if I == 1 and J == 1:
+                    global_grid = global_grid[0][0]
+                    global_map = global_map[0][0]
+                
+                return global_grid, global_map
     
     
     
     
     def fullGen(grid_sizes : int | list[int], map_factors : int | float | list[int] | list[float], water_level : float,
                 map_size : tuple[int] = (1,1), display_loading : bool = True, display_map : bool = False):
+        
+        I, J = map_size
         
         n = 1
         ppcm = grid_sizes * 10
@@ -312,13 +345,22 @@ class mapGenerator:
         
         _, global_map = mapGenerator.get2DMap(grid_sizes, map_factors, map_size=map_size, display_loading=display_loading)
         
+        
+        # Generating unique complete_map
+        complete_map = global_map
+        if I != 1 or J != 1:
+            complete_map = np.concatenate([np.concatenate(global_map[i], axis=1) for i in range(len(global_map))], axis=0)
+        
+        
         if display_loading:
             print("Applying water levels on maps... ")
         
-        water_map, color_map = mapGenerator.setWaterLevel(global_map, isFloat=True, display_loading=display_loading)
+        water_map, color_map = mapGenerator.setWaterLevel(complete_map, isFloat=True, display_loading=display_loading)
     
         if display_loading:
             print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+        
+        
         
         
         if display_map:
@@ -333,18 +375,25 @@ class mapGenerator:
             # 3D Map
             ax3D = fig.add_subplot(1, 2, 2, projection='3d')
 
-            x = np.linspace(0, 1, ppcm)
-            y = np.linspace(0, 1, ppcm)
+            x = np.linspace(0, map_size[1], ppcm * map_size[1])
+            y = np.linspace(0, map_size[0], ppcm * map_size[0])
             x, y = np.meshgrid(x, y)
 
             surf = ax3D.plot_surface(y, x, np.array(water_map), facecolors=np.array(color_map))
             
-            ax3D.set_zlim(-1, 1)
+            xylim = max(map_size[0], map_size[1])
+            ax3D.set_xlim(0, xylim)
+            ax3D.set_ylim(0, xylim)
+            
+            zlim = min(map_size[0], map_size[1])
+            ax3D.set_zlim(-zlim, zlim)
 
-            plt.show()
+            plt.show(block=False)
+            
+            input("Press [Enter] to quit.")
         
         
-        return global_map, water_map, color_map
+        return complete_map, water_map, color_map
     
     
     
