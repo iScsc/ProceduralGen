@@ -17,7 +17,7 @@ print("SEED =", SEED)
 
 mapGenerator.setSeed(SEED)
 
-MAX_LENGTH = 3 #4
+MAX_LENGTH = 4
 
 #20 first prime numbers
 prime_numbers = np.array([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 43, 47, 53, 59, 61, 67, 71, 73])
