@@ -9,8 +9,8 @@ print("SEED =", SEED)
 mapGenerator.setSeed(SEED)
 
 
-GRID_SIZE = 5
-MAP_FACTOR = 1
+GRID_SIZES = [2, 3, 5]
+MAP_FACTORS = [1, .3, .1]
 
 # number of rows, number of columns
 MAP_SIZE = (4, 7)
@@ -21,7 +21,7 @@ WATER_LEVEL = -0.15
 
 
 
-global_grid, global_map = mapGenerator.get2DMap(GRID_SIZE, MAP_FACTOR, MAP_SIZE, False)
+global_grid, global_map = mapGenerator.get2DMap(GRID_SIZES, MAP_FACTORS, MAP_SIZE, False)
 
 mainMap, secondMap = global_map[0][0], global_map[1][0]
 
