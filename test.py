@@ -9,34 +9,33 @@ print("SEED =", SEED)
 mapGenerator.setSeed(SEED)
 
 
-GRID_SIZE = 5 #20
+GRID_SIZE = 5
 MAP_FACTOR = 1
+
+# number of rows, number of columns
+MAP_SIZE = (4, 7)
 
 WATER_LEVEL = -0.15
 
-#Trying to generate two maps
-
-# Generate First map
-
-#main_map, main_water_map, main_color_map = mapGenerator.fullGen(GRID_SIZE, MAP_FACTOR, WATER_LEVEL, display_map=False)
-mainGrid = np.array(mapGenerator.randomGradGrid2D((GRID_SIZE + 1, GRID_SIZE + 1)))
-mainMap = np.array(mapGenerator.generateMap2D(mainGrid))
 
 
-# Generate Second map
-secondGrid = np.array(mapGenerator.randomGradGrid2D((GRID_SIZE + 1, GRID_SIZE + 1)))
-secondGrid[0, :] = mainGrid[-1, :]
 
-secondMap = np.array(mapGenerator.generateMap2D(secondGrid))
-secondMap[0, :] = mainMap[-1, :]
 
-fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, 10))
-ax1, ax2, ax3 = axs
+global_grid, global_map = mapGenerator.get2DMap(GRID_SIZE, MAP_FACTOR, MAP_SIZE, False)
+
+mainMap, secondMap = global_map[0][0], global_map[1][0]
+
+fig = plt.figure(figsize=(20, 10))
+
+ax1 = plt.subplot2grid((MAP_SIZE[0] + 2, MAP_SIZE[1] + 2), (0, 0), rowspan=1, colspan=1)
+ax2 = plt.subplot2grid((MAP_SIZE[0] + 2, MAP_SIZE[1] + 2), (2, 0), rowspan=1, colspan=1)
+
+ax3 = plt.subplot2grid((MAP_SIZE[0] + 2, MAP_SIZE[1] + 2), (0, 2), rowspan=MAP_SIZE[0], colspan=MAP_SIZE[1])
 
 ax1.imshow(mainMap, cmap="gray")
 ax2.imshow(secondMap, cmap="gray")
 
-completeMap = np.concatenate([mainMap, secondMap], axis=0)
+completeMap = np.concatenate([np.concatenate(global_map[i], axis=1) for i in range(len(global_map))], axis=0)
 ax3.imshow(completeMap, cmap="gray")
 
 plt.show(block=False)
