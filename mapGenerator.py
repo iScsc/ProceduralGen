@@ -18,8 +18,10 @@ HORIZONTAL_RECTANGLE_CHAR = u"\u25ac"
 # https://en.wikipedia.org/wiki/Geometric_Shapes_(Unicode_block)
 # (general) https://en.wikipedia.org/wiki/Unicode_block
 
+LIST_TYPES = [list, tuple, np.ndarray]
+
 def ppcm_of_list(l):
-    if type(l) not in [list, tuple, np.ndarray]:
+    if type(l) not in LIST_TYPES:
         return l
     # try:
     #     len(l)
@@ -212,12 +214,40 @@ class mapGenerator:
         
         # simple values
         if (type(grid_sizes), type(map_factors)) in [(int, int), (int, float)]:
-            grid = np.array(mapGenerator.randomGradGrid2D((grid_sizes + 1, grid_sizes + 1), display_loading=display_loading))
-            if display_loading:
-                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
-            final_map = np.array(mapGenerator.generateMap2D(grid, display_loading=display_loading))
-            if display_loading:
-                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+            
+            I, J = map_size
+            global_grid = [[None for j in range(J)] for i in range(I)]
+            global_map = [[None for j in range(J)] for i in range(I)]
+            
+            for i in range(I):
+                for j in range(J):
+                    grid = np.array(mapGenerator.randomGradGrid2D((grid_sizes + 1, grid_sizes + 1), display_loading=display_loading))
+                    
+                    if i != 0:
+                        grid[0, :] = global_grid[i - 1][j][-1, :]
+                    
+                    if j != 0:
+                        grid[:, 0] = global_grid[i][j - 1][:, -1]
+                    
+                    global_grid[i][j] = np.copy(grid)
+                    
+                    if display_loading:
+                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+            
+            for i in range(I):
+                for j in range(J):
+                    final_map = np.array(mapGenerator.generateMap2D(global_grid[i][j], display_loading=display_loading))
+                    
+                    global_map[i][j] = np.copy(final_map)
+                    
+                    if display_loading:
+                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+            
+            if I == 1 and J == 1:
+                global_grid = global_grid[0][0]
+                global_map = global_map[0][0]
+            
+            return global_grid, global_map
         
         # lists or arrays
         else:
@@ -235,8 +265,8 @@ class mapGenerator:
             elif n > 1:
                 ppcm = ppcm_of_list(grid_sizes)
                 
-                gradGrids = [None] * n
-                maps = [None] * n
+                global_grid = [None for i in range(n)]
+                maps = [None for i in range(n)]
                 
                 for i in range(n):
                     gsi = grid_sizes[i]
@@ -244,24 +274,24 @@ class mapGenerator:
                     if display_loading:
                         print("Generating noise map " + str(i + 1) + " of size " + str(gsi) + "...  ")
                     
-                    gradGrids[i] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading))
+                    global_grid[i] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading))
                     if display_loading:
                         print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
                     
-                    maps[i] = np.array(mapGenerator.generateMap2D(gradGrids[i], ppcm//gsi, display_loading=display_loading))
+                    maps[i] = np.array(mapGenerator.generateMap2D(global_grid[i], ppcm//gsi, display_loading=display_loading))
                     if display_loading:
                         print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
                 
                 factor_tot = map_factors[0]
-                final_map = map_factors[0] * maps[0]
+                global_map = map_factors[0] * maps[0]
 
                 for i in range(1, n):
                     factor_tot += map_factors[i]
-                    final_map += map_factors[i] * maps[i]
+                    global_map += map_factors[i] * maps[i]
                 
-                final_map /= factor_tot
+                global_map /= factor_tot
         
-        return final_map
+            return global_grid, global_map
     
     
     
@@ -271,7 +301,7 @@ class mapGenerator:
         
         n = 1
         ppcm = grid_sizes * 10
-        if type(grid_sizes) in [list, tuple, np.ndarray]:
+        if type(grid_sizes) in LIST_TYPES:
             n = len(grid_sizes)
             ppcm = ppcm_of_list(grid_sizes)
         
@@ -280,12 +310,12 @@ class mapGenerator:
         if display_loading:
             print("Generation of the " + str(n) + " map(s)... ")
         
-        full_map = mapGenerator.get2DMap(grid_sizes, map_factors, map_size=map_size, display_loading=display_loading)
+        _, global_map = mapGenerator.get2DMap(grid_sizes, map_factors, map_size=map_size, display_loading=display_loading)
         
         if display_loading:
             print("Applying water levels on maps... ")
         
-        water_map, color_map = mapGenerator.setWaterLevel(full_map, isFloat=True, display_loading=display_loading)
+        water_map, color_map = mapGenerator.setWaterLevel(global_map, isFloat=True, display_loading=display_loading)
     
         if display_loading:
             print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
@@ -314,7 +344,7 @@ class mapGenerator:
             plt.show()
         
         
-        return full_map, water_map, color_map
+        return global_map, water_map, color_map
     
     
     
