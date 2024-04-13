@@ -2,6 +2,7 @@ import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
 
+import time
 
 #--------------------------------# useful functions and constants #--------------------------------#
 
@@ -35,7 +36,7 @@ def ppcm_of_list(l):
 
 
 
-def loading_bar(value, max_value, number_of_segments, pre_text = ""):
+def loading_bar(value, max_value, number_of_segments, pre_text = "", end_text=""):
     begin_char = "["
     end_char = "]"
     loading_char = HORIZONTAL_RECTANGLE_CHAR
@@ -60,7 +61,7 @@ def loading_bar(value, max_value, number_of_segments, pre_text = ""):
     
     loading_str += end_char + "    {0:.2f}% completed".format(percent)
     
-    return pre_text + loading_str
+    return pre_text + loading_str + end_text
 
 
 #--------------------------------# Map Generator Class #--------------------------------#
@@ -109,6 +110,7 @@ class mapGenerator:
     
     
     def randomGradGrid2D(size : tuple[int], display_loading : bool = False, pre_text : str = "\r      Generating random gradient grid... "):
+        start_time = time.time()
         
         I, J = size
         
@@ -122,7 +124,9 @@ class mapGenerator:
                 grid2D[i][j] = (x, y)
                 
                 if display_loading:
-                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text), end="")
+                    t = time.time() - start_time
+                    time_str = " | Time spent : {:.3f} s".format(t)
+                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text, end_text=time_str), end="")
         
         return grid2D
     
@@ -156,6 +160,8 @@ class mapGenerator:
         return value
 
     def generateMap2D(grid, sizeFactor = 10, display_loading : bool = False, pre_text : str = "\r      Generating map...                  "):
+        start_time = time.time()
+        
         size = ((len(grid) - 1) * sizeFactor, (len(grid[0]) - 1) * sizeFactor)
         I, J = size
         
@@ -166,7 +172,9 @@ class mapGenerator:
                 map[i][j] = mapGenerator.perlin(i/sizeFactor, j/sizeFactor, grid)
                 
                 if display_loading:
-                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text), end="")
+                    t = time.time() - start_time
+                    time_str = " | Time spent : {:.3f} s".format(t)
+                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text, end_text=time_str), end="")
         
         return map
 
@@ -186,6 +194,8 @@ class mapGenerator:
             return (scale * 50, scale * i, scale * 50)
 
     def setWaterLevel(map, seaLevel = 0, isFloat = False, display_loading : bool = False, pre_text : str = "\r   Generating color map...  "):
+        start_time = time.time()
+        
         size = (len(map), len(map[0]))
         I, J = size
         
@@ -201,7 +211,9 @@ class mapGenerator:
                 colorMap[i][j] = mapGenerator.colorize(map[i][j], seaLevel, min_value, max_value, isFloat)
                 
                 if display_loading:
-                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text), end="")
+                    t = time.time() - start_time
+                    time_str = " | Time spent : {:.3f} s".format(t)
+                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text, end_text=time_str), end="")
         
         return seaMap, colorMap
     
@@ -213,6 +225,9 @@ class mapGenerator:
         #     raise TypeError("The given parameters were not of the correct type! Their types were : " + str((type(grid_sizes), type(map_factors))))
         
         # simple values
+        
+        begin_2D_map_time = time.time()
+        
         if (type(grid_sizes), type(map_factors)) in [(int, int), (int, float)]:
             
             I, J = map_size
@@ -257,6 +272,10 @@ class mapGenerator:
             if I == 1 and J == 1:
                 global_grid = global_grid[0][0]
                 global_map = global_map[0][0]
+            
+            if display_loading:
+                t = time.time() - begin_2D_map_time
+                print("2D maps generation took {:.3f} s.".format(t))
             
             return global_grid, global_map
         
@@ -344,6 +363,11 @@ class mapGenerator:
                     global_grid = global_grid[0][0]
                     global_map = global_map[0][0]
                 
+                
+                if display_loading:
+                    t = time.time() - begin_2D_map_time
+                    print("2D maps generation took {:.3f} s.".format(t))
+                
                 return global_grid, global_map
     
     
@@ -351,6 +375,8 @@ class mapGenerator:
     
     def fullGen(grid_sizes : int | list[int], map_factors : int | float | list[int] | list[float], water_level : float,
                 map_size : tuple[int] = (1,1), display_loading : bool = True, display_map : bool = False):
+        
+        begin_gen_time = time.time()
         
         I, J = map_size
         
@@ -383,6 +409,9 @@ class mapGenerator:
     
         if display_loading:
             print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+            
+            t = time.time() - begin_gen_time
+            print("Full generation took {:.3f} s.".format(t))
             
             print(" --------------------------------------------------- MAP GENERATION : END --------------------------------------------------- ")
         

@@ -23,7 +23,7 @@ MAX_LENGTH = 3
 prime_numbers = np.array([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 43, 47, 53, 59, 61, 67, 71, 73])
 
 GRID_SIZE = [2, 5, 11] #np.array([prime_numbers[i] for i in range(0, min(len(prime_numbers), MAX_LENGTH) ) ] ) #np.array([prime_numbers[2*i] for i in range(0, min(len(prime_numbers)//2, MAX_LENGTH) ) ] )  #np.array([2, 15, 35, 80]) #np.array([5,8,10,15,20,36])
-VALUE_FACTOR = [1, 1/4, 1/9] #np.array([1/i**2 for i in range(1, len(GRID_SIZE) + 1)])  #np.array([100, 10, 1, 1]) #np.array([.9, .7, .6])
+VALUE_FACTOR = [1, 0.1, 0.01] #np.array([1/i**2 for i in range(1, len(GRID_SIZE) + 1)])  #np.array([100, 10, 1, 1]) #np.array([.9, .7, .6])
 
 
 MAP_SIZE = (5, 7) #(1,1) #(5, 7)
