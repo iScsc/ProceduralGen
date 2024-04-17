@@ -164,7 +164,7 @@ class mapGenerator:
         
         return map
 
-    def colorize(value, seaLevel=0,min_value = -1, max_value = 1, isFloat = False):
+    def colorize(value, seaLevel=0, min_value = -1, max_value = 1, isFloat = False):
         scale = 1
         if isFloat:
             scale = 1/255
@@ -188,23 +188,32 @@ class mapGenerator:
         min_value = min([min(v) for v in map])
         max_value = max([max(v) for v in map])
         
-        #print(min_value, max_value)
+        colorMap = [[0 for j in range(J)] for i in range(I)]
         
-        colorMap = [[mapGenerator.colorize(map[i][j], seaLevel, min_value, max_value, isFloat) for j in range(J)] for i in range(I)]
+        for i in range(I):
+            for j in range(J):
+                colorMap[i][j] = mapGenerator.colorize(map[i][j], seaLevel, min_value, max_value, isFloat)
+                
+                if display_loading:
+                    print("\r   Generating map...                  " + loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS), end="")
         
         return seaMap, colorMap
     
     
-    # #--------------------------------# class all-in methods #--------------------------------#
+    #--------------------------------# class all-in methods #--------------------------------#
     
-    def get2DMap(grid_sizes : int | list[int], map_factors : int | float | list[int] | list[float], display_loading : bool = True):
+    def get2DMap(grid_sizes : int | list[int], map_factors : int | float | list[int] | list[float], map_size : tuple[int] = (1,1), display_loading : bool = True):
         # if (type(grid_sizes), type(map_factors)) not in [(int, int), (int, float), (list[int], list[int]), (list[int], list[float]), (np.ndarray, np.ndarray)]:
         #     raise TypeError("The given parameters were not of the correct type! Their types were : " + str((type(grid_sizes), type(map_factors))))
         
         # simple values
         if (type(grid_sizes), type(map_factors)) in [(int, int), (int, float)]:
-            grid = np.array(mapGenerator.randomGradGrid2D((grid_sizes + 1, grid_sizes + 1), display_loading))
-            final_map = np.array(mapGenerator.generateMap2D(grid, display_loading))
+            grid = np.array(mapGenerator.randomGradGrid2D((grid_sizes + 1, grid_sizes + 1), display_loading=display_loading))
+            if display_loading:
+                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+            final_map = np.array(mapGenerator.generateMap2D(grid, display_loading=display_loading))
+            if display_loading:
+                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
         
         # lists or arrays
         else:
@@ -231,11 +240,13 @@ class mapGenerator:
                     if display_loading:
                         print("Generating noise map " + str(i + 1) + " of size " + str(gsi) + "...  ")
                     
-                    gradGrids[i] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading))
-                    print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+                    gradGrids[i] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading))
+                    if display_loading:
+                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
                     
-                    maps[i] = np.array(mapGenerator.generateMap2D(gradGrids[i], ppcm//gsi, display_loading))
-                    print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+                    maps[i] = np.array(mapGenerator.generateMap2D(gradGrids[i], ppcm//gsi, display_loading=display_loading))
+                    if display_loading:
+                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
                 
                 factor_tot = map_factors[0]
                 final_map = map_factors[0] * maps[0]
@@ -249,20 +260,29 @@ class mapGenerator:
         return final_map
     
     
+    
+    
     def fullGen(grid_sizes : int | list[int], map_factors : int | float | list[int] | list[float], water_level : float,
-                display_loading : bool = True, display_map : bool = False):
+                map_size : tuple[int] = (1,1), display_loading : bool = True, display_map : bool = False):
         
-        ppcm = ppcm_of_list(grid_sizes)
+        n = 1
+        ppcm = grid_sizes * 10
+        if type(grid_sizes) in [list, tuple]:
+            n = len(grid_sizes)
+            ppcm = ppcm_of_list(grid_sizes)
         
         if display_loading:
-            print("Generation of the " + str(len(grid_sizes)) + " map(s)... ")
+            print("Generation of the " + str(n) + " map(s)... ")
         
-        full_map = mapGenerator.get2DMap(grid_sizes, map_factors, display_loading = display_loading)
+        full_map = mapGenerator.get2DMap(grid_sizes, map_factors, map_size=map_size, display_loading=display_loading)
         
         if display_loading:
             print("Applying water levels on maps... ")
         
         water_map, color_map = mapGenerator.setWaterLevel(full_map, isFloat=True, display_loading=display_loading)
+    
+        if display_loading:
+            print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
         
         
         if display_map:
@@ -281,6 +301,7 @@ class mapGenerator:
             y = np.linspace(0, 1, ppcm)
             x, y = np.meshgrid(x, y)
 
+            print(np.shape(y), np.shape(x), np.shape(water_map), np.shape(color_map))
             surf = ax3D.plot_surface(y, x, np.array(water_map), facecolors=np.array(color_map))
             
             ax3D.set_zlim(-1, 1)
