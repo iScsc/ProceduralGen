@@ -2,6 +2,7 @@
 
 # Compiler
 CFLAGS = -g -std=c99 -Wall
+LFLAGS = -lm
 CC = gcc $(CFLAGS)
 
 # Valgrind
@@ -32,7 +33,7 @@ test_loadingBar: test_loadingBar.o loadingBar.o
 	$(CC) test_loadingBar.o loadingBar.o -o test_loadingBar
 
 test_gradientGrid: test_gradientGrid.o gradientGrid.o
-	$(CC) test_gradientGrid.o gradientGrid.o -o test_gradientGrid
+	$(CC) test_gradientGrid.o gradientGrid.o -o test_gradientGrid $(LFLAGS)
 
 # Valgrind ----------------------------------
 
