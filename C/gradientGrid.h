@@ -22,7 +22,15 @@ typedef struct gradientGrid gradientGrid;
 
 // ----- Functions -----
 
+void setRandomSeed(unsigned int seed);
+
 gradientGrid* newGradGrid(int width, int height);
+
+gradientGrid* newRandomGradGrid(int width, int height);
+
+void regenerateRandomGradGrid(gradientGrid* p_gradGrid);
+
+void printGradientGrid(gradientGrid* p_gradGrid);
 
 void freeGradGrid(gradientGrid* p_gradGrid);
 
