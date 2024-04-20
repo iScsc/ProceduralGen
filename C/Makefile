@@ -11,7 +11,7 @@ VALGRIND = valgrind $(VFLAGS)
 
 # Exectuables
 PROGRAMS = main
-TESTS = test_loadingBar test_gradientGrid
+TESTS = test_loadingBar test_gradientGrid test_map2d
 
 EXE = $(TESTS) $(PROGRAMS)
 
@@ -34,6 +34,9 @@ test_loadingBar: test_loadingBar.o loadingBar.o
 
 test_gradientGrid: test_gradientGrid.o gradientGrid.o
 	$(CC) test_gradientGrid.o gradientGrid.o -o test_gradientGrid $(LFLAGS)
+
+test_map2d: test_map2d.o map2d.o gradientGrid.o
+	$(CC) test_map2d.o map2d.o gradientGrid.o -o test_map2d $(LFLAGS)
 
 # Valgrind ----------------------------------
 
