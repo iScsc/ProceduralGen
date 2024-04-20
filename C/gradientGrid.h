@@ -30,7 +30,7 @@ gradientGrid* newRandomGradGrid(int width, int height);
 
 void regenerateRandomGradGrid(gradientGrid* p_gradGrid);
 
-vector* getVector(gradientGrid* p_gragGrid, int width_idw, int height_idx);
+vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx);
 
 void printGradientGrid(gradientGrid* p_gradGrid);
 
