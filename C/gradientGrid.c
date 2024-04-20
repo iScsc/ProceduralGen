@@ -44,12 +44,32 @@ void regenerateRandomGradGrid(gradientGrid* p_gradGrid)
     {
         for (int j = 0; j < width; j++)
         {
-            vector* v = (p_gradGrid->gradients) + i * width + j;
+            vector* v = getVector(p_gradGrid, j, i); //(p_gradGrid->gradients) + i * width + j;
 
             v->x = (double) rand()/RAND_MAX;
             v->y = sqrt(1. - v->x * v->x);
         }
     }
+}
+
+
+
+vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx)
+{
+    int width = p_gradGrid->width;
+    int height = p_gradGrid->height;
+
+    if (width_idx < 0 || width_idx >= width)
+    {
+        return NULL;
+    }
+    
+    if (height_idx < 0 || height_idx >= height)
+    {
+        return NULL;
+    }
+
+    return (p_gradGrid->gradients) + height_idx * width + width_idx;
 }
 
 
@@ -66,7 +86,7 @@ void printGradientGrid(gradientGrid* p_gradGrid)
     {
         for (int j = 0; j < width; j++)
         {
-            vector* v = (p_gradGrid->gradients) + i * width + j;
+            vector* v = getVector(p_gradGrid, j, i); //(p_gradGrid->gradients) + i * width + j;
 
             printf("(%lf, %lf)   ", v->x, v->y);
         }
