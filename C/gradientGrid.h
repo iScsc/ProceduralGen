@@ -1,6 +1,10 @@
 #ifndef GRADIENT_GRID
 #define GRADIENT_GRID
 
+// ----- Constants definition -----
+
+#define NUMBER_OF_SEGMENTS 21
+
 // ----- Structure definition -----
 
 struct vector
@@ -26,9 +30,9 @@ void setRandomSeed(unsigned int seed);
 
 gradientGrid* newGradGrid(int width, int height);
 
-gradientGrid* newRandomGradGrid(int width, int height);
+gradientGrid* newRandomGradGrid(int width, int height, int display_loading);
 
-void regenerateRandomGradGrid(gradientGrid* p_gradGrid);
+void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading);
 
 vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx);
 

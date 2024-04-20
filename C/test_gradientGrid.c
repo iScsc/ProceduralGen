@@ -12,7 +12,7 @@ int main()
 
     printf("Creating a gradient grid of size (width x height) = (%d x %d)\n", width, height);
 
-    gradientGrid* gradGrid = newRandomGradGrid(width, height);
+    gradientGrid* gradGrid = newRandomGradGrid(width, height, 1);
 
     printf("Total space used by this gradient grid : %ld\n", sizeof(*gradGrid) + width*height*sizeof(*(gradGrid->gradients)));
     //                                              Should be :    4 + 4 + 8   + width*height    *      8 + 8

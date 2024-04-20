@@ -1,5 +1,6 @@
 #include <malloc.h>
 
+#include "loadingBar.h"
 #include "map2d.h"
 
 double smoothstep(double w)
@@ -67,7 +68,7 @@ double perlin(double x, double y, gradientGrid* gradGrid)
 
 
 
-map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor)
+map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor, int display_loading)
 {
     int gradGridWidth = gradGrid->width;
     int gradGridHeight = gradGrid->height;
@@ -92,7 +93,19 @@ map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor)
             double* value = getValue(new_map2d, j, i);
 
             *value = perlin((double) j/sizeFactor, (double) i/sizeFactor, gradGrid);
+
+            if (display_loading != 0)
+            {
+                // max :  (width - 1) + (height - 1) * width  =  width * height - 1
+                print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
+                "\r   Generating random gradient grid... ", "");
+            }
         }
+    }
+
+    if (display_loading != 0)
+    {
+        printf("\n");
     }
 
     return new_map2d;

@@ -32,11 +32,11 @@ EXE = $(TESTS) $(PROGRAMS)
 test_loadingBar: test_loadingBar.o loadingBar.o
 	$(CC) test_loadingBar.o loadingBar.o -o test_loadingBar
 
-test_gradientGrid: test_gradientGrid.o gradientGrid.o
-	$(CC) test_gradientGrid.o gradientGrid.o -o test_gradientGrid $(LFLAGS)
+test_gradientGrid: test_gradientGrid.o gradientGrid.o loadingBar.o
+	$(CC) test_gradientGrid.o gradientGrid.o loadingBar.o -o test_gradientGrid $(LFLAGS)
 
-test_map2d: test_map2d.o map2d.o gradientGrid.o
-	$(CC) test_map2d.o map2d.o gradientGrid.o -o test_map2d $(LFLAGS)
+test_map2d: test_map2d.o map2d.o gradientGrid.o loadingBar.o
+	$(CC) test_map2d.o map2d.o gradientGrid.o loadingBar.o -o test_map2d $(LFLAGS)
 
 # Valgrind ----------------------------------
 

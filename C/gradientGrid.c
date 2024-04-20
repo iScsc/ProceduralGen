@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "loadingBar.h"
 #include "gradientGrid.h"
 
 void setRandomSeed(unsigned int seed)
@@ -24,18 +25,18 @@ gradientGrid* newGradGrid(int width, int height)
 
 
 
-gradientGrid* newRandomGradGrid(int width, int height)
+gradientGrid* newRandomGradGrid(int width, int height, int display_loading)
 {
     gradientGrid* new_grad_grid = newGradGrid(width, height);
 
-    regenerateRandomGradGrid(new_grad_grid);
+    regenerateRandomGradGrid(new_grad_grid, display_loading);
 
     return new_grad_grid;
 }
 
 
 
-void regenerateRandomGradGrid(gradientGrid* p_gradGrid)
+void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading)
 {
     int width = p_gradGrid->width;
     int height = p_gradGrid->height;
@@ -48,7 +49,19 @@ void regenerateRandomGradGrid(gradientGrid* p_gradGrid)
 
             v->x = (double) rand()/RAND_MAX;
             v->y = sqrt(1. - v->x * v->x);
+
+            if (display_loading != 0)
+            {
+                // max :  (width - 1) + (height - 1) * width  =  width * height - 1
+                print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
+                "\r   Generating random gradient grid... ", "");
+            }
         }
+    }
+
+    if (display_loading != 0)
+    {
+        printf("\n");
     }
 }
 

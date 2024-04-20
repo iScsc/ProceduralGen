@@ -29,7 +29,7 @@ double perlin(double x, double y, gradientGrid* gradGrid);
 
 
 
-map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor);
+map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor, int display_loading);
 
 double* getValue(map2d* map2d, int width_idx, int height_idx);
 
