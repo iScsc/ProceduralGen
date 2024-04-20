@@ -1,0 +1,45 @@
+################## VARIABLES ###################
+
+# Compiler
+CFLAGS = -g -std=c99 -Wall
+CC = gcc $(CFLAGS)
+
+# Valgrind
+VFLAGS = --tool=memcheck --leak-check=full --track-origins=yes
+VALGRIND = valgrind $(VFLAGS)
+
+# Exectuables
+PROGRAMS = main
+TESTS = test_loadingBar test_gradientGrid
+
+EXE = $(TESTS) $(PROGRAMS)
+
+
+################## GENERATION ##################
+
+
+# Generic -----------------------------------
+
+%.o : %.c
+	$(CC) -c $< -o $@
+
+
+
+
+# Tests -------------------------------------
+
+test_loadingBar: test_loadingBar.o loadingBar.o
+	$(CC) test_loadingBar.o loadingBar.o -o test_loadingBar
+
+test_gradientGrid: test_gradientGrid.o gradientGrid.o
+	$(CC) test_gradientGrid.o gradientGrid.o -o test_gradientGrid
+
+# Valgrind ----------------------------------
+
+# valgrind :
+# 	$(VALGRIND) 
+
+# Cleaning ----------------------------------
+
+clean:
+	rm -f *.o $(EXE)
