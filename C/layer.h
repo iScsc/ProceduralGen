@@ -1,19 +1,22 @@
-#ifndef MAP2D
-#define MAP2D
+#ifndef LAYER
+#define LAYER
 
 #include "gradientGrid.h"
 
 // ----- Structure definition -----
 
-struct map2d
+struct layer
 {
     int width;
     int height;
     int sizeFactor;
+
+    gradientGrid* gradGrid;
+
     double* values;
 };
 
-typedef struct map2d map2d;
+typedef struct layer layer;
 
 // ----- Functions -----
 
@@ -29,13 +32,13 @@ double perlin(double x, double y, gradientGrid* gradGrid);
 
 
 
-map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor, int display_loading);
+layer* newLayer(gradientGrid* gradGrid, int sizeFactor, int display_loading);
 
-double* getValue(map2d* map2d, int width_idx, int height_idx);
+double* getValue(layer* layer, int width_idx, int height_idx);
 
 
-void printMap2d(map2d* map2d);
+void printLayer(layer* layer);
 
-void freeMap2d(map2d* map2d);
+void freeLayer(layer* layer);
 
 #endif

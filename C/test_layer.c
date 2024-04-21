@@ -2,7 +2,7 @@
 #include <time.h>
 
 #include "gradientGrid.h"
-#include "map2d.h"
+#include "layer.h"
 
 int main()
 {
@@ -21,19 +21,17 @@ int main()
 
     int sizeFactor = 100;
 
-    printf("Creating a 2d map of size (height x width) = (%d x %d)\n", sizeFactor*(height-1), sizeFactor*(width-1));
+    printf("Creating a layer of size (height x width) = (%d x %d)\n", sizeFactor*(height-1), sizeFactor*(width-1));
 
-    map2d* map = newMap2d(gradGrid, sizeFactor, 1);
+    layer* layer = newLayer(gradGrid, sizeFactor, 1);
 
-    printMap2d(map);
+    printLayer(layer);
 
 
 
     printf("Deallocating now...\n");
 
-    freeGradGrid(gradGrid);
-
-    freeMap2d(map);
+    freeLayer(layer);
 
     return 0;
 }

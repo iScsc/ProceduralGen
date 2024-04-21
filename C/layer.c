@@ -1,7 +1,7 @@
 #include <malloc.h>
 
 #include "loadingBar.h"
-#include "map2d.h"
+#include "layer.h"
 
 double smoothstep(double w)
 {
@@ -68,7 +68,7 @@ double perlin(double x, double y, gradientGrid* gradGrid)
 
 
 
-map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor, int display_loading)
+layer* newLayer(gradientGrid* gradGrid, int sizeFactor, int display_loading)
 {
     int gradGridWidth = gradGrid->width;
     int gradGridHeight = gradGrid->height;
@@ -77,20 +77,23 @@ map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor, int display_loading)
     int height = (gradGridHeight - 1) * sizeFactor;
 
     // Initialization
-    map2d* new_map2d = calloc(1, sizeof(map2d));
+    layer* new_layer = calloc(1, sizeof(layer));
     double* values = calloc(width * height, sizeof(double));
 
-    new_map2d->width = width;
-    new_map2d->height = height;
-    new_map2d->sizeFactor = sizeFactor;
-    new_map2d->values = values;
+    new_layer->width = width;
+    new_layer->height = height;
+    new_layer->sizeFactor = sizeFactor;
+
+    new_layer->gradGrid = gradGrid;
+
+    new_layer->values = values;
 
     // Setting correct double values
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
-            double* value = getValue(new_map2d, j, i);
+            double* value = getValue(new_layer, j, i);
 
             *value = perlin((double) j/sizeFactor, (double) i/sizeFactor, gradGrid);
 
@@ -108,15 +111,15 @@ map2d* newMap2d(gradientGrid* gradGrid, int sizeFactor, int display_loading)
         printf("\n");
     }
 
-    return new_map2d;
+    return new_layer;
 }
 
 
 
-double* getValue(map2d* map2d, int width_idx, int height_idx)
+double* getValue(layer* layer, int width_idx, int height_idx)
 {
-    int width = map2d->width;
-    int height = map2d->height;
+    int width = layer->width;
+    int height = layer->height;
 
     if (width_idx < 0 || width_idx >= width)
     {
@@ -128,24 +131,24 @@ double* getValue(map2d* map2d, int width_idx, int height_idx)
         return NULL;
     }
 
-    return (map2d->values) + height_idx * width + width_idx;
+    return (layer->values) + height_idx * width + width_idx;
 }
 
 
 
-void printMap2d(map2d* map2d)
+void printLayer(layer* layer)
 {
-    int width = map2d->width;
-    int height = map2d->height;
+    int width = layer->width;
+    int height = layer->height;
 
     printf("-------------------------------------------\n");
-    printf("Printing 2d map of size = (%d, %d)\n\n", height, width);
+    printf("Printing layer of size = (%d, %d)\n\n", height, width);
 
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
-            double* value = getValue(map2d, j, i);
+            double* value = getValue(layer, j, i);
 
             printf("%lf   ", *value);
         }
@@ -157,8 +160,10 @@ void printMap2d(map2d* map2d)
 
 
 
-void freeMap2d(map2d* map2d)
+void freeLayer(layer* layer)
 {
-    free(map2d->values);
-    free(map2d);
+    freeGradGrid(layer->gradGrid);
+
+    free(layer->values);
+    free(layer);
 }
