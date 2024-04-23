@@ -32,7 +32,7 @@ double perlin(double x, double y, gradientGrid* gradGrid);
 
 
 
-double* getValue(layer* layer, int width_idx, int height_idx);
+double* getLayerValue(layer* layer, int width_idx, int height_idx);
 
 
 

@@ -68,7 +68,7 @@ double perlin(double x, double y, gradientGrid* gradGrid)
 
 
 
-double* getValue(layer* layer, int width_idx, int height_idx)
+double* getLayerValue(layer* layer, int width_idx, int height_idx)
 {
     int width = layer->width;
     int height = layer->height;
@@ -115,7 +115,7 @@ layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_
     {
         for (int j = 0; j < width; j++)
         {
-            double* value = getValue(new_layer, j, i);
+            double* value = getLayerValue(new_layer, j, i);
 
             *value = perlin((double) j/sizeFactor, (double) i/sizeFactor, gradGrid);
 
@@ -161,7 +161,7 @@ void printLayer(layer* layer)
     {
         for (int j = 0; j < width; j++)
         {
-            double* value = getValue(layer, j, i);
+            double* value = getLayerValue(layer, j, i);
 
             printf("%lf   ", *value);
         }
