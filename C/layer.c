@@ -68,6 +68,28 @@ double perlin(double x, double y, gradientGrid* gradGrid)
 
 
 
+double* getValue(layer* layer, int width_idx, int height_idx)
+{
+    int width = layer->width;
+    int height = layer->height;
+
+    if (width_idx < 0 || width_idx >= width)
+    {
+        return NULL;
+    }
+    
+    if (height_idx < 0 || height_idx >= height)
+    {
+        return NULL;
+    }
+
+    return (layer->values) + height_idx * width + width_idx;
+}
+
+
+
+
+
 layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_loading)
 {
     int gradGridWidth = gradGrid->width;
@@ -116,32 +138,14 @@ layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_
 
 
 
-double* getValue(layer* layer, int width_idx, int height_idx)
-{
-    int width = layer->width;
-    int height = layer->height;
-
-    if (width_idx < 0 || width_idx >= width)
-    {
-        return NULL;
-    }
-    
-    if (height_idx < 0 || height_idx >= height)
-    {
-        return NULL;
-    }
-
-    return (layer->values) + height_idx * width + width_idx;
-}
-
-
-
 layer* newLayer(int width, int height, int sizeFactor, int display_loading)
 {
     gradientGrid* gradGrid = newRandomGradGrid(width, height, display_loading);
 
     return newLayerFromGradient(gradGrid, sizeFactor, display_loading);
 }
+
+
 
 
 

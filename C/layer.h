@@ -32,10 +32,11 @@ double perlin(double x, double y, gradientGrid* gradGrid);
 
 
 
-layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_loading);
-
 double* getValue(layer* layer, int width_idx, int height_idx);
 
+
+
+layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_loading);
 
 layer* newLayer(int width, int height, int sizeFactor, int display_loading);
 
