@@ -9,9 +9,9 @@ struct layer
 {
     int width;
     int height;
-    int sizeFactor;
+    int size_factor;
 
-    gradientGrid* gradGrid;
+    gradientGrid* gradient_grid;
 
     double* values;
 };
@@ -26,9 +26,9 @@ double interpolate(double a0, double a1, double w);
 
 
 
-double dotGridGradient(int ix, int iy, double x, double y, gradientGrid* gradGrid);
+double dotGridGradient(int ix, int iy, double x, double y, gradientGrid* gradient_grid);
 
-double perlin(double x, double y, gradientGrid* gradGrid);
+double perlin(double x, double y, gradientGrid* gradient_grid);
 
 
 
@@ -36,9 +36,9 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx);
 
 
 
-layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_loading);
+layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int display_loading);
 
-layer* newLayer(int width, int height, int sizeFactor, int display_loading);
+layer* newLayer(int width, int height, int size_factor, int display_loading);
 
 
 void printLayer(layer* layer);

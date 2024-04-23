@@ -28,19 +28,19 @@ double interpolate(double a0, double a1, double w)
 
 
 
-double dotGridGradient(int ix, int iy, double x, double y, gradientGrid* gradGrid)
+double dotGridGradient(int ix, int iy, double x, double y, gradientGrid* gradient_grid)
 {
     double dx = x - (double) ix;
     double dy = y - (double) iy;
 
-    vector* v = getVector(gradGrid, ix, iy);
+    vector* v = getVector(gradient_grid, ix, iy);
 
     return dx * v->x + dy * v->y;
 }
 
 
 
-double perlin(double x, double y, gradientGrid* gradGrid)
+double perlin(double x, double y, gradientGrid* gradient_grid)
 {
     int x0 = (int) x;
     int y0 = (int) y;
@@ -51,12 +51,12 @@ double perlin(double x, double y, gradientGrid* gradGrid)
     double sx = x - x0;
     double sy = y - y0;
 
-    double n0 = dotGridGradient(x0, y0, x, y, gradGrid);
-    double n1 = dotGridGradient(x1, y0, x, y, gradGrid);
+    double n0 = dotGridGradient(x0, y0, x, y, gradient_grid);
+    double n1 = dotGridGradient(x1, y0, x, y, gradient_grid);
     double ix0 = interpolate(n0, n1, sx);
 
-    n0 = dotGridGradient(x0, y1, x, y, gradGrid);
-    n1 = dotGridGradient(x1, y1, x, y, gradGrid);
+    n0 = dotGridGradient(x0, y1, x, y, gradient_grid);
+    n1 = dotGridGradient(x1, y1, x, y, gradient_grid);
     double ix1 = interpolate(n0, n1, sx);
 
     double value = interpolate(ix0, ix1, sy);
@@ -90,13 +90,13 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx)
 
 
 
-layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_loading)
+layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int display_loading)
 {
-    int gradGridWidth = gradGrid->width;
-    int gradGridHeight = gradGrid->height;
+    int gradGridWidth = gradient_grid->width;
+    int gradGridHeight = gradient_grid->height;
 
-    int width = (gradGridWidth - 1) * sizeFactor;
-    int height = (gradGridHeight - 1) * sizeFactor;
+    int width = (gradGridWidth - 1) * size_factor;
+    int height = (gradGridHeight - 1) * size_factor;
 
     // Initialization
     layer* new_layer = calloc(1, sizeof(layer));
@@ -104,9 +104,9 @@ layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_
 
     new_layer->width = width;
     new_layer->height = height;
-    new_layer->sizeFactor = sizeFactor;
+    new_layer->size_factor = size_factor;
 
-    new_layer->gradGrid = gradGrid;
+    new_layer->gradient_grid = gradient_grid;
 
     new_layer->values = values;
 
@@ -117,7 +117,7 @@ layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_
         {
             double* value = getLayerValue(new_layer, j, i);
 
-            *value = perlin((double) j/sizeFactor, (double) i/sizeFactor, gradGrid);
+            *value = perlin((double) j/size_factor, (double) i/size_factor, gradient_grid);
 
             if (display_loading != 0)
             {
@@ -138,11 +138,11 @@ layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_
 
 
 
-layer* newLayer(int width, int height, int sizeFactor, int display_loading)
+layer* newLayer(int width, int height, int size_factor, int display_loading)
 {
-    gradientGrid* gradGrid = newRandomGradGrid(width, height, display_loading);
+    gradientGrid* gradient_grid = newRandomGradGrid(width, height, display_loading);
 
-    return newLayerFromGradient(gradGrid, sizeFactor, display_loading);
+    return newLayerFromGradient(gradient_grid, size_factor, display_loading);
 }
 
 
@@ -175,7 +175,7 @@ void printLayer(layer* layer)
 
 void freeLayer(layer* layer)
 {
-    freeGradGrid(layer->gradGrid);
+    freeGradGrid(layer->gradient_grid);
 
     free(layer->values);
     free(layer);
