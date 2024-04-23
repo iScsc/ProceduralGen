@@ -68,7 +68,7 @@ double perlin(double x, double y, gradientGrid* gradGrid)
 
 
 
-layer* newLayer(gradientGrid* gradGrid, int sizeFactor, int display_loading)
+layer* newLayerFromGradient(gradientGrid* gradGrid, int sizeFactor, int display_loading)
 {
     int gradGridWidth = gradGrid->width;
     int gradGridHeight = gradGrid->height;
@@ -101,7 +101,7 @@ layer* newLayer(gradientGrid* gradGrid, int sizeFactor, int display_loading)
             {
                 // max :  (width - 1) + (height - 1) * width  =  width * height - 1
                 print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
-                "\r   Generating random gradient grid... ", "");
+                "\r   Generating layer...                ", "");
             }
         }
     }
@@ -132,6 +132,15 @@ double* getValue(layer* layer, int width_idx, int height_idx)
     }
 
     return (layer->values) + height_idx * width + width_idx;
+}
+
+
+
+layer* newLayer(int width, int height, int sizeFactor, int display_loading)
+{
+    gradientGrid* gradGrid = newRandomGradGrid(width, height, display_loading);
+
+    return newLayerFromGradient(gradGrid, sizeFactor, display_loading);
 }
 
 
