@@ -10,29 +10,27 @@ void setRandomSeed(unsigned int seed)
     srand(seed);
 }
 
-gradientGrid* newGradGrid(int width, int height)
+
+
+vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx)
 {
-    gradientGrid* new_grad_grid = calloc(1, sizeof(gradientGrid));
+    int width = p_gradGrid->width;
+    int height = p_gradGrid->height;
 
-    vector* gradients = calloc(width * height, sizeof(vector));
+    if (width_idx < 0 || width_idx >= width)
+    {
+        return NULL;
+    }
+    
+    if (height_idx < 0 || height_idx >= height)
+    {
+        return NULL;
+    }
 
-    new_grad_grid->width = width;
-    new_grad_grid->height = height;
-    new_grad_grid->gradients = gradients;
-
-    return new_grad_grid;
+    return (p_gradGrid->gradients) + height_idx * width + width_idx;
 }
 
 
-
-gradientGrid* newRandomGradGrid(int width, int height, int display_loading)
-{
-    gradientGrid* new_grad_grid = newGradGrid(width, height);
-
-    regenerateRandomGradGrid(new_grad_grid, display_loading);
-
-    return new_grad_grid;
-}
 
 
 
@@ -67,23 +65,33 @@ void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading)
 
 
 
-vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx)
+
+
+gradientGrid* newGradGrid(int width, int height)
 {
-    int width = p_gradGrid->width;
-    int height = p_gradGrid->height;
+    gradientGrid* new_grad_grid = calloc(1, sizeof(gradientGrid));
 
-    if (width_idx < 0 || width_idx >= width)
-    {
-        return NULL;
-    }
-    
-    if (height_idx < 0 || height_idx >= height)
-    {
-        return NULL;
-    }
+    vector* gradients = calloc(width * height, sizeof(vector));
 
-    return (p_gradGrid->gradients) + height_idx * width + width_idx;
+    new_grad_grid->width = width;
+    new_grad_grid->height = height;
+    new_grad_grid->gradients = gradients;
+
+    return new_grad_grid;
 }
+
+
+
+gradientGrid* newRandomGradGrid(int width, int height, int display_loading)
+{
+    gradientGrid* new_grad_grid = newGradGrid(width, height);
+
+    regenerateRandomGradGrid(new_grad_grid, display_loading);
+
+    return new_grad_grid;
+}
+
+
 
 
 

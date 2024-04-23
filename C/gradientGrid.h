@@ -28,13 +28,19 @@ typedef struct gradientGrid gradientGrid;
 
 void setRandomSeed(unsigned int seed);
 
+vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx);
+
+
+
+void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading);
+
+
+
 gradientGrid* newGradGrid(int width, int height);
 
 gradientGrid* newRandomGradGrid(int width, int height, int display_loading);
 
-void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading);
 
-vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx);
 
 void printGradientGrid(gradientGrid* p_gradGrid);
 
