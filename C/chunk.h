@@ -5,6 +5,29 @@
 
 // ----- Structure definition -----
 
+// TODO : In the future, if needed, may be implemented.
+// struct linkedLayerNode
+// {
+//     layer* layer;
+
+//     linkedLayerNode* next_node;
+// };
+
+// typedef linkedLayerNode layerNode;
+
+
+
+// struct linkedLayerList
+// {
+//     int length;
+
+//     layerNode head;
+// };
+
+// typedef linkedLayerList layerList;
+
+
+
 struct chunk
 {
     int width;
@@ -20,6 +43,47 @@ struct chunk
 typedef struct chunk chunk;
 
 // ----- Functions -----
+
+// TODO : In the future, if needed, may be implemented.
+// // --- Layer List ---
+
+// layerList* newLayerList();
+
+// void addLayer(layerList* list, layer* layer);
+
+// void removeLayer(layerList* list, int index);
+
+
+// --- Chunks ---
+
+// TODO : In the future, if needed, may be implemented. (need for linked list in order to adapt list length)
+// void addLayer(chunk* chunk, double layer_factor);
+
+// void addLayers(chunk* chunk, double* layers_factors);
+
+double* getChunkValue(chunk* chunk, int width_idx, int height_idx);
+
+chunk* initChunk(int width, int height, int number_of_layers, double* layers_factors, layer** layers);
+
+
+
+void regenerateChunk(chunk* chunk);
+
+
+
+chunk* newChunkFromLayers(int width, int height, int number_of_layers, double* layers_factors, layer** layers);
+
+chunk* newChunkFromGradient(int width, int height, int number_of_layers, gradientGrid** gradient_grids, int* size_factors, double* layers_factors);
+
+chunk* newChunk(int width, int height, int number_of_layers, int* size_factors, double* layers_factors);
+
+
+
+chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk);
+
+
+
+void printChunk(chunk* chunk);
 
 void freeChunk(chunk* chunk);
 
