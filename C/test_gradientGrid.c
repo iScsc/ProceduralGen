@@ -20,9 +20,26 @@ int main()
 
     printGradientGrid(gradGrid);
 
+    printf("Creating adjacent Est gradient grid :\n");
+    gradientGrid* gradientEst = newAdjacentGradGrid(NULL, gradGrid, 1);
+    printGradientGrid(gradientEst);
+
+
+    printf("Creating adjacent South gradient grid :\n");
+    gradientGrid* gradientSouth = newAdjacentGradGrid(gradGrid, NULL, 1);
+    printGradientGrid(gradientSouth);
+
+
+    printf("Creating adjacent South-Est gradient grid :\n");
+    gradientGrid* gradientSouthEst = newAdjacentGradGrid(gradientEst, gradientSouth, 1);
+    printGradientGrid(gradientSouthEst);
+
     printf("Deallocating now...\n");
 
     freeGradGrid(gradGrid);
+    freeGradGrid(gradientEst);
+    freeGradGrid(gradientSouth);
+    freeGradGrid(gradientSouthEst);
 
     return 0;
 }

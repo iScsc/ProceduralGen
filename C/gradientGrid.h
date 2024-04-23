@@ -42,6 +42,10 @@ gradientGrid* newRandomGradGrid(int width, int height, int display_loading);
 
 
 
+gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_grid, int display_loading);
+
+
+
 void printGradientGrid(gradientGrid* p_gradGrid);
 
 void freeGradGrid(gradientGrid* p_gradGrid);
