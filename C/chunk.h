@@ -30,13 +30,12 @@
 
 struct chunk
 {
-    int width;
-    int height;
-
     int number_of_layers;
     double* layers_factors;
     layer** layers;
 
+    int width;
+    int height;
     double* chunk_values;
 };
 

@@ -11,7 +11,7 @@ VALGRIND = valgrind $(VFLAGS)
 
 # Exectuables
 PROGRAMS = main
-TESTS = test_loadingBar test_gradientGrid test_layer
+TESTS = test_loadingBar test_gradientGrid test_layer test_chunk
 
 EXE = $(TESTS) $(PROGRAMS)
 
@@ -37,6 +37,9 @@ test_gradientGrid: test_gradientGrid.o gradientGrid.o loadingBar.o
 
 test_layer: test_layer.o layer.o gradientGrid.o loadingBar.o
 	$(CC) test_layer.o layer.o gradientGrid.o loadingBar.o -o test_layer $(LFLAGS)
+
+test_chunk: test_chunk.o chunk.o layer.o gradientGrid.o loadingBar.o
+	$(CC) test_chunk.c chunk.o layer.o gradientGrid.o loadingBar.o -o test_chunk $(LFLAGS)
 
 # Valgrind ----------------------------------
 
