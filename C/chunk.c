@@ -13,11 +13,13 @@ double* getChunkValue(chunk* chunk, int width_idx, int height_idx)
 
     if (width_idx < 0 || width_idx >= width)
     {
+        printf("%sERROR : invalid width_idx = %d when reading chunk value. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
         return NULL;
     }
     
     if (height_idx < 0 || height_idx >= height)
     {
+        printf("%sERROR : invalid height_idx = %d when reading chunk value. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
         return NULL;
     }
 
@@ -101,12 +103,13 @@ chunk* newChunkFromLayers(int width, int height, int number_of_layers, double* l
 
 
 
-chunk* newChunkFromGradient(int width, int height, int number_of_layers, gradientGrid** gradient_grids, int* size_factors, double* layers_factors)
+chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid** gradient_grids, int* size_factors, double* layers_factors)
 {
     layer** layers = calloc(number_of_layers, sizeof(layer*));
 
     for (int i = 0; i < number_of_layers; i++)
     {
+        // size_factors should match gradient_grids dimensions - 1
         layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], 1);
     }
 
@@ -115,15 +118,20 @@ chunk* newChunkFromGradient(int width, int height, int number_of_layers, gradien
 
 
 
-chunk* newChunk(int width, int height, int number_of_layers, int* size_factors, double* layers_factors)
+chunk* newChunk(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors)
 {
     layer** layers = calloc(number_of_layers, sizeof(layer*));
 
+    printf("Layer generation before generating chunk...\n");
     for (int i = 0; i < number_of_layers; i++)
     {
-        layers[i] = newLayer(width, height, size_factors[i], 1);
+        layers[i] = newLayer(gradGrids_width[i], gradGrids_height[i], size_factors[i], 1);
     }
 
+    // size_factors should match gradient_grids dimensions - 1
+    int width = (gradGrids_width[0] - 1) * size_factors[0];
+    int height = (gradGrids_height[0] - 1) * size_factors[0];
+    
     return newChunkFromLayers(width, height, number_of_layers, layers_factors, layers);
 }
 
@@ -230,7 +238,7 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk)
         gradientGrids[k] = newAdjacentGradGrid(north_grid, west_grid, 1);
     }
 
-    chunk* new_chunk = newChunkFromGradient(width, height, nb_layers, gradientGrids, size_factors, factors);
+    chunk* new_chunk = newChunkFromGradients(width, height, nb_layers, gradientGrids, size_factors, factors);
 
     return new_chunk;
 }
@@ -284,15 +292,31 @@ void printChunk(chunk* chunk)
 
 void freeChunk(chunk* chunk)
 {
-    free(chunk->layers_factors);
-    free(chunk->chunk_values);
-
-    for (int i=0; i < chunk->number_of_layers; i++)
+    if (chunk != NULL)
     {
-        freeLayer(chunk->layers[i]);
+        if (chunk->layers_factors != NULL)
+        {
+            printf("Freeing layers factors\n");
+            free(chunk->layers_factors);
+            printf("Layers factors freed\n");
+        }
+
+        if (chunk->chunk_values != NULL)
+        {
+            free(chunk->chunk_values);
+        }
+
+
+        if (chunk->layers != NULL)
+        {
+            for (int i=0; i < chunk->number_of_layers; i++)
+            {
+                freeLayer(chunk->layers[i]);
+            }
+
+            free(chunk->layers);
+        }
+
+        free(chunk);
     }
-
-    free(chunk->layers);
-
-    free(chunk);
 }

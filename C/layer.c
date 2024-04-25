@@ -75,11 +75,13 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx)
 
     if (width_idx < 0 || width_idx >= width)
     {
+        printf("%sERROR : invalid width_idx = %d when reading layer value. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
         return NULL;
     }
     
     if (height_idx < 0 || height_idx >= height)
     {
+        printf("%sERROR : invalid height_idx = %d when reading layer value. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
         return NULL;
     }
 
@@ -95,6 +97,7 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int di
     int gradGridWidth = gradient_grid->width;
     int gradGridHeight = gradient_grid->height;
 
+    // Size layer must be applied **between** gradient grids points.Thus, the layer dimensions are the following:
     int width = (gradGridWidth - 1) * size_factor;
     int height = (gradGridHeight - 1) * size_factor;
 
@@ -138,9 +141,10 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int di
 
 
 
-layer* newLayer(int width, int height, int size_factor, int display_loading)
+layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, int display_loading)
 {
-    gradientGrid* gradient_grid = newRandomGradGrid(width, height, display_loading);
+    // Size Factor should be set to match gradGrid_width - 1 and gradGrid_height - 1
+    gradientGrid* gradient_grid = newRandomGradGrid(gradGrid_width, gradGrid_height, display_loading);
 
     return newLayerFromGradient(gradient_grid, size_factor, display_loading);
 }
@@ -175,8 +179,15 @@ void printLayer(layer* layer)
 
 void freeLayer(layer* layer)
 {
-    freeGradGrid(layer->gradient_grid);
+    if (layer != NULL)
+    {
+        if (layer->values != NULL)
+        {
+            free(layer->values);
+        }
 
-    free(layer->values);
-    free(layer);
+        freeGradGrid(layer->gradient_grid);
+        
+        free(layer);
+    }
 }

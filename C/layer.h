@@ -38,7 +38,7 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx);
 
 layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int display_loading);
 
-layer* newLayer(int width, int height, int size_factor, int display_loading);
+layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, int display_loading);
 
 
 void printLayer(layer* layer);

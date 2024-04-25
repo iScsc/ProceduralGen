@@ -19,11 +19,13 @@ vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx)
 
     if (width_idx < 0 || width_idx >= width)
     {
+        printf("%sERROR : invalid width_idx = %d when reading gradient grid vector. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
         return NULL;
     }
     
     if (height_idx < 0 || height_idx >= height)
     {
+        printf("%sERROR : invalid height_idx = %d when reading gradient grid vector. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
         return NULL;
     }
 
@@ -225,6 +227,13 @@ void printGradientGrid(gradientGrid* p_gradGrid)
 
 void freeGradGrid(gradientGrid* p_gradGrid)
 {
-    free(p_gradGrid->gradients);
-    free(p_gradGrid);
+    if (p_gradGrid != NULL)
+    {
+        if (p_gradGrid->gradients != NULL)
+        {
+            free(p_gradGrid->gradients);
+        }
+        
+        free(p_gradGrid);
+    }
 }
