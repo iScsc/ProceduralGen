@@ -10,6 +10,8 @@
 
 int main()
 {
+    int display_loading = 1;
+
     int nb_layers = 2;
 
     int gradGrids_width[2] = {2+1, 7+1};
@@ -25,7 +27,7 @@ int main()
 
     printf("Creating a full map...\n");
 
-    map* my_map = newMap(nb_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, map_width, map_height);
+    map* my_map = newMap(nb_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, map_width, map_height, display_loading);
 
     printMap(my_map);
 

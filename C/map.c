@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <malloc.h>
+#include <time.h>
 
 #include "loadingBar.h"
 #include "gradientGrid.h"
@@ -51,8 +52,9 @@ chunk* getChunk(map* map, int width_idx, int height_idx)
 
 
 
-map* newMapFromChunks(int map_width, int map_height, chunk** chunks)
+map* newMapFromChunks(int map_width, int map_height, chunk** chunks, int display_loading)
 {
+    clock_t start_time = clock();
 
     if (chunks != NULL && map_width > 0 && map_height > 0)
     {
@@ -87,7 +89,24 @@ map* newMapFromChunks(int map_width, int map_height, chunk** chunks)
                 chunk* current_chunk = getChunk(new_map, j/chunk_width, i/chunk_height);
 
                 *value = *getChunkValue(current_chunk, j%chunk_width, i%chunk_height);
+                
+                if (display_loading != 0)
+                {
+                    double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+
+                    char time_str[100];
+                    sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+
+                    // max :  (width - 1) + (height - 1) * width  =  width * height - 1
+                    print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
+                    "\r   Generating map...                  ", time_str);
+                }
             }
+        }
+
+        if (display_loading != 0)
+        {
+            printf("\n");
         }
 
         return new_map;
@@ -100,21 +119,44 @@ map* newMapFromChunks(int map_width, int map_height, chunk** chunks)
 
 
 
-map* newMap(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors, int map_width, int map_height)
+map* newMap(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors,
+            int map_width, int map_height, int display_loading)
 {
     chunk** chunks = calloc(map_width * map_height, sizeof(chunk*));
 
+    printf("Chunks generation before generating map...\n");
     for (int i = 0; i < map_height; i++)
     {
         for (int j = 0; j < map_width; j++)
         {
-            chunk* current_chunk = newChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors);
+            chunk* current_chunk = NULL;
+
+            if (i == 0 && j == 0)
+            {
+                current_chunk = newChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, display_loading);
+            }
+            else
+            {
+                chunk* north_chunk = NULL;
+                chunk* west_chunk = NULL;
+
+                if (j > 0)
+                {
+                    west_chunk = chunks[i * map_width + j - 1];
+                }
+                if (i > 0)
+                {
+                    north_chunk = chunks[(i - 1) * map_width + j];
+                }
+
+                current_chunk = newAdjacentChunk(north_chunk, west_chunk, display_loading);
+            }
 
             chunks[i * map_width + j] = current_chunk;
         }
     }
 
-    return newMapFromChunks(map_width, map_height, chunks);
+    return newMapFromChunks(map_width, map_height, chunks, display_loading);
 }
 
 

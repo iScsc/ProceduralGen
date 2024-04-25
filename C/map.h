@@ -26,9 +26,10 @@ chunk* getChunk(map* map, int width_idx, int height_idx);
 
 
 
-map* newMapFromChunks(int map_width, int map_height, chunk** chunks);
+map* newMapFromChunks(int map_width, int map_height, chunk** chunks, int display_loading);
 
-map* newMap(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors, int map_width, int map_height);
+map* newMap(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors,
+            int map_width, int map_height, int display_loading);
 
 
 
