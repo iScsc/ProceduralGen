@@ -1,5 +1,6 @@
 #include <malloc.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "loadingBar.h"
 #include "gradientGrid.h"
@@ -49,8 +50,10 @@ chunk* initChunk(int width, int height, int number_of_layers, double* layers_fac
 
 
 
-void regenerateChunk(chunk* chunk)
+void regenerateChunk(chunk* chunk, int display_loading)
 {
+    clock_t start_time = clock();
+
     int width = chunk->width;
     int height = chunk->height;
     int nblayers = chunk->number_of_layers;
@@ -81,10 +84,28 @@ void regenerateChunk(chunk* chunk)
                 double layer_value = *(getLayerValue(layers[k], j, i));
 
                 *value += factors[k] * layer_value;
+                
+                if (display_loading != 0)
+                {
+                    double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+
+                    char time_str[100];
+                    sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+
+                    // max :  (width * (height - 1) + (width - 1)) * nblayers + nblayers - 1  = (width * height - 1) * nblayers + nb_layers - 1
+                    //                                                                        = width * height * nblayers - 1
+                    print_loading_bar((i * width + j) * nblayers + k, width * height * nblayers - 1, NUMBER_OF_SEGMENTS,
+                    "\r   Generating chunk...                ", time_str);
+                }
             }
 
             *value /= divisor;
         }
+    }
+
+    if (display_loading != 0)
+    {
+        printf("\n");
     }
 }
 
@@ -92,54 +113,55 @@ void regenerateChunk(chunk* chunk)
 
 
 
-chunk* newChunkFromLayers(int width, int height, int number_of_layers, double* layers_factors, layer** layers)
+chunk* newChunkFromLayers(int width, int height, int number_of_layers, double* layers_factors, layer** layers, int display_loading)
 {
     chunk* new_chunk = initChunk(width, height, number_of_layers, layers_factors, layers);
 
-    regenerateChunk(new_chunk);
+    regenerateChunk(new_chunk, display_loading);
 
     return new_chunk;
 }
 
 
 
-chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid** gradient_grids, int* size_factors, double* layers_factors)
+chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid** gradient_grids, int* size_factors,
+                             double* layers_factors, int display_loading)
 {
     layer** layers = calloc(number_of_layers, sizeof(layer*));
 
     for (int i = 0; i < number_of_layers; i++)
     {
         // size_factors should match gradient_grids dimensions - 1
-        layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], 1);
+        layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], display_loading);
     }
 
-    return newChunkFromLayers(width, height, number_of_layers, layers_factors, layers);
+    return newChunkFromLayers(width, height, number_of_layers, layers_factors, layers, display_loading);
 }
 
 
 
-chunk* newChunk(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors)
+chunk* newChunk(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors, int display_loading)
 {
     layer** layers = calloc(number_of_layers, sizeof(layer*));
 
     printf("Layer generation before generating chunk...\n");
     for (int i = 0; i < number_of_layers; i++)
     {
-        layers[i] = newLayer(gradGrids_width[i], gradGrids_height[i], size_factors[i], 1);
+        layers[i] = newLayer(gradGrids_width[i], gradGrids_height[i], size_factors[i], display_loading);
     }
 
     // size_factors should match gradient_grids dimensions - 1
     int width = (gradGrids_width[0] - 1) * size_factors[0];
     int height = (gradGrids_height[0] - 1) * size_factors[0];
     
-    return newChunkFromLayers(width, height, number_of_layers, layers_factors, layers);
+    return newChunkFromLayers(width, height, number_of_layers, layers_factors, layers, display_loading);
 }
 
 
 
 
 
-chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk)
+chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, int display_loading)
 {
     int width = 0;
     int height = 0;
@@ -215,8 +237,7 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk)
 
 
     // GradientGrid generation
-
-    gradientGrid** gradientGrids = calloc(nb_layers, sizeof(gradientGrid*));
+    gradientGrid* gradientGrids[nb_layers];
     int size_factors[nb_layers];
 
     for (int k = 0; k < nb_layers; k++)
@@ -232,13 +253,13 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk)
         if (west_chunk != NULL)
         {
             west_grid = west_chunk->layers[k]->gradient_grid;
-            size_factors[k] = north_chunk->layers[k]->size_factor;
+            size_factors[k] = west_chunk->layers[k]->size_factor;
         }
 
-        gradientGrids[k] = newAdjacentGradGrid(north_grid, west_grid, 1);
+        gradientGrids[k] = newAdjacentGradGrid(north_grid, west_grid, display_loading);
     }
 
-    chunk* new_chunk = newChunkFromGradients(width, height, nb_layers, gradientGrids, size_factors, factors);
+    chunk* new_chunk = newChunkFromGradients(width, height, nb_layers, gradientGrids, size_factors, factors, display_loading);
 
     return new_chunk;
 }

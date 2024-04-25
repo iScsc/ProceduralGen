@@ -1,6 +1,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 #include "loadingBar.h"
 #include "gradientGrid.h"
@@ -38,6 +39,8 @@ vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx)
 
 void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading)
 {
+    clock_t start_time = clock();
+
     int width = p_gradGrid->width;
     int height = p_gradGrid->height;
 
@@ -52,9 +55,14 @@ void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading)
 
             if (display_loading != 0)
             {
+                double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+
+                char time_str[100];
+                sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+
                 // max :  (width - 1) + (height - 1) * width  =  width * height - 1
                 print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
-                "\r   Generating random gradient grid... ", "");
+                "\r   Generating random gradient grid... ", time_str);
             }
         }
     }
@@ -99,6 +107,8 @@ gradientGrid* newRandomGradGrid(int width, int height, int display_loading)
 
 gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_grid, int display_loading)
 {
+    clock_t start_time = clock();
+
     int width = 0;
     int height = 0;
 
@@ -158,9 +168,14 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
             if (display_loading != 0)
             {
+                double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+
+                char time_str[100];
+                sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+
                 // max :  (width - 1) + (height - 1) * width  =  width * height - 1
                 print_loading_bar(j, width - 1, NUMBER_OF_SEGMENTS,
-                "\r   Applying North boundary conditions ", "");
+                "\r   Applying North boundary conditions ", time_str);
             }
         }
 
@@ -182,9 +197,14 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
             if (display_loading != 0)
             {
+                double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+
+                char time_str[100];
+                sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+
                 // max :  (width - 1) + (height - 1) * width  =  width * height - 1
                 print_loading_bar(i, height - 1, NUMBER_OF_SEGMENTS,
-                "\r   Applying West boundary conditions  ", "");
+                "\r   Applying West boundary conditions  ", time_str);
             }
         }
 
@@ -233,7 +253,7 @@ void freeGradGrid(gradientGrid* p_gradGrid)
         {
             free(p_gradGrid->gradients);
         }
-        
+
         free(p_gradGrid);
     }
 }

@@ -6,6 +6,8 @@
 
 int main()
 {
+    int display_loading = 1;
+
     int width = 21;
     int height = 11;
 
@@ -13,17 +15,17 @@ int main()
 
     printf("Creating a gradient grid of size (height x width) = (%d x %d)\n", height, width);
 
-    gradientGrid* gradGrid = newRandomGradGrid(width, height, 1);
+    gradientGrid* gradGrid = newRandomGradGrid(width, height, display_loading);
 
     printGradientGrid(gradGrid);
 
 
 
-    int sizeFactor = 3;
+    int sizeFactor = 10;
 
     printf("Creating a layer of size (height x width) = (%d x %d)\n", sizeFactor*(height-1), sizeFactor*(width-1));
 
-    layer* layer1 = newLayerFromGradient(gradGrid, sizeFactor, 1);
+    layer* layer1 = newLayerFromGradient(gradGrid, sizeFactor, display_loading);
 
     printLayer(layer1);
 
@@ -31,7 +33,7 @@ int main()
 
     printf("Trying another layer.\n");
 
-    layer* another_layer = newLayer(width, height, sizeFactor, 1);
+    layer* another_layer = newLayer(width, height, sizeFactor, display_loading);
 
     printLayer(another_layer);
 

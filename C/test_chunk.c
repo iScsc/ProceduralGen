@@ -8,6 +8,8 @@
 
 int main()
 {
+    int display_loading = 1;
+
     int width1 = 3;
     int height1 = 3;
 
@@ -18,10 +20,10 @@ int main()
 
     printf("Creating two gradient grids of sizes (height, width) = (%d x %d) and (%d x %d)\n", height1, width1, height2, width2);
 
-    gradientGrid* gradGrid1 = newRandomGradGrid(width1 + 1, height1 + 1, 1);
+    gradientGrid* gradGrid1 = newRandomGradGrid(width1 + 1, height1 + 1, display_loading);
     printGradientGrid(gradGrid1);
 
-    gradientGrid* gradGrid2 = newRandomGradGrid(width2 + 1, height2 + 1, 1);
+    gradientGrid* gradGrid2 = newRandomGradGrid(width2 + 1, height2 + 1, display_loading);
     printGradientGrid(gradGrid2);
 
 
@@ -40,10 +42,10 @@ int main()
                                                     layer_height1, layer_width1,
                                                     layer_height2, layer_width2);
 
-    layer* layer1 = newLayerFromGradient(gradGrid1, sizeFactor1, 1);
+    layer* layer1 = newLayerFromGradient(gradGrid1, sizeFactor1, display_loading);
     printLayer(layer1);
     
-    layer* layer2 = newLayerFromGradient(gradGrid2, sizeFactor2, 1);
+    layer* layer2 = newLayerFromGradient(gradGrid2, sizeFactor2, display_loading);
     printLayer(layer2);
 
 
@@ -58,7 +60,7 @@ int main()
 
     printf("Creating chunk with these two layers, and factors = {%lf, %lf}\n", my_factors[0], my_factors[1]);
 
-    chunk* my_chunk = newChunkFromLayers(layer_width1, layer_height1, 2, my_factors, my_layers);
+    chunk* my_chunk = newChunkFromLayers(layer_width1, layer_height1, 2, my_factors, my_layers, display_loading);
 
     printChunk(my_chunk);
 

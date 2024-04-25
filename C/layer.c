@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <time.h>
 
 #include "loadingBar.h"
 #include "layer.h"
@@ -94,6 +95,8 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx)
 
 layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int display_loading)
 {
+    clock_t start_time = clock();
+
     int gradGridWidth = gradient_grid->width;
     int gradGridHeight = gradient_grid->height;
 
@@ -124,9 +127,14 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int di
 
             if (display_loading != 0)
             {
+                double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+
+                char time_str[100];
+                sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+
                 // max :  (width - 1) + (height - 1) * width  =  width * height - 1
                 print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
-                "\r   Generating layer...                ", "");
+                "\r   Generating layer...                ", time_str);
             }
         }
     }
@@ -187,7 +195,7 @@ void freeLayer(layer* layer)
         }
 
         freeGradGrid(layer->gradient_grid);
-        
+
         free(layer);
     }
 }
