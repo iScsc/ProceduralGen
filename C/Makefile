@@ -11,7 +11,7 @@ VALGRIND = valgrind $(VFLAGS)
 
 # Exectuables
 PROGRAMS = main
-TESTS = test_loadingBar test_gradientGrid test_layer test_chunk test_map
+TESTS = test_unicode test_loadingBar test_gradientGrid test_layer test_chunk test_map
 
 EXE = $(TESTS) $(PROGRAMS)
 
@@ -28,6 +28,9 @@ EXE = $(TESTS) $(PROGRAMS)
 
 
 # Tests -------------------------------------
+
+test_unicode: test_unicode.o
+	$(CC) test_unicode.c -o test_unicode
 
 test_loadingBar: test_loadingBar.o loadingBar.o
 	$(CC) test_loadingBar.o loadingBar.o -o test_loadingBar
