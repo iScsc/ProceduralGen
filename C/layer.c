@@ -71,22 +71,29 @@ double perlin(double x, double y, gradientGrid* gradient_grid)
 
 double* getLayerValue(layer* layer, int width_idx, int height_idx)
 {
-    int width = layer->width;
-    int height = layer->height;
+    double* layer_value = NULL;
 
-    if (width_idx < 0 || width_idx >= width)
+    if (layer != NULL)
     {
-        printf("%sERROR : invalid width_idx = %d when reading layer value. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
-        return NULL;
-    }
-    
-    if (height_idx < 0 || height_idx >= height)
-    {
-        printf("%sERROR : invalid height_idx = %d when reading layer value. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
-        return NULL;
+        int width = layer->width;
+        int height = layer->height;
+
+        if (width_idx < 0 || width_idx >= width)
+        {
+            printf("%sERROR : invalid width_idx = %d when reading layer value. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
+            return NULL;
+        }
+        
+        if (height_idx < 0 || height_idx >= height)
+        {
+            printf("%sERROR : invalid height_idx = %d when reading layer value. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
+            return NULL;
+        }
+
+        layer_value = (layer->values) + height_idx * width + width_idx;
     }
 
-    return (layer->values) + height_idx * width + width_idx;
+    return layer_value;
 }
 
 

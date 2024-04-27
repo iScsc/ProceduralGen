@@ -10,22 +10,29 @@
 
 double* getMapValue(map* map, int width_idx, int height_idx)
 {
-    int width = map->map_width * map->chunk_width;
-    int height = map->map_height * map->chunk_height;
+    double* map_value = NULL;
 
-    if (width_idx < 0 || width_idx >= width)
+    if (map != NULL)
     {
-        printf("%sERROR : invalid width_idx = %d when reading map value. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
-        return NULL;
-    }
-    
-    if (height_idx < 0 || height_idx >= height)
-    {
-        printf("%sERROR : invalid height_idx = %d when reading map value. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
-        return NULL;
+        int width = map->map_width * map->chunk_width;
+        int height = map->map_height * map->chunk_height;
+
+        if (width_idx < 0 || width_idx >= width)
+        {
+            printf("%sERROR : invalid width_idx = %d when reading map value. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
+            return NULL;
+        }
+        
+        if (height_idx < 0 || height_idx >= height)
+        {
+            printf("%sERROR : invalid height_idx = %d when reading map value. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
+            return NULL;
+        }
+
+        map_value = (map->map_values) + height_idx * width + width_idx;
     }
 
-    return (map->map_values) + height_idx * width + width_idx;
+    return map_value;
 }
 
 
