@@ -13,42 +13,49 @@ void setRandomSeed(unsigned int seed)
 
 
 
-vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx)
+vector* getVector(gradientGrid* gradGrid, int width_idx, int height_idx)
 {
-    int width = p_gradGrid->width;
-    int height = p_gradGrid->height;
+    vector* vec = NULL;
 
-    if (width_idx < 0 || width_idx >= width)
+    if (gradGrid != NULL)
     {
-        printf("%sERROR : invalid width_idx = %d when reading gradient grid vector. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
-        return NULL;
-    }
-    
-    if (height_idx < 0 || height_idx >= height)
-    {
-        printf("%sERROR : invalid height_idx = %d when reading gradient grid vector. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
-        return NULL;
+        int width = gradGrid->width;
+        int height = gradGrid->height;
+
+        if (width_idx < 0 || width_idx >= width)
+        {
+            printf("%sERROR : invalid width_idx = %d when reading gradient grid vector. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
+            return NULL;
+        }
+        
+        if (height_idx < 0 || height_idx >= height)
+        {
+            printf("%sERROR : invalid height_idx = %d when reading gradient grid vector. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
+            return NULL;
+        }
+
+        vec = (gradGrid->gradients) + height_idx * width + width_idx;
     }
 
-    return (p_gradGrid->gradients) + height_idx * width + width_idx;
+    return vec;
 }
 
 
 
 
 
-void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading)
+void regenerateRandomGradGrid(gradientGrid* gradGrid, int display_loading)
 {
     clock_t start_time = clock();
 
-    int width = p_gradGrid->width;
-    int height = p_gradGrid->height;
+    int width = gradGrid->width;
+    int height = gradGrid->height;
 
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
-            vector* v = getVector(p_gradGrid, j, i); //(p_gradGrid->gradients) + i * width + j;
+            vector* v = getVector(gradGrid, j, i);
 
             v->x = (double) rand()/RAND_MAX;
             v->y = sqrt(1. - v->x * v->x);
@@ -221,10 +228,10 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
 
 
-void printGradientGrid(gradientGrid* p_gradGrid)
+void printGradientGrid(gradientGrid* gradGrid)
 {
-    int width = p_gradGrid->width;
-    int height = p_gradGrid->height;
+    int width = gradGrid->width;
+    int height = gradGrid->height;
 
     printf("-------------------------------------------\n");
     printf("Printing gradient grid of size = (%d, %d)\n\n", height, width);
@@ -233,7 +240,7 @@ void printGradientGrid(gradientGrid* p_gradGrid)
     {
         for (int j = 0; j < width; j++)
         {
-            vector* v = getVector(p_gradGrid, j, i); //(p_gradGrid->gradients) + i * width + j;
+            vector* v = getVector(gradGrid, j, i);
 
             printf("(%lf, %lf)   ", v->x, v->y);
         }
@@ -245,15 +252,15 @@ void printGradientGrid(gradientGrid* p_gradGrid)
 
 
 
-void freeGradGrid(gradientGrid* p_gradGrid)
+void freeGradGrid(gradientGrid* gradGrid)
 {
-    if (p_gradGrid != NULL)
+    if (gradGrid != NULL)
     {
-        if (p_gradGrid->gradients != NULL)
+        if (gradGrid->gradients != NULL)
         {
-            free(p_gradGrid->gradients);
+            free(gradGrid->gradients);
         }
 
-        free(p_gradGrid);
+        free(gradGrid);
     }
 }

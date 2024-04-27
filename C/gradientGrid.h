@@ -28,11 +28,11 @@ typedef struct gradientGrid gradientGrid;
 
 void setRandomSeed(unsigned int seed);
 
-vector* getVector(gradientGrid* p_gradGrid, int width_idx, int height_idx);
+vector* getVector(gradientGrid* gradGrid, int width_idx, int height_idx);
 
 
 
-void regenerateRandomGradGrid(gradientGrid* p_gradGrid, int display_loading);
+void regenerateRandomGradGrid(gradientGrid* gradGrid, int display_loading);
 
 
 
@@ -46,8 +46,8 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
 
 
-void printGradientGrid(gradientGrid* p_gradGrid);
+void printGradientGrid(gradientGrid* gradGrid);
 
-void freeGradGrid(gradientGrid* p_gradGrid);
+void freeGradGrid(gradientGrid* gradGrid);
 
 #endif
