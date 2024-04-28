@@ -36,7 +36,7 @@ double* getChunkValue(chunk* chunk, int width_idx, int height_idx)
 
 
 
-chunk* initChunk(int width, int height, int number_of_layers, double* layers_factors, layer** layers)
+chunk* initChunk(int width, int height, int number_of_layers, double layers_factors[number_of_layers], layer* layers[number_of_layers])
 {
     chunk* new_chunk = calloc(1, sizeof(chunk));
 
@@ -137,7 +137,8 @@ void regenerateChunk(chunk* chunk, int display_loading)
 
 
 
-chunk* newChunkFromLayers(int width, int height, int number_of_layers, double* layers_factors, layer** layers, int display_loading)
+chunk* newChunkFromLayers(int width, int height, int number_of_layers, double layers_factors[number_of_layers], layer* layers[number_of_layers],
+                             int display_loading)
 {
     chunk* new_chunk = initChunk(width, height, number_of_layers, layers_factors, layers);
 
@@ -148,8 +149,8 @@ chunk* newChunkFromLayers(int width, int height, int number_of_layers, double* l
 
 
 
-chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid** gradient_grids, int* size_factors,
-                             double* layers_factors, int display_loading)
+chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid* gradient_grids[number_of_layers], 
+                                int size_factors[number_of_layers], double layers_factors[number_of_layers], int display_loading)
 {
     layer* layers[number_of_layers];
 
@@ -164,7 +165,8 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
 
 
 
-chunk* newChunk(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors, int display_loading)
+chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], 
+                        double layers_factors[number_of_layers], int display_loading)
 {
     layer* layers[number_of_layers];
 

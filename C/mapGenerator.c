@@ -270,7 +270,8 @@ completeMap* newCompleteMapFromMap(map* map, double sea_level, int display_loadi
 
 
 
-completeMap* newCompleteMap(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors,
+completeMap* newCompleteMap(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers],
+                            int size_factors[number_of_layers], double layers_factors[number_of_layers],
                             int map_width, int map_height, double sea_level, int display_loading)
 {
     map* map = newMap(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, map_width, map_height, display_loading);
@@ -290,7 +291,8 @@ completeMap* newCompleteMap(int number_of_layers, int* gradGrids_width, int* gra
 
 
 //? Generate square chunks with automatic size factors.
-map* get2dMap(int number_of_layers, int* gradGrids_dimension, double* layers_factors, int map_width, int map_height, int display_loading)
+map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], double layers_factors[number_of_layers],
+                    int map_width, int map_height, int display_loading)
 {
     int lcm = lcmOfArray(number_of_layers, gradGrids_dimension);
 
@@ -310,8 +312,8 @@ map* get2dMap(int number_of_layers, int* gradGrids_dimension, double* layers_fac
 
 
 //? Generate square chunks with automatic size factors and creates sea and color maps.
-completeMap* fullGen(int number_of_layers, int* gradGrids_dimension, double* layers_factors, int map_width, int map_height, double sea_level,
-                        int display_loading)
+completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_layers], double layers_factors[number_of_layers],
+                         int map_width, int map_height, double sea_level, int display_loading)
 {
     map* new_map = get2dMap(number_of_layers, gradGrids_dimension, layers_factors, map_width, map_height, display_loading);
 

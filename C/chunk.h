@@ -58,11 +58,11 @@ typedef struct chunk chunk;
 // TODO : If needed, may be implemented in the future. (linked list required in order to adapt list length)
 // void addLayer(chunk* chunk, double layer_factor);
 
-// void addLayers(chunk* chunk, double* layers_factors);
+// void addLayers(chunk* chunk, double layers_factors[number_of_layers]);
 
 double* getChunkValue(chunk* chunk, int width_idx, int height_idx);
 
-chunk* initChunk(int width, int height, int number_of_layers, double* layers_factors, layer** layers);
+chunk* initChunk(int width, int height, int number_of_layers, double layers_factors[number_of_layers], layer* layers[number_of_layers]);
 
 
 
@@ -70,12 +70,14 @@ void regenerateChunk(chunk* chunk, int display_loading);
 
 
 
-chunk* newChunkFromLayers(int width, int height, int number_of_layers, double* layers_factors, layer** layers, int display_loading);
+chunk* newChunkFromLayers(int width, int height, int number_of_layers, double layers_factors[number_of_layers], layer* layers[number_of_layers],
+                             int display_loading);
 
-chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid** gradient_grids, int* size_factors,
-                             double* layers_factors, int display_loading);
+chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid* gradient_grids[number_of_layers], 
+                                int size_factors[number_of_layers], double layers_factors[number_of_layers], int display_loading);
 
-chunk* newChunk(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors, int display_loading);
+chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], 
+                        double layers_factors[number_of_layers], int display_loading);
 
 
 
