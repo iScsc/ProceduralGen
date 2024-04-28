@@ -11,7 +11,7 @@ VALGRIND = valgrind $(VFLAGS)
 
 # Exectuables
 PROGRAMS = main
-TESTS = test_unicode test_loadingBar test_gradientGrid test_layer test_chunk test_map
+TESTS = test_unicode test_loadingBar test_gradientGrid test_layer test_chunk test_map test_mapGenerator
 
 EXE = $(TESTS) $(PROGRAMS)
 
@@ -46,6 +46,9 @@ test_chunk: test_chunk.o chunk.o layer.o gradientGrid.o loadingBar.o
 
 test_map: test_map.o map.o chunk.o layer.o gradientGrid.o loadingBar.o
 	$(CC) test_map.o map.o chunk.o layer.o gradientGrid.o loadingBar.o -o test_map $(LFLAGS)
+
+test_mapGenerator: test_mapGenerator.o mapGenerator.o map.o chunk.o layer.o gradientGrid.o loadingBar.o
+	$(CC) test_mapGenerator.o mapGenerator.o map.o chunk.o layer.o gradientGrid.o loadingBar.o -o test_mapGenerator $(LFLAGS)
 
 # Valgrind ----------------------------------
 
