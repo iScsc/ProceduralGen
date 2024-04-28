@@ -38,6 +38,15 @@ typedef struct completeMap completeMap;
 
 // ----- Functions -----
 
+//? For positive integers only. Should not be an issue here.
+int gcd(int a, int b);
+
+int lcm(int a, int b);
+
+int lcmOfArray(int nb, int array[nb]);
+
+
+
 color* getCompleteMapColor(completeMap* completeMap, int width_idx, int height_idx);
 
 color* colorize(double value, double sea_level, double min_value, double max_value);
@@ -57,12 +66,22 @@ completeMap* newCompleteMap(int number_of_layers, int* gradGrids_width, int* gra
 
 
 
-//? Generate square chunks with automatic size factors
-//? int* gradGrids_dimension, double* layers_factors,
+//? Generate square chunks with automatic size factors.
+map* get2dMap(int number_of_layers, int* gradGrids_dimension, double* layers_factors, int map_width, int map_height, int display_loading);
 
-//get2dMap
+//? Generate square chunks with automatic size factors and creates sea and color maps.
+completeMap* fullGen(int number_of_layers, int* gradGrids_dimension, double* layers_factors, int map_width, int map_height, double sea_level,
+                        int display_loading);
 
-//fullGen
+
+
+void printCompleteMap(completeMap* completeMap);
+
+
+
+void saveColorMap(char* filepath);
+
+
 
 void freeCompleteMap(completeMap* completeMap);
 

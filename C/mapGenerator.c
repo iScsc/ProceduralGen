@@ -4,6 +4,67 @@
 #include "map.h"
 #include "mapGenerator.h"
 
+//? For positive integers only. Should not be an issue here.
+int gcd(int a, int b)
+{
+    if (a == 0 || b == 0)
+    {
+        printf("%sERROR : can't find the greatest common divisor of 0 !%s\n", RED_COLOR, DEFAULT_COLOR);
+        return 0;
+    }
+
+    while (a != b)
+    {
+        if (a > b)
+        {
+            a -= b;
+        }
+        else
+        {
+            b -= a;
+        }
+    }
+
+    return a;
+}
+
+
+
+int lcm(int a, int b)
+{
+    if (a == 0 || b == 0)
+    {
+        return 0;
+    }
+
+    int c = gcd(a, b);
+
+    return (a * b) / c;
+}
+
+
+
+int lcmOfArray(int nb, int array[nb])
+{
+    int common = 0;
+
+    if (array != NULL && nb > 1)
+    {
+        common = lcm(array[0], array[1]);
+
+        for (int i = 2; i < nb; i++)
+        {
+            common = lcm(common, array[i]);
+        }
+    }
+
+    return common;
+}
+
+
+
+
+
 color* getCompleteMapColor(completeMap* completeMap, int width_idx, int height_idx)
 {
     color* map_color = NULL;
@@ -222,6 +283,41 @@ completeMap* newCompleteMap(int number_of_layers, int* gradGrids_width, int* gra
     }
 
     return complete_map;
+}
+
+
+
+
+
+//? Generate square chunks with automatic size factors.
+map* get2dMap(int number_of_layers, int* gradGrids_dimension, double* layers_factors, int map_width, int map_height, int display_loading)
+{
+    int lcm = lcmOfArray(number_of_layers, gradGrids_dimension);
+
+    int size_factors[number_of_layers];
+
+    for (int i = 0; i < number_of_layers; i++)
+    {
+        size_factors[i] = lcm / gradGrids_dimension[i];
+    }
+
+    map* new_map = newMap(number_of_layers, gradGrids_dimension, gradGrids_dimension, size_factors, layers_factors,
+                                map_width, map_height, display_loading);
+
+    return new_map;
+}
+
+
+
+//? Generate square chunks with automatic size factors and creates sea and color maps.
+completeMap* fullGen(int number_of_layers, int* gradGrids_dimension, double* layers_factors, int map_width, int map_height, double sea_level,
+                        int display_loading)
+{
+    map* new_map = get2dMap(number_of_layers, gradGrids_dimension, layers_factors, map_width, map_height, display_loading);
+
+    completeMap* new_complete_map = newCompleteMapFromMap(new_map, sea_level, display_loading);
+
+    return new_complete_map;
 }
 
 
