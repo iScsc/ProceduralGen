@@ -373,6 +373,8 @@ class mapGenerator:
     
     
     
+    
+    
     def fullGen(grid_sizes : int | list[int], map_factors : int | float | list[int] | list[float], water_level : float,
                 map_size : tuple[int] = (1,1), display_loading : bool = True, display_map : bool = False):
         
@@ -434,6 +436,7 @@ class mapGenerator:
             y = np.linspace(0, map_size[0], ppcm * map_size[0])
             x, y = np.meshgrid(x, y)
 
+            print(np.shape(y), np.shape(x), np.shape(water_map), np.shape(color_map))
             surf = ax3D.plot_surface(y, x, np.array(water_map), facecolors=np.array(color_map))
             
             xylim = max(map_size[0], map_size[1])
