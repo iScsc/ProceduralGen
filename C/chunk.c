@@ -43,8 +43,25 @@ chunk* initChunk(int width, int height, int number_of_layers, double* layers_fac
     double* chunk_values = calloc(width * height, sizeof(double));
 
     new_chunk->number_of_layers = number_of_layers;
-    new_chunk->layers_factors = layers_factors;
-    new_chunk->layers = layers;
+
+
+    // copy layer factors to ensure dynamic allocation
+    double* factors = calloc(number_of_layers, sizeof(double));
+    for (int i = 0; i < number_of_layers; i++)
+    {
+        factors[i] = layers_factors[i];
+    }
+    new_chunk->layers_factors = factors;
+
+
+    // copy layers list to ensure dynamic allocation
+    layer** layers_list = calloc(number_of_layers, sizeof(layer*));
+    for (int i = 0; i < number_of_layers; i++)
+    {
+        layers_list[i] = layers[i];
+    }
+    new_chunk->layers = layers_list;
+
 
     new_chunk->width = width;
     new_chunk->height = height;
@@ -134,7 +151,7 @@ chunk* newChunkFromLayers(int width, int height, int number_of_layers, double* l
 chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid** gradient_grids, int* size_factors,
                              double* layers_factors, int display_loading)
 {
-    layer** layers = calloc(number_of_layers, sizeof(layer*));
+    layer* layers[number_of_layers];
 
     for (int i = 0; i < number_of_layers; i++)
     {
@@ -149,7 +166,7 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
 
 chunk* newChunk(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors, int display_loading)
 {
-    layer** layers = calloc(number_of_layers, sizeof(layer*));
+    layer* layers[number_of_layers];
 
     printf("Layer generation before generating chunk...\n");
     for (int i = 0; i < number_of_layers; i++)
@@ -324,9 +341,7 @@ void freeChunk(chunk* chunk)
     {
         if (chunk->layers_factors != NULL)
         {
-            printf("Freeing layers factors\n");
             free(chunk->layers_factors);
-            printf("Layers factors freed\n");
         }
 
         if (chunk->chunk_values != NULL)

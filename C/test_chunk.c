@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <malloc.h>
 #include <time.h>
 
 #include "gradientGrid.h"
@@ -50,13 +49,9 @@ int main()
 
 
 
-    double* my_factors = calloc(2, sizeof(double));
-    my_factors[0] = 1;
-    my_factors[1] = 0.01;
+    double my_factors[] = {1, 0.01};
 
-    layer** my_layers = calloc(2, sizeof(layer*));
-    my_layers[0] = layer1;
-    my_layers[1] = layer2;
+    layer* my_layers[] = {layer1, layer2};
 
     printf("Creating chunk with these two layers, and factors = {%lf, %lf}\n", my_factors[0], my_factors[1]);
 

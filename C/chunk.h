@@ -43,7 +43,7 @@ typedef struct chunk chunk;
 
 // ----- Functions -----
 
-// TODO : In the future, if needed, may be implemented.
+// TODO : If needed, may be implemented in the future.
 // // --- Layer List ---
 
 // layerList* newLayerList();
@@ -55,7 +55,7 @@ typedef struct chunk chunk;
 
 // --- Chunks ---
 
-// TODO : In the future, if needed, may be implemented. (need for linked list in order to adapt list length)
+// TODO : If needed, may be implemented in the future. (linked list required in order to adapt list length)
 // void addLayer(chunk* chunk, double layer_factor);
 
 // void addLayers(chunk* chunk, double* layers_factors);
