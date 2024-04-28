@@ -2,6 +2,7 @@ import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
 
+import time
 
 #--------------------------------# useful functions and constants #--------------------------------#
 
@@ -18,9 +19,15 @@ HORIZONTAL_RECTANGLE_CHAR = u"\u25ac"
 # https://en.wikipedia.org/wiki/Geometric_Shapes_(Unicode_block)
 # (general) https://en.wikipedia.org/wiki/Unicode_block
 
+LIST_TYPES = [list, tuple, np.ndarray]
+
 def ppcm_of_list(l):
-    if type(l) not in [list, np.ndarray]:
+    if type(l) not in LIST_TYPES:
         return l
+    # try:
+    #     len(l)
+    # except:
+    #     return l
     
     ppcm = 1
     for i in l:
@@ -29,7 +36,7 @@ def ppcm_of_list(l):
 
 
 
-def loading_bar(value, max_value, number_of_segments):
+def loading_bar(value, max_value, number_of_segments, pre_text = "", end_text=""):
     begin_char = "["
     end_char = "]"
     loading_char = HORIZONTAL_RECTANGLE_CHAR
@@ -54,7 +61,7 @@ def loading_bar(value, max_value, number_of_segments):
     
     loading_str += end_char + "    {0:.2f}% completed".format(percent)
     
-    return loading_str
+    return pre_text + loading_str + end_text
 
 
 #--------------------------------# Map Generator Class #--------------------------------#
@@ -102,7 +109,8 @@ class mapGenerator:
     
     
     
-    def randomGradGrid2D(size, display_loading : bool = False):
+    def randomGradGrid2D(size : tuple[int], display_loading : bool = False, pre_text : str = "\r      Generating random gradient grid... "):
+        start_time = time.time()
         
         I, J = size
         
@@ -116,7 +124,9 @@ class mapGenerator:
                 grid2D[i][j] = (x, y)
                 
                 if display_loading:
-                    print("\r   Generating random gradient grid... " + loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS), end="")
+                    t = time.time() - start_time
+                    time_str = " | Time spent : {:.3f} s".format(t)
+                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text, end_text=time_str), end="")
         
         return grid2D
     
@@ -149,7 +159,9 @@ class mapGenerator:
 
         return value
 
-    def generateMap2D(grid, sizeFactor = 10, display_loading : bool = False):
+    def generateMap2D(grid, sizeFactor = 10, display_loading : bool = False, pre_text : str = "\r      Generating map...                  "):
+        start_time = time.time()
+        
         size = ((len(grid) - 1) * sizeFactor, (len(grid[0]) - 1) * sizeFactor)
         I, J = size
         
@@ -160,7 +172,9 @@ class mapGenerator:
                 map[i][j] = mapGenerator.perlin(i/sizeFactor, j/sizeFactor, grid)
                 
                 if display_loading:
-                    print("\r   Generating map...                  " + loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS), end="")
+                    t = time.time() - start_time
+                    time_str = " | Time spent : {:.3f} s".format(t)
+                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text, end_text=time_str), end="")
         
         return map
 
@@ -179,7 +193,9 @@ class mapGenerator:
         else:
             return (scale * 50, scale * i, scale * 50)
 
-    def setWaterLevel(map, seaLevel = 0, isFloat = False, display_loading : bool = False):
+    def setWaterLevel(map, seaLevel = 0, isFloat = False, display_loading : bool = False, pre_text : str = "\r   Generating color map...  "):
+        start_time = time.time()
+        
         size = (len(map), len(map[0]))
         I, J = size
         
@@ -195,7 +211,9 @@ class mapGenerator:
                 colorMap[i][j] = mapGenerator.colorize(map[i][j], seaLevel, min_value, max_value, isFloat)
                 
                 if display_loading:
-                    print("\r   Generating map...                  " + loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS), end="")
+                    t = time.time() - start_time
+                    time_str = " | Time spent : {:.3f} s".format(t)
+                    print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text, end_text=time_str), end="")
         
         return seaMap, colorMap
     
@@ -207,13 +225,59 @@ class mapGenerator:
         #     raise TypeError("The given parameters were not of the correct type! Their types were : " + str((type(grid_sizes), type(map_factors))))
         
         # simple values
+        
+        begin_2D_map_time = time.time()
+        
         if (type(grid_sizes), type(map_factors)) in [(int, int), (int, float)]:
-            grid = np.array(mapGenerator.randomGradGrid2D((grid_sizes + 1, grid_sizes + 1), display_loading=display_loading))
+            
+            I, J = map_size
+            global_grid = [[None for j in range(J)] for i in range(I)]
+            global_map = [[None for j in range(J)] for i in range(I)]
+            
             if display_loading:
-                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
-            final_map = np.array(mapGenerator.generateMap2D(grid, display_loading=display_loading))
+                print("- Generation of the gradient grids.")
+            
+            for i in range(I):
+                for j in range(J):
+                    if display_loading:
+                        print("   Map " + str(i*J + j + 1) +"/" + str(I*J) + "...")
+                    grid = np.array(mapGenerator.randomGradGrid2D((grid_sizes + 1, grid_sizes + 1), display_loading=display_loading))
+                    
+                    if i != 0:
+                        grid[0, :] = global_grid[i - 1][j][-1, :]
+                    
+                    if j != 0:
+                        grid[:, 0] = global_grid[i][j - 1][:, -1]
+                    
+                    global_grid[i][j] = np.copy(grid)
+                    
+                    if display_loading:
+                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+            
+            
             if display_loading:
-                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+                print("\n- Generation of the maps based on gradient grids.")
+            
+            for i in range(I):
+                for j in range(J):
+                    if display_loading:
+                        print("   Map " + str(i*J + j + 1) +"/" + str(I*J) + "...")
+                    final_map = np.array(mapGenerator.generateMap2D(global_grid[i][j], display_loading=display_loading))
+                    
+                    global_map[i][j] = final_map
+                    
+                    if display_loading:
+                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+            
+            if I == 1 and J == 1:
+                global_grid = global_grid[0][0]
+                global_map = global_map[0][0]
+            
+            if display_loading:
+                t = time.time() - begin_2D_map_time
+                print("2D maps generation took {:.3f} s.".format(t))
+            
+            return global_grid, global_map
         
         # lists or arrays
         else:
@@ -229,35 +293,84 @@ class mapGenerator:
                 return mapGenerator.get2DMap(grid_sizes[0], map_factors[0])
             # real list
             elif n > 1:
+                I, J = map_size
                 ppcm = ppcm_of_list(grid_sizes)
                 
-                gradGrids = [None] * n
-                maps = [None] * n
+                global_grid = [[None for j in range(J)] for i in range(I)]
+                global_map = [[None for j in range(J)] for i in range(I)]
                 
-                for i in range(n):
-                    gsi = grid_sizes[i]
-                    
-                    if display_loading:
-                        print("Generating noise map " + str(i + 1) + " of size " + str(gsi) + "...  ")
-                    
-                    gradGrids[i] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading))
-                    if display_loading:
-                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
-                    
-                    maps[i] = np.array(mapGenerator.generateMap2D(gradGrids[i], ppcm//gsi, display_loading=display_loading))
-                    if display_loading:
-                        print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
                 
-                factor_tot = map_factors[0]
-                final_map = map_factors[0] * maps[0]
+                if display_loading:
+                    print("- Generation of the gradient grids.")
+                
+                for i in range(I):
+                    for j in range(J):
+                        if display_loading:
+                            print("   Map " + str(i*J + j + 1) +"/" + str(I*J) + "...")
+                
+                        gradGrids = [None for k in range(n)]
+                        
+                        for k in range(n):
+                            gsi = grid_sizes[k]
+                            
+                            pre_text = "\r      | Generating gradient grid " + str(k + 1) + "/" + str(n) + " of size " + str(gsi) + "...  "
+                            gradGrids[k] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading, pre_text=pre_text))
+                            
+                            if i != 0:
+                                gradGrids[k][0, :] = global_grid[i - 1][j][k][-1, :]
+                            
+                            if j != 0:
+                                gradGrids[k][:, 0] = global_grid[i][j - 1][k][:, -1]
+                            
+                            if display_loading:
+                                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+                        
+                        global_grid[i][j] = gradGrids
+                
+                
+                
+                if display_loading:
+                    print("\n- Generation of the maps based on gradient grids.")
+                
+                for i in range(I):
+                    for j in range(J):
+                        if display_loading:
+                            print("   Map " + str(i*J + j + 1) +"/" + str(I*J) + "...")
+                        
+                        maps = [None for k in range(n)]
+                        
+                        for k in range(n):
+                            gsi = grid_sizes[k]
+                            
+                            pre_text = "\r      | Generating map " + str(k + 1) + "/" + str(n) + "...  "
+                            maps[k] = np.array(mapGenerator.generateMap2D(global_grid[i][j][k], ppcm//gsi, display_loading=display_loading, pre_text=pre_text))
+                            if display_loading:
+                                print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+                        
+                        factor_tot = map_factors[0]
+                        final_map = map_factors[0] * maps[0]
 
-                for i in range(1, n):
-                    factor_tot += map_factors[i]
-                    final_map += map_factors[i] * maps[i]
+                        for k in range(1, n):
+                            factor_tot += map_factors[k]
+                            final_map += map_factors[k] * maps[k]
+                        
+                        final_map /= factor_tot
+                        
+                        global_map[i][j] = final_map
                 
-                final_map /= factor_tot
-        
-        return final_map
+                
+                if I == 1 and J == 1:
+                    global_grid = global_grid[0][0]
+                    global_map = global_map[0][0]
+                
+                
+                if display_loading:
+                    t = time.time() - begin_2D_map_time
+                    print("2D maps generation took {:.3f} s.".format(t))
+                
+                return global_grid, global_map
+    
+    
     
     
     
@@ -265,24 +378,46 @@ class mapGenerator:
     def fullGen(grid_sizes : int | list[int], map_factors : int | float | list[int] | list[float], water_level : float,
                 map_size : tuple[int] = (1,1), display_loading : bool = True, display_map : bool = False):
         
+        begin_gen_time = time.time()
+        
+        I, J = map_size
+        
         n = 1
         ppcm = grid_sizes * 10
-        if type(grid_sizes) in [list, tuple]:
+        if type(grid_sizes) in LIST_TYPES:
             n = len(grid_sizes)
             ppcm = ppcm_of_list(grid_sizes)
         
-        if display_loading:
-            print("Generation of the " + str(n) + " map(s)... ")
-        
-        full_map = mapGenerator.get2DMap(grid_sizes, map_factors, map_size=map_size, display_loading=display_loading)
+        print("ppcm = ", ppcm)
         
         if display_loading:
-            print("Applying water levels on maps... ")
+            print(" -------------------------------------------------- MAP GENERATION : BEGIN -------------------------------------------------- ")
+            print("Generation of " + str(map_size[0] * map_size[1]) + " map(s) with " + str(n) + " layers each for a total of " \
+                + str(map_size[0] * map_size[1] * n) + " maps... \n")
         
-        water_map, color_map = mapGenerator.setWaterLevel(full_map, isFloat=True, display_loading=display_loading)
+        _, global_map = mapGenerator.get2DMap(grid_sizes, map_factors, map_size=map_size, display_loading=display_loading)
+        
+        
+        # Generating unique complete_map
+        complete_map = global_map
+        if I != 1 or J != 1:
+            complete_map = np.concatenate([np.concatenate(global_map[i], axis=1) for i in range(len(global_map))], axis=0)
+        
+        
+        if display_loading:
+            print("\n- Applying water levels on maps... ")
+        
+        water_map, color_map = mapGenerator.setWaterLevel(complete_map, isFloat=True, display_loading=display_loading)
     
         if display_loading:
             print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
+            
+            t = time.time() - begin_gen_time
+            print("Full generation took {:.3f} s.".format(t))
+            
+            print(" --------------------------------------------------- MAP GENERATION : END --------------------------------------------------- ")
+        
+        
         
         
         if display_map:
@@ -297,19 +432,26 @@ class mapGenerator:
             # 3D Map
             ax3D = fig.add_subplot(1, 2, 2, projection='3d')
 
-            x = np.linspace(0, 1, ppcm)
-            y = np.linspace(0, 1, ppcm)
+            x = np.linspace(0, map_size[1], ppcm * map_size[1])
+            y = np.linspace(0, map_size[0], ppcm * map_size[0])
             x, y = np.meshgrid(x, y)
 
             print(np.shape(y), np.shape(x), np.shape(water_map), np.shape(color_map))
             surf = ax3D.plot_surface(y, x, np.array(water_map), facecolors=np.array(color_map))
             
-            ax3D.set_zlim(-1, 1)
+            xylim = max(map_size[0], map_size[1])
+            ax3D.set_xlim(0, xylim)
+            ax3D.set_ylim(0, xylim)
+            
+            zlim = min(map_size[0], map_size[1])
+            ax3D.set_zlim(-zlim, zlim)
 
-            plt.show()
+            plt.show(block=False)
+            
+            input("Press [Enter] to quit.")
         
         
-        return full_map, water_map, color_map
+        return complete_map, water_map, color_map
     
     
     
@@ -340,7 +482,7 @@ class mapGenerator:
         
         for i in range(1, I):
             for j in range(1, J):
-                print(loading_bar(j + i*J, I*J - 1, 20), end="\r")
+                print(loading_bar(j + i*J, I*J - 1, 20, pre_text="\r test : "), end="")
                 
                 time.sleep(.1)
         
