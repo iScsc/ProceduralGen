@@ -70,8 +70,13 @@ map* newMapFromChunks(int map_width, int map_height, chunk** chunks, int display
         new_map->map_width = map_width;
         new_map->map_height = map_height;
 
-        new_map->chunks = chunks;
-
+        // copy chunks list to ensure dynamic allocation
+        chunk** chunks_list = calloc(map_width * map_height, sizeof(chunk*));
+        for (int i = 0; i < map_width * map_height; i++)
+        {
+            chunks_list[i] = chunks[i];
+        }
+        new_map->chunks = chunks_list;
 
 
         chunk* firstChunk = getChunk(new_map, 0, 0);
@@ -129,7 +134,7 @@ map* newMapFromChunks(int map_width, int map_height, chunk** chunks, int display
 map* newMap(int number_of_layers, int* gradGrids_width, int* gradGrids_height, int* size_factors, double* layers_factors,
             int map_width, int map_height, int display_loading)
 {
-    chunk** chunks = calloc(map_width * map_height, sizeof(chunk*));
+    chunk* chunks[map_width * map_height];
 
     printf("Chunks generation before generating map...\n");
     for (int i = 0; i < map_height; i++)
@@ -234,10 +239,6 @@ void freeMap(map* map)
             {
                 for (int j = 0; j < map_width; j++)
                 {
-                    // Be aware that layers_factors may be the same list referenced in each chunk if chunks were created here. Should not be freed several times.
-                    // TODO: Should rather be cloned ! Verify every other lists. Should be copied in structures, not directly referenced.
-                    // TODO: This way, users will be able to create local arrays and pass them as well. Or they can create arrays dynamically and free them themselves.
-                    
                     freeChunk(getChunk(map, j, i));
                 }
             }
