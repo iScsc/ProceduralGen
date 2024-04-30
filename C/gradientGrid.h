@@ -1,10 +1,6 @@
 #ifndef GRADIENT_GRID
 #define GRADIENT_GRID
 
-// ----- Constants definition -----
-
-#define NUMBER_OF_SEGMENTS 21
-
 // ----- Structure definition -----
 
 struct vector
