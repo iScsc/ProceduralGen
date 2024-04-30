@@ -71,14 +71,17 @@ int main()
     {
         clock_t start_time = clock();
 
-        setRandomSeed(time(NULL)); //? Comment this to make it not random, or give a constant rather than time(NULL)
+        time_t seed = time(NULL);
+        printf("Seed used for the generation : %ld\n", seed);
+
+        setRandomSeed(seed); //? Comment this to make it not random, or give a constant rather than time(NULL)
 
         int nb_layers = 3;
 
-        int dimensions[] = {2, 5, 7}; //, 11};
+        int dimensions[] = {2, 5, 11};
         int final_size = lcmOfArray(nb_layers, dimensions);
 
-        double weights[] = {1, .1, .01}; //, 0.001};
+        double weights[] = {1, .1, .01};
 
         int width = 7;
         int height = 5;
