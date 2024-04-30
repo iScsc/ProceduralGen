@@ -62,21 +62,14 @@ void regenerateRandomGradGrid(gradientGrid* gradGrid, int display_loading)
 
             if (display_loading != 0)
             {
-                double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+                char base_str[100] = "Generating random gradient grid... ";
 
-                char time_str[100];
-                sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+                int nb_indents = (display_loading - 1);
 
                 // max :  (width - 1) + (height - 1) * width  =  width * height - 1
-                print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
-                "\r   Generating random gradient grid... ", time_str);
+                predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
             }
         }
-    }
-
-    if (display_loading != 0)
-    {
-        printf("\n");
     }
 }
 
@@ -119,6 +112,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
     int width = 0;
     int height = 0;
 
+    // Tests on pointers
     if (north_grid != NULL && west_grid != NULL)
     {
         int n_width = north_grid->width;
@@ -159,12 +153,31 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
         return NULL;
     }
 
-    gradientGrid* new_grad_grid = newRandomGradGrid(width, height, display_loading);
+
+    // Begin of the generation
+    if (display_loading != 0)
+    {
+        char begin_string[200] = "Generating an adjacent gradient grid...\n";
+        
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, begin_string);
+    }
+
+
+
+    int display_grad_grid = display_loading;
+    if (display_loading > 0)
+    {
+        display_grad_grid += 1;
+    }
+
+    gradientGrid* new_grad_grid = newRandomGradGrid(width, height, display_grad_grid);
 
     // Applying boundary conditions for the newly generated grid
 
     if (north_grid != NULL)
     {
+        clock_t north_start_time = clock();
         for (int j = 0; j < width; j++)
         {
             vector* vec = getVector(new_grad_grid, j, 0);
@@ -175,25 +188,19 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
             if (display_loading != 0)
             {
-                double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+                char base_str[100] = "Applying North boundary conditions ";
 
-                char time_str[100];
-                sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+                // +1 to indent once more than random adjacent gradient grid base text.
+                int nb_indents = (display_loading - 1) + 1;
 
-                // max :  (width - 1) + (height - 1) * width  =  width * height - 1
-                print_loading_bar(j, width - 1, NUMBER_OF_SEGMENTS,
-                "\r   Applying North boundary conditions ", time_str);
+                predefined_loading_bar(j, width - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, north_start_time);
             }
-        }
-
-        if (display_loading != 0)
-        {
-            printf("\n");
         }
     }
 
     if (west_grid != NULL)
     {
+        clock_t west_start_time = clock();
         for (int i = 0; i < height; i++)
         {
             vector* vec = getVector(new_grad_grid, 0, i);
@@ -204,21 +211,26 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
             if (display_loading != 0)
             {
-                double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+                char base_str[100] = "Applying West boundary conditions  ";
 
-                char time_str[100];
-                sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+                // +1 to indent once more than random adjacent gradient grid base text.
+                int nb_indents = (display_loading - 1) + 1;
 
-                // max :  (width - 1) + (height - 1) * width  =  width * height - 1
-                print_loading_bar(i, height - 1, NUMBER_OF_SEGMENTS,
-                "\r   Applying West boundary conditions  ", time_str);
+                predefined_loading_bar(i, height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, west_start_time);
             }
         }
+    }
 
-        if (display_loading != 0)
-        {
-            printf("\n");
-        }
+    if (display_loading != 0)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        sprintf(final_string, "%sSUCCESS :%s The adjacent gradient grid generation took a total of %.4lf second(s).\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, final_string);
     }
 
     return new_grad_grid;
