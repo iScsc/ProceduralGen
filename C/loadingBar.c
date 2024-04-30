@@ -3,6 +3,46 @@
 
 #include "loadingBar.h"
 
+void delay(float waiting_seconds)
+{
+    clock_t start_time = clock();
+
+    while( (double)(clock() - start_time) / CLOCKS_PER_SEC < waiting_seconds)
+    {
+        ;
+    }
+}
+
+
+
+void indent_print(int number_of_indents, char str[])
+{
+    int indent_length = number_of_indents * CUSTOM_INDENT_WIDTH;
+    char begin_indent[indent_length + 1];
+    
+    for (int k = 0; k < number_of_indents; k++)
+    {
+        for (int l = 0; l < CUSTOM_INDENT_WIDTH; l++)
+        {
+            int idx = k * CUSTOM_INDENT_WIDTH + l;
+
+            if (l == 0)
+            {
+                begin_indent[idx] = CUSTOM_POSSESS_CHAR;
+                continue;
+            }
+            begin_indent[idx] = CUSTOM_INDENT_CHAR;
+        }
+    }
+    begin_indent[indent_length] = '\0';
+
+    printf("%s%s", begin_indent, str);
+}
+
+
+
+
+
 void print_loading_bar(int value, int max_value, int number_of_segments, char* pre_text, char* post_text)
 {
     char begin_char = '[';
@@ -41,19 +81,52 @@ void print_loading_bar(int value, int max_value, int number_of_segments, char* p
 
     float percent = (value * 100.) / max_value;
 
-    printf("%s%s     %3.2f%%%s", pre_text, loading_bar, percent, post_text);
+    printf("%s%s%c%3.2f%%%s", pre_text, loading_bar, INDENT_CHAR, percent, post_text);
 }
 
 
 
-
-
-void delay(float waiting_seconds)
+void predefined_loading_bar(int value, int max_value, int number_of_segments, char* base_str, int number_of_indents, double start_time)
 {
-    clock_t start_time = clock();
+    double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
 
-    while( (double)(clock() - start_time) / CLOCKS_PER_SEC < waiting_seconds)
+    char end_str[1000] = "";
+
+    char time_str[100] = "";
+    sprintf(time_str, " completed - Elapsed time : %.4lf s", current_time);
+
+    if (value == max_value)
     {
-        ;
+        sprintf(end_str, "%s - %sSUCCESS !%s\n", time_str, GREEN_COLOR, DEFAULT_COLOR);
     }
+    else
+    {
+        sprintf(end_str, "%s", time_str);
+    }
+
+    char begin_str[1000] = "";
+    sprintf(begin_str, "\r%s", base_str);
+
+    int indent_length = number_of_indents * CUSTOM_INDENT_WIDTH;
+    char begin_indent[indent_length + 1];
+    
+    for (int k = 0; k < number_of_indents; k++)
+    {
+        for (int l = 0; l < CUSTOM_INDENT_WIDTH; l++)
+        {
+            int idx = k * CUSTOM_INDENT_WIDTH + l;
+
+            if (l == 0)
+            {
+                begin_indent[idx] = CUSTOM_POSSESS_CHAR;
+                continue;
+            }
+            begin_indent[idx] = CUSTOM_INDENT_CHAR;
+        }
+    }
+    begin_indent[indent_length] = '\0';
+
+    sprintf(begin_str, "\r%s%s", begin_indent, base_str);
+
+    print_loading_bar(value, max_value, NUMBER_OF_SEGMENTS, begin_str, end_str);
 }
