@@ -1,9 +1,12 @@
 ################## VARIABLES ###################
 
 # Compiler
-CFLAGS = -g -std=c99 -Wall
+DEBUGGING_FLAGS = -g -Wall
+CFLAGS = -std=c99
+OPTI_FLAGS = -O2
+CC = gcc $(CFLAGS) $(DEBUGGING_FLAGS)   # or gcc $(CFLAGS) $(OPTI_FLAGS)
+
 LFLAGS = -lm
-CC = gcc $(CFLAGS)
 
 # Valgrind
 VFLAGS = --tool=memcheck --leak-check=full --track-origins=yes
