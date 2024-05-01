@@ -59,7 +59,7 @@ chunk* getChunk(map* map, int width_idx, int height_idx)
 
 
 
-map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], int display_loading)
+map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -104,21 +104,13 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
                 
                 if (display_loading != 0)
                 {
-                    double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+                    int nb_indents = display_loading - 1;
 
-                    char time_str[100];
-                    sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+                    char base_str[100] = "Generating map values...           ";
 
-                    // max :  (width - 1) + (height - 1) * width  =  width * height - 1
-                    print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
-                    "\r   Generating map...                  ", time_str);
+                    predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
                 }
             }
-        }
-
-        if (display_loading != 0)
-        {
-            printf("\n");
         }
 
         return new_map;
@@ -132,20 +124,39 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
 
 
 map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers],
-                 int size_factors[number_of_layers], double layers_factors[number_of_layers], int map_width, int map_height, int display_loading)
+                 int size_factors[number_of_layers], double layers_factors[number_of_layers], int map_width, int map_height, unsigned int display_loading)
 {
+    clock_t start_time = clock();
+
     chunk* chunks[map_width * map_height];
 
-    printf("Chunks generation before generating map...\n");
+    int c_loading = display_loading;
+    
+    if (display_loading != 0)
+    {
+        indent_print(display_loading - 1, "Chunks generation before generating map...\n");
+        c_loading += 2;
+    }
+
     for (int i = 0; i < map_height; i++)
     {
         for (int j = 0; j < map_width; j++)
         {
+            clock_t chunk_start_time = clock();
+
             chunk* current_chunk = NULL;
+
+            if (display_loading != 0)
+            {
+                char to_print[200] = "";
+                snprintf(to_print, sizeof(to_print), "Generating chunk %d/%d...\n", i * map_width + j + 1, map_width * map_height);
+
+                indent_print(display_loading, to_print);
+            }
 
             if (i == 0 && j == 0)
             {
-                current_chunk = newChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, display_loading);
+                current_chunk = newChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, c_loading);
             }
             else
             {
@@ -161,14 +172,42 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
                     north_chunk = chunks[(i - 1) * map_width + j];
                 }
 
-                current_chunk = newAdjacentChunk(north_chunk, west_chunk, display_loading);
+                current_chunk = newAdjacentChunk(north_chunk, west_chunk, c_loading);
             }
 
             chunks[i * map_width + j] = current_chunk;
+            
+            if (display_loading != 0)
+            {
+                double total_time = (double) (clock() - chunk_start_time)/CLOCKS_PER_SEC;
+                char final_string[200] = "";
+
+                snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The chunk generation took a total of %.4lf second(s).\n",
+                                        GREEN_COLOR, DEFAULT_COLOR, total_time);
+                
+                int nb_indents = display_loading;
+                indent_print(nb_indents, final_string);
+
+                indent_print(display_loading, "\n");
+            }
         }
     }
 
-    return newMapFromChunks(map_width, map_height, chunks, display_loading);
+    map* new_map = newMapFromChunks(map_width, map_height, chunks, display_loading);
+
+    if (display_loading == 1)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The map generation took a total of %.4lf second(s).\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, final_string);
+    }
+
+    return new_map;
 }
 
 
