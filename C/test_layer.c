@@ -8,8 +8,8 @@ int main()
 {
     int display_loading = 1;
 
-    int width = 21;
-    int height = 11;
+    int width = 5;
+    int height = 4;
 
     setRandomSeed(time(NULL)); //? Comment this to make it not random, or give a constant rather than time(NULL)
 
@@ -21,7 +21,7 @@ int main()
 
 
 
-    int sizeFactor = 10;
+    int sizeFactor = 5;
 
     printf("Creating a layer of size (height x width) = (%d x %d)\n", sizeFactor*(height-1), sizeFactor*(width-1));
 

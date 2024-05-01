@@ -100,7 +100,7 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx)
 
 
 
-layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int display_loading)
+layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -134,21 +134,13 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int di
 
             if (display_loading != 0)
             {
-                double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+                int nb_indents = display_loading - 1;
 
-                char time_str[100];
-                sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+                char base_str[100] = "Generating layer...                ";
 
-                // max :  (width - 1) + (height - 1) * width  =  width * height - 1
-                print_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS,
-                "\r   Generating layer...                ", time_str);
+                predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
             }
         }
-    }
-
-    if (display_loading != 0)
-    {
-        printf("\n");
     }
 
     return new_layer;
@@ -156,12 +148,20 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, int di
 
 
 
-layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, int display_loading)
+layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsigned int display_loading)
 {
-    // Size Factor should be set to match gradGrid_width - 1 and gradGrid_height - 1
-    gradientGrid* gradient_grid = newRandomGradGrid(gradGrid_width, gradGrid_height, display_loading);
+    int g_loading = display_loading;
 
-    return newLayerFromGradient(gradient_grid, size_factor, display_loading);
+    // if (display_loading != 0)
+    // {
+    //     indent_print(display_loading - 1, "Generating new layer...\n");
+    //     g_loading += 1;
+    // }
+
+    // Size Factor should be set to match gradGrid_width - 1 and gradGrid_height - 1
+    gradientGrid* gradient_grid = newRandomGradGrid(gradGrid_width, gradGrid_height, g_loading);
+
+    return newLayerFromGradient(gradient_grid, size_factor, g_loading);
 }
 
 
