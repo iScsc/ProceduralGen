@@ -93,19 +93,19 @@ void predefined_loading_bar(int value, int max_value, int number_of_segments, ch
     char end_str[1000] = "";
 
     char time_str[100] = "";
-    sprintf(time_str, " completed - Elapsed time : %.4lf s", current_time);
+    snprintf(time_str, sizeof(time_str), " completed - Elapsed time : %.4lf s", current_time);
 
     if (value == max_value)
     {
-        sprintf(end_str, "%s - %sSUCCESS !%s\n", time_str, GREEN_COLOR, DEFAULT_COLOR);
+        snprintf(end_str, sizeof(end_str), "%s - %sSUCCESS !%s\n", time_str, GREEN_COLOR, DEFAULT_COLOR);
     }
     else
     {
-        sprintf(end_str, "%s", time_str);
+        snprintf(end_str, sizeof(end_str), "%s", time_str);
     }
 
     char begin_str[1000] = "";
-    sprintf(begin_str, "\r%s", base_str);
+    snprintf(begin_str, sizeof(begin_str), "\r%s", base_str);
 
     int indent_length = number_of_indents * CUSTOM_INDENT_WIDTH;
     char begin_indent[indent_length + 1];
@@ -126,7 +126,7 @@ void predefined_loading_bar(int value, int max_value, int number_of_segments, ch
     }
     begin_indent[indent_length] = '\0';
 
-    sprintf(begin_str, "\r%s%s", begin_indent, base_str);
+    snprintf(begin_str, sizeof(begin_str), "\r%s%s", begin_indent, base_str);
 
     print_loading_bar(value, max_value, NUMBER_OF_SEGMENTS, begin_str, end_str);
 }
