@@ -28,17 +28,17 @@ vector* getVector(gradientGrid* gradGrid, int width_idx, int height_idx);
 
 
 
-void regenerateRandomGradGrid(gradientGrid* gradGrid, int display_loading);
+void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loading);
 
 
 
 gradientGrid* newGradGrid(int width, int height);
 
-gradientGrid* newRandomGradGrid(int width, int height, int display_loading);
+gradientGrid* newRandomGradGrid(int width, int height, unsigned int display_loading);
 
 
 
-gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_grid, int display_loading);
+gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_grid, unsigned int display_loading);
 
 
 

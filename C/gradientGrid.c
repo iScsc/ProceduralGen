@@ -44,7 +44,7 @@ vector* getVector(gradientGrid* gradGrid, int width_idx, int height_idx)
 
 
 
-void regenerateRandomGradGrid(gradientGrid* gradGrid, int display_loading)
+void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -92,7 +92,7 @@ gradientGrid* newGradGrid(int width, int height)
 
 
 
-gradientGrid* newRandomGradGrid(int width, int height, int display_loading)
+gradientGrid* newRandomGradGrid(int width, int height, unsigned int display_loading)
 {
     gradientGrid* new_grad_grid = newGradGrid(width, height);
 
@@ -105,7 +105,7 @@ gradientGrid* newRandomGradGrid(int width, int height, int display_loading)
 
 
 
-gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_grid, int display_loading)
+gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_grid, unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -157,7 +157,8 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
     // Begin of the generation
     if (display_loading != 0)
     {
-        char begin_string[200] = "Generating an adjacent gradient grid...\n";
+        char begin_string[200] = "";
+        snprintf(begin_string, sizeof(begin_string), "Generating adjacent gradient grid of size %d x %d...\n", width, height);
         
         int nb_indents = display_loading - 1;
         indent_print(nb_indents, begin_string);
@@ -166,7 +167,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
 
     int display_grad_grid = display_loading;
-    if (display_loading > 0)
+    if (display_loading != 0)
     {
         display_grad_grid += 1;
     }
@@ -221,12 +222,12 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
         }
     }
 
-    if (display_loading != 0)
+    if (display_loading == 1)
     {
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
         char final_string[200] = "";
 
-        sprintf(final_string, "%sSUCCESS :%s The adjacent gradient grid generation took a total of %.4lf second(s).\n",
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The adjacent gradient grid generation took a total of %.4lf second(s).\n",
                                 GREEN_COLOR, DEFAULT_COLOR, total_time);
         
         int nb_indents = display_loading - 1;

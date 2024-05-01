@@ -14,7 +14,7 @@ int main()
 
     printf("Creating a gradient grid of size (width x height) = (%d x %d)\n", width, height);
 
-    gradientGrid* gradGrid = newRandomGradGrid(width, height, display_loading + 1);
+    gradientGrid* gradGrid = newRandomGradGrid(width, height, display_loading);
 
     printf("Total space used by this gradient grid : %ld\n", sizeof(*gradGrid) + width*height*sizeof(*(gradGrid->gradients)));
     //                                              Should be :    4 + 4 + 8   + width*height    *      8 + 8
@@ -28,7 +28,7 @@ int main()
 
 
     printf("Creating adjacent South gradient grid :\n");
-    gradientGrid* gradientSouth = newAdjacentGradGrid(gradGrid, NULL, display_loading + 1);
+    gradientGrid* gradientSouth = newAdjacentGradGrid(gradGrid, NULL, display_loading);
     printGradientGrid(gradientSouth);
 
 
