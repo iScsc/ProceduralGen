@@ -74,7 +74,7 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
 
 
 
-void regenerateChunk(chunk* chunk, int display_loading)
+void regenerateChunk(chunk* chunk, unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -111,25 +111,17 @@ void regenerateChunk(chunk* chunk, int display_loading)
                 
                 if (display_loading != 0)
                 {
-                    double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+                    int nb_indents = display_loading - 1;
 
-                    char time_str[100];
-                    sprintf(time_str, " - Elapsed time : %.3lf s", current_time);
+                    char base_str[100] = "Generating chunk values...         ";
 
-                    // max :  (width * (height - 1) + (width - 1)) * nblayers + nblayers - 1  = (width * height - 1) * nblayers + nb_layers - 1
-                    //                                                                        = width * height * nblayers - 1
-                    print_loading_bar((i * width + j) * nblayers + k, width * height * nblayers - 1, NUMBER_OF_SEGMENTS,
-                    "\r   Generating chunk...                ", time_str);
+                    predefined_loading_bar((i * width + j) * nblayers + k, width * height * nblayers - 1, NUMBER_OF_SEGMENTS,
+                                                base_str, nb_indents, start_time);
                 }
             }
 
             *value /= divisor;
         }
-    }
-
-    if (display_loading != 0)
-    {
-        printf("\n");
     }
 }
 
@@ -138,7 +130,7 @@ void regenerateChunk(chunk* chunk, int display_loading)
 
 
 chunk* newChunkFromLayers(int width, int height, int number_of_layers, double layers_factors[number_of_layers], layer* layers[number_of_layers],
-                             int display_loading)
+                             unsigned int display_loading)
 {
     chunk* new_chunk = initChunk(width, height, number_of_layers, layers_factors, layers);
 
@@ -150,14 +142,35 @@ chunk* newChunkFromLayers(int width, int height, int number_of_layers, double la
 
 
 chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid* gradient_grids[number_of_layers], 
-                                int size_factors[number_of_layers], double layers_factors[number_of_layers], int display_loading)
+                                int size_factors[number_of_layers], double layers_factors[number_of_layers], unsigned int display_loading)
 {
     layer* layers[number_of_layers];
 
+    int g_loading = display_loading;
+
+    if (display_loading != 0)
+    {
+        g_loading += 1;
+    }
+
     for (int i = 0; i < number_of_layers; i++)
     {
+        if (display_loading != 0)
+        {
+            char to_print[200] = "";
+            snprintf(to_print, sizeof(to_print), "Generating layer %d/%d from gradient grid...\n", i + 1, number_of_layers);
+
+            indent_print(display_loading - 1, to_print);
+        }
+
         // size_factors should match gradient_grids dimensions - 1
-        layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], display_loading);
+        layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], g_loading);
+
+
+        if (display_loading != 0)
+        {
+            indent_print(display_loading - 1, "\n");
+        }
     }
 
     return newChunkFromLayers(width, height, number_of_layers, layers_factors, layers, display_loading);
@@ -166,29 +179,67 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
 
 
 chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], 
-                        double layers_factors[number_of_layers], int display_loading)
+                        double layers_factors[number_of_layers], unsigned int display_loading)
 {
+    clock_t start_time = clock();
+
     layer* layers[number_of_layers];
 
-    printf("Layer generation before generating chunk...\n");
+    int l_loading = display_loading;
+
+    if (display_loading != 0)
+    {
+        l_loading += 2;
+        indent_print(display_loading - 1, "Layer generation before generating chunk...\n");
+    }
+
     for (int i = 0; i < number_of_layers; i++)
     {
-        layers[i] = newLayer(gradGrids_width[i], gradGrids_height[i], size_factors[i], display_loading);
+        if (display_loading != 0)
+        {
+            char to_print[200] = "";
+            snprintf(to_print, sizeof(to_print), "Generating layer %d/%d...\n", i + 1, number_of_layers);
+
+            indent_print(display_loading, to_print);
+        }
+
+        layers[i] = newLayer(gradGrids_width[i], gradGrids_height[i], size_factors[i], l_loading);
+
+        if (display_loading != 0)
+        {
+            indent_print(display_loading, "\n");
+        }
     }
 
     // size_factors should match gradient_grids dimensions - 1
     int width = (gradGrids_width[0] - 1) * size_factors[0];
     int height = (gradGrids_height[0] - 1) * size_factors[0];
     
-    return newChunkFromLayers(width, height, number_of_layers, layers_factors, layers, display_loading);
+    chunk* new_chunk = newChunkFromLayers(width, height, number_of_layers, layers_factors, layers, display_loading);
+
+    if (display_loading == 1)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The chunk generation took a total of %.4lf second(s).\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, final_string);
+    }
+
+    return new_chunk;
 }
 
 
 
 
 
-chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, int display_loading)
+chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int display_loading)
 {
+    clock_t start_time = clock();
+
     int width = 0;
     int height = 0;
     int nb_layers = 0;
@@ -262,6 +313,13 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, int display_loadi
     }
 
 
+    int c_loading = display_loading;
+    if (display_loading != 0)
+    {
+        indent_print(display_loading - 1, "Generating adjacent chunk...\n");
+        c_loading += 1;
+    }
+
     // GradientGrid generation
     gradientGrid* gradientGrids[nb_layers];
     int size_factors[nb_layers];
@@ -282,10 +340,27 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, int display_loadi
             size_factors[k] = west_chunk->layers[k]->size_factor;
         }
 
-        gradientGrids[k] = newAdjacentGradGrid(north_grid, west_grid, display_loading);
+        gradientGrids[k] = newAdjacentGradGrid(north_grid, west_grid, c_loading);
+
+        if (display_loading != 0)
+        {
+            indent_print(display_loading, "\n");
+        }
     }
 
-    chunk* new_chunk = newChunkFromGradients(width, height, nb_layers, gradientGrids, size_factors, factors, display_loading);
+    chunk* new_chunk = newChunkFromGradients(width, height, nb_layers, gradientGrids, size_factors, factors, c_loading);
+
+    if (display_loading == 1)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The adjacent chunk generation took a total of %.4lf second(s).\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, final_string);
+    }
 
     return new_chunk;
 }

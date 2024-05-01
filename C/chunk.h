@@ -66,22 +66,22 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
 
 
 
-void regenerateChunk(chunk* chunk, int display_loading);
+void regenerateChunk(chunk* chunk, unsigned int display_loading);
 
 
 
 chunk* newChunkFromLayers(int width, int height, int number_of_layers, double layers_factors[number_of_layers], layer* layers[number_of_layers],
-                             int display_loading);
+                             unsigned int display_loading);
 
 chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradientGrid* gradient_grids[number_of_layers], 
-                                int size_factors[number_of_layers], double layers_factors[number_of_layers], int display_loading);
+                                int size_factors[number_of_layers], double layers_factors[number_of_layers], unsigned int display_loading);
 
 chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], 
-                        double layers_factors[number_of_layers], int display_loading);
+                        double layers_factors[number_of_layers], unsigned int display_loading);
 
 
 
-chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, int display_loading);
+chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int display_loading);
 
 
 

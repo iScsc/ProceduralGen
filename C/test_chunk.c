@@ -20,10 +20,10 @@ int main()
     printf("Creating two gradient grids of sizes (height, width) = (%d x %d) and (%d x %d)\n", height1, width1, height2, width2);
 
     gradientGrid* gradGrid1 = newRandomGradGrid(width1 + 1, height1 + 1, display_loading);
-    printGradientGrid(gradGrid1);
+    // printGradientGrid(gradGrid1);
 
     gradientGrid* gradGrid2 = newRandomGradGrid(width2 + 1, height2 + 1, display_loading);
-    printGradientGrid(gradGrid2);
+    // printGradientGrid(gradGrid2);
 
 
 
@@ -42,10 +42,10 @@ int main()
                                                     layer_height2, layer_width2);
 
     layer* layer1 = newLayerFromGradient(gradGrid1, sizeFactor1, display_loading);
-    printLayer(layer1);
+    // printLayer(layer1);
     
     layer* layer2 = newLayerFromGradient(gradGrid2, sizeFactor2, display_loading);
-    printLayer(layer2);
+    // printLayer(layer2);
 
 
 
@@ -59,9 +59,21 @@ int main()
 
     printChunk(my_chunk);
 
+
+    printf("Generating another one from scratch...\n");
+
+    int widths[] = {width1, width2};
+    int heights[] = {height1, height2};
+    int size_factors[] = {sizeFactor1, sizeFactor2};
+
+    chunk* another_chunk = newChunk(2, widths, heights, size_factors, my_factors, display_loading);
+
+    printChunk(another_chunk);
+
     printf("Deallocating now...\n");
 
     freeChunk(my_chunk);
+    freeChunk(another_chunk);
 
     return 0;
 }
