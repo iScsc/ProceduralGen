@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <time.h>
 
 #include "loadingBar.h"
 #include "map.h"
@@ -140,8 +141,10 @@ color* colorize(double value, double sea_level, double min_value, double max_val
 
 
 
-color** generateColorMap(map* map, double sea_level, int display_loading)
+color** generateColorMap(map* map, double sea_level, unsigned int display_loading)
 {
+    clock_t start_time = clock();
+
     color** color_map = NULL;
 
     if (map != NULL)
@@ -177,6 +180,15 @@ color** generateColorMap(map* map, double sea_level, int display_loading)
                 {
                     max_value = map_value;
                 }
+
+                if (display_loading != 0)
+                {
+                    int nb_indents = display_loading - 1;
+
+                    char base_str[100] = "Generating color map...            ";
+
+                    predefined_loading_bar(i * width + j, 2 * height * width - 2, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                }
             }
         }
 
@@ -192,6 +204,15 @@ color** generateColorMap(map* map, double sea_level, int display_loading)
                 color* c = colorize(map_value, sea_level, min_value, max_value);
                 
                 color_map[i * width + j] = c;
+
+                if (display_loading != 0)
+                {
+                    int nb_indents = display_loading - 1;
+
+                    char base_str[100] = "Generating color map...            ";
+
+                    predefined_loading_bar(height * width - 1 + i * width + j, 2 * height * width - 2, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                }
             }
         }
     }
@@ -201,8 +222,10 @@ color** generateColorMap(map* map, double sea_level, int display_loading)
 
 
 
-double* setSeaLevel(map* map, double sea_level, int display_loading)
+double* setSeaLevel(map* map, double sea_level, unsigned int display_loading)
 {
+    clock_t start_time = clock();
+
     double* sea_map = NULL;
 
     if (map != NULL)
@@ -231,6 +254,16 @@ double* setSeaLevel(map* map, double sea_level, int display_loading)
                 {
                     sea_map[i * width + j] = map_value;
                 }
+
+
+                if (display_loading != 0)
+                {
+                    int nb_indents = display_loading - 1;
+
+                    char base_str[100] = "Setting sea level...               ";
+
+                    predefined_loading_bar(i * width + j, height * width - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                }
             }
         }
     }
@@ -242,7 +275,7 @@ double* setSeaLevel(map* map, double sea_level, int display_loading)
 
 
 
-completeMap* newCompleteMapFromMap(map* map, double sea_level, int display_loading)
+completeMap* newCompleteMapFromMap(map* map, double sea_level, unsigned int display_loading)
 {
     completeMap* complete_map = NULL;
 
@@ -262,6 +295,12 @@ completeMap* newCompleteMapFromMap(map* map, double sea_level, int display_loadi
         
         complete_map->sea_values = setSeaLevel(map, sea_level, display_loading);
 
+        if (display_loading != 0)
+        {
+            int nb_indents = display_loading - 1;
+            indent_print(nb_indents, "\n");
+        }
+
         complete_map->color_map = generateColorMap(map, sea_level, display_loading);
     }
 
@@ -272,7 +311,7 @@ completeMap* newCompleteMapFromMap(map* map, double sea_level, int display_loadi
 
 completeMap* newCompleteMap(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers],
                             int size_factors[number_of_layers], double layers_factors[number_of_layers],
-                            int map_width, int map_height, double sea_level, int display_loading)
+                            int map_width, int map_height, double sea_level, unsigned int display_loading)
 {
     map* map = newMap(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, map_width, map_height, display_loading);
 
@@ -292,8 +331,19 @@ completeMap* newCompleteMap(int number_of_layers, int gradGrids_width[number_of_
 
 //? Generate square chunks with automatic size factors.
 map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], double layers_factors[number_of_layers],
-                    int map_width, int map_height, int display_loading)
+                    int map_width, int map_height, unsigned int display_loading)
 {
+    clock_t start_time = clock();
+
+    int m_loading = display_loading;
+
+    if (display_loading != 0)
+    {
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, "Generating a 2d map...\n");
+        m_loading += 1;
+    }
+
     int lcm = lcmOfArray(number_of_layers, gradGrids_dimension);
 
     int size_factors[number_of_layers];
@@ -304,7 +354,20 @@ map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], d
     }
 
     map* new_map = newMap(number_of_layers, gradGrids_dimension, gradGrids_dimension, size_factors, layers_factors,
-                                map_width, map_height, display_loading);
+                                map_width, map_height, m_loading);
+
+
+    if (display_loading == 1)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The 2d map generation took a total of %.4lf second(s).\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, final_string);
+    }
 
     return new_map;
 }
@@ -313,11 +376,39 @@ map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], d
 
 //? Generate square chunks with automatic size factors and creates sea and color maps.
 completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_layers], double layers_factors[number_of_layers],
-                         int map_width, int map_height, double sea_level, int display_loading)
+                         int map_width, int map_height, double sea_level, unsigned int display_loading)
 {
-    map* new_map = get2dMap(number_of_layers, gradGrids_dimension, layers_factors, map_width, map_height, display_loading);
+    clock_t start_time = clock();
+    int m_loading = display_loading;
 
-    completeMap* new_complete_map = newCompleteMapFromMap(new_map, sea_level, display_loading);
+    if (display_loading != 0)
+    {
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, "Generating a complete map...\n");
+        m_loading += 1;
+    }
+
+    map* new_map = get2dMap(number_of_layers, gradGrids_dimension, layers_factors, map_width, map_height, m_loading);
+
+    if (display_loading != 0)
+    {
+        int nb_indents = display_loading;
+        indent_print(nb_indents, "\n");
+    }
+
+    completeMap* new_complete_map = newCompleteMapFromMap(new_map, sea_level, m_loading);
+
+    if (display_loading == 1)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The complete map generation took a total of %.4lf second(s).\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading - 1;
+        indent_print(nb_indents, final_string);
+    }
 
     return new_complete_map;
 }

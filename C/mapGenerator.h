@@ -53,27 +53,27 @@ color* colorize(double value, double sea_level, double min_value, double max_val
 
 
 
-color** generateColorMap(map* map, double sea_level, int display_loading);
+color** generateColorMap(map* map, double sea_level, unsigned int display_loading);
 
-double* setSeaLevel(map* map, double sea_level, int display_loading);
+double* setSeaLevel(map* map, double sea_level, unsigned int display_loading);
 
 
 
-completeMap* newCompleteMapFromMap(map* map, double sea_level, int display_loading);
+completeMap* newCompleteMapFromMap(map* map, double sea_level, unsigned int display_loading);
 
 completeMap* newCompleteMap(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers],
                             int size_factors[number_of_layers], double layers_factors[number_of_layers],
-                            int map_width, int map_height, double sea_level, int display_loading);
+                            int map_width, int map_height, double sea_level, unsigned int display_loading);
 
 
 
 //? Generate square chunks with automatic size factors.
 map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], double layers_factors[number_of_layers],
-                    int map_width, int map_height, int display_loading);
+                    int map_width, int map_height, unsigned int display_loading);
 
 //? Generate square chunks with automatic size factors and creates sea and color maps.
 completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_layers], double layers_factors[number_of_layers],
-                         int map_width, int map_height, double sea_level, int display_loading);
+                         int map_width, int map_height, double sea_level, unsigned int display_loading);
 
 
 
