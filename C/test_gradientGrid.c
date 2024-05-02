@@ -36,6 +36,14 @@ int main()
     gradientGrid* gradientSouthEast = newAdjacentGradGrid(gradientEast, gradientSouth, display_loading);
     printGradientGrid(gradientSouthEast);
 
+
+    printf("File creation...\n");
+    char path[200] = "../saves/gradGrid_test.txt";
+
+    writeGradientGridFile(gradGrid, path);
+    printf("File should be written now.\n");
+
+
     printf("Deallocating now...\n");
 
     freeGradGrid(gradGrid);

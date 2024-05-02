@@ -57,8 +57,11 @@ void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loadi
         {
             vector* v = getVector(gradGrid, j, i);
 
-            v->x = (double) rand()/RAND_MAX;
-            v->y = sqrt(1. - v->x * v->x);
+            int sign_x = 1 - 2 * (rand()%2);
+            v->x = sign_x * (double) rand()/RAND_MAX;
+
+            int sign_y = 1 - 2 * (rand()%2);
+            v->y = sign_y * sqrt(1. - v->x * v->x);
 
             if (display_loading != 0)
             {
@@ -236,6 +239,57 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
     return new_grad_grid;
 }
+
+
+
+
+
+void writeGradientGridFile(gradientGrid* gradGrid, char path[])
+{
+    FILE* f = NULL;
+
+    f = fopen(path, "w");
+
+    if (f != NULL)
+    {
+        fprintf(f, "Gradient Grid\n");
+
+        // Writing the parameters
+        int width = gradGrid->width;
+        int height = gradGrid->height;
+
+        fprintf(f, "width=%d\nheight=%d\n", width, height);
+
+        // Writing the values
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                vector* vec = getVector(gradGrid, j, i);
+
+                if (j != width - 1)
+                {
+                    fprintf(f, "(% .8lf,% .8lf)\t", vec->x, vec->y);
+                }
+                else
+                {
+                    fprintf(f, "(% .8lf,% .8lf)\n", vec->x, vec->y);
+                }
+            }
+        }
+
+        fclose(f);
+    }
+    else
+    {
+        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
+        return;
+    }
+}
+
+
+
+gradientGrid* readGradientGridFile(char path[200]);
 
 
 

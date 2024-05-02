@@ -42,6 +42,12 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
 
 
+void writeGradientGridFile(gradientGrid* gradGrid, char path[]);
+
+gradientGrid* readGradientGridFile(char path[]);
+
+
+
 void printGradientGrid(gradientGrid* gradGrid);
 
 void freeGradGrid(gradientGrid* gradGrid);
