@@ -47,6 +47,8 @@ int lcmOfArray(int nb, int array[nb]);
 
 
 
+double* getCompleteMapSeaValue(completeMap* completeMap, int width_idx, int height_idx);
+
 color* getCompleteMapColor(completeMap* completeMap, int width_idx, int height_idx);
 
 color* colorize(double value, double sea_level, double min_value, double max_value);
@@ -81,7 +83,11 @@ void printCompleteMap(completeMap* completeMap);
 
 
 
-void saveColorMap(char* filepath);
+void writeColorMapFiles(color** color_map, int width, int height, char path[]);
+
+void writeCompleteMapFiles(completeMap* complete_map, char path[]);
+
+completeMap* readCompleteMapFiles(char path[]);
 
 
 

@@ -66,6 +66,36 @@ int lcmOfArray(int nb, int array[nb])
 
 
 
+
+double* getCompleteMapSeaValue(completeMap* completeMap, int width_idx, int height_idx)
+{
+    double* sea_value = NULL;
+
+    if (completeMap != NULL)
+    {
+        int width = completeMap->width;
+        int height = completeMap->height;
+
+        if (width_idx < 0 || width_idx >= width)
+        {
+            printf("%sERROR : invalid width_idx = %d when reading complete map sea value. Should be in range [0, %d]%s\n", RED_COLOR, width_idx, width - 1, DEFAULT_COLOR);
+            return NULL;
+        }
+        
+        if (height_idx < 0 || height_idx >= height)
+        {
+            printf("%sERROR : invalid height_idx = %d when reading complete map sea value. Should be in range [0, %d]%s\n", RED_COLOR, height_idx, height - 1, DEFAULT_COLOR);
+            return NULL;
+        }
+
+        sea_value = (completeMap->sea_values) + height_idx * width + width_idx;
+    }
+
+    return sea_value;
+}
+
+
+
 color* getCompleteMapColor(completeMap* completeMap, int width_idx, int height_idx)
 {
     color* map_color = NULL;
@@ -412,6 +442,108 @@ completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_lay
 
     return new_complete_map;
 }
+
+
+
+
+
+void writeSeaMapFile(double* sea_map, int width, int height, char path[])
+{
+    FILE* f = NULL;
+
+    f = fopen(path, "w");
+
+    if (f != NULL)
+    {
+        fprintf(f, "Sea Map\n");
+
+        // Writing the parameters
+        fprintf(f, "width=%d\nheight=%d\n", width, height);
+
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                double value = sea_map[j + i * width];
+
+                if (j != width - 1)
+                {
+                    fprintf(f, "% .8lf\t", value);
+                }
+                else
+                {
+                    fprintf(f, "% .8lf\n", value);
+                }
+            }
+        }
+
+        fclose(f);
+    }
+    else
+    {
+        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
+        return;
+    }
+}
+
+
+
+// void writeColorMapFiles(color** color_map, int width, int height, char path[])
+// {
+//     // TODO : two files to write : colorInt_map and colorDouble_map
+
+//     FILE* f = NULL;
+
+//     f = fopen(path, "w");
+
+//     if (f != NULL)
+//     {
+//         fprintf(f, "Map\n");
+
+//         // Writing the parameters
+//         fprintf(f, "map_width=%d\nmap_height=%d\nchunk_width=%d\nchunk_height=%d\n", map_width, map_height, chunk_width, chunk_height);
+
+//         int width = map_width * chunk_width;
+//         int height = map_height * chunk_height;
+
+//         // Writing the vectors
+//         for (int i = 0; i < height; i++)
+//         {
+//             for (int j = 0; j < width; j++)
+//             {
+//                 double value = *getMapValue(map, j, i);
+
+//                 if (j != width - 1)
+//                 {
+//                     fprintf(f, "% .8lf\t", value);
+//                 }
+//                 else
+//                 {
+//                     fprintf(f, "% .8lf\n", value);
+//                 }
+//             }
+//         }
+
+//         fclose(f);
+//     }
+//     else
+//     {
+//         printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
+//         return;
+//     }
+// }
+
+
+
+void writeCompleteMapFiles(completeMap* complete_map, char path[])
+{
+    //! TEMPORARY
+    writeSeaMapFile(complete_map->sea_values, complete_map->width, complete_map->height, path);
+}
+
+
+
+completeMap* readCompleteMapFiles(char path[]);
 
 
 

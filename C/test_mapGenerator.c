@@ -94,6 +94,17 @@ int main()
         completeMap* new_complete_map = fullGen(nb_layers, dimensions, weights, width, height, sea_level, display_loading);
         printf("Generation complete!\n");
 
+
+
+
+        printf("File creation...\n");
+        char path[200] = "../saves/completeMap_test.txt";
+
+        writeCompleteMapFiles(new_complete_map, path);
+        printf("File should be written now.\n");
+
+
+
         printf("Deallocating now...\n");
         freeCompleteMap(new_complete_map);
 
