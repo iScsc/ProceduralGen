@@ -70,6 +70,15 @@ int main()
 
     printChunk(another_chunk);
 
+
+    printf("File creation...\n");
+    char path[200] = "../saves/chunk_test.txt";
+
+    writeChunkFile(another_chunk, path);
+    printf("File should be written now.\n");
+
+
+
     printf("Deallocating now...\n");
 
     freeChunk(my_chunk);

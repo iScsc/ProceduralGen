@@ -33,6 +33,12 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
 
 
 
+void writeMapFile(map* map, char path[]);
+
+map* readMapFile(char path[]);
+
+
+
 void printMap(map* map);
 
 void freeMap(map* map);

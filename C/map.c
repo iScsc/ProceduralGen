@@ -214,6 +214,62 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
 
 
 
+void writeMapFile(map* map, char path[])
+{
+    FILE* f = NULL;
+
+    f = fopen(path, "w");
+
+    if (f != NULL)
+    {
+        fprintf(f, "Map\n");
+
+        // Writing the parameters
+        int map_width = map->map_width;
+        int map_height = map->map_height;
+        int chunk_width = map->chunk_width;
+        int chunk_height = map->chunk_height;
+
+        fprintf(f, "map_width=%d\nmap_height=%d\nchunk_width=%d\nchunk_height=%d\n", map_width, map_height, chunk_width, chunk_height);
+
+        int width = map_width * chunk_width;
+        int height = map_height * chunk_height;
+
+        // Writing the values
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                double value = *getMapValue(map, j, i);
+
+                if (j != width - 1)
+                {
+                    fprintf(f, "% .8lf\t", value);
+                }
+                else
+                {
+                    fprintf(f, "% .8lf\n", value);
+                }
+            }
+        }
+
+        fclose(f);
+    }
+    else
+    {
+        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
+        return;
+    }
+}
+
+
+
+map* readMapFile(char path[200]);
+
+
+
+
+
 void printMap(map* map)
 {
     int map_width = map->map_width;

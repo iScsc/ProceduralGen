@@ -1,5 +1,5 @@
-#ifndef CHUNCK
-#define CHUNCK
+#ifndef CHUNK
+#define CHUNK
 
 #include "layer.h"
 
@@ -82,6 +82,12 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
 
 
 chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int display_loading);
+
+
+
+void writeChunkFile(chunk* chunk, char path[]);
+
+chunk* readChunkFile(char path[]);
 
 
 

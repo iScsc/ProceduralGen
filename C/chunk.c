@@ -369,6 +369,58 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
 
 
 
+void writeChunkFile(chunk* chunk, char path[])
+{
+    FILE* f = NULL;
+
+    f = fopen(path, "w");
+
+    if (f != NULL)
+    {
+        fprintf(f, "Chunk\n");
+
+        // Writing the parameters
+        int number_of_layers = chunk->number_of_layers;
+        int width = chunk->width;
+        int height = chunk->height;
+
+        fprintf(f, "number_of_layers=%d\nwidth=%d\nheight=%d\n", number_of_layers, width, height);
+
+        // Writing the values
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                double value = *getChunkValue(chunk, j, i);
+
+                if (j != width - 1)
+                {
+                    fprintf(f, "% .8lf\t", value);
+                }
+                else
+                {
+                    fprintf(f, "% .8lf\n", value);
+                }
+            }
+        }
+
+        fclose(f);
+    }
+    else
+    {
+        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
+        return;
+    }
+}
+
+
+
+chunk* readChunkFile(char path[200]);
+
+
+
+
+
 void printChunk(chunk* chunk)
 {
     int width = chunk->width;

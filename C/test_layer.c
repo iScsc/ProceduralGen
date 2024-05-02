@@ -38,6 +38,13 @@ int main()
     printLayer(another_layer);
 
 
+    printf("File creation...\n");
+    char path[200] = "../saves/layer_test.txt";
+
+    writeLayerFile(another_layer, path);
+    printf("File should be written now.\n");
+
+
 
     printf("Deallocating now...\n");
 

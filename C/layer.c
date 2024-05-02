@@ -168,6 +168,58 @@ layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsign
 
 
 
+void writeLayerFile(layer* layer, char path[])
+{
+    FILE* f = NULL;
+
+    f = fopen(path, "w");
+
+    if (f != NULL)
+    {
+        fprintf(f, "Layer\n");
+
+        // Writing the parameters
+        int width = layer->width;
+        int height = layer->height;
+        int size_factor = layer->size_factor;
+
+        fprintf(f, "width=%d\nheight=%d\nsize_factor=%d\n", width, height, size_factor);
+
+        // Writing the values
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                double value = *getLayerValue(layer, j, i);
+
+                if (j != width - 1)
+                {
+                    fprintf(f, "% .8lf\t", value);
+                }
+                else
+                {
+                    fprintf(f, "% .8lf\n", value);
+                }
+            }
+        }
+
+        fclose(f);
+    }
+    else
+    {
+        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
+        return;
+    }
+}
+
+
+
+layer* readLayerFile(char path[200]);
+
+
+
+
+
 void printLayer(layer* layer)
 {
     int width = layer->width;

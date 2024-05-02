@@ -30,6 +30,14 @@ int main()
 
     printMap(my_map);
 
+
+    printf("File creation...\n");
+    char path[200] = "../saves/map_test.txt";
+
+    writeMapFile(my_map, path);
+    printf("File should be written now.\n");
+
+
     printf("Deallocating now...\n");
 
     freeMap(my_map);

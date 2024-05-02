@@ -41,6 +41,13 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsign
 layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsigned int display_loading);
 
 
+
+void writeLayerFile(layer* layer, char path[]);
+
+layer* readLayerFile(char path[]);
+
+
+
 void printLayer(layer* layer);
 
 void freeLayer(layer* layer);
