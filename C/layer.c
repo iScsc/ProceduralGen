@@ -214,7 +214,7 @@ void writeLayerFile(layer* layer, char path[])
 
 
 
-layer* readLayerFile(char path[200]);
+layer* readLayerFile(char path[]);
 
 
 

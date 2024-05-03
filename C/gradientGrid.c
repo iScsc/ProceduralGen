@@ -289,7 +289,7 @@ void writeGradientGridFile(gradientGrid* gradGrid, char path[])
 
 
 
-gradientGrid* readGradientGridFile(char path[200]);
+gradientGrid* readGradientGridFile(char path[]);
 
 
 

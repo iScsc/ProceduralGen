@@ -264,7 +264,7 @@ void writeMapFile(map* map, char path[])
 
 
 
-map* readMapFile(char path[200]);
+map* readMapFile(char path[]);
 
 
 

@@ -415,7 +415,7 @@ void writeChunkFile(chunk* chunk, char path[])
 
 
 
-chunk* readChunkFile(char path[200]);
+chunk* readChunkFile(char path[]);
 
 
 
