@@ -1,5 +1,6 @@
 #include <malloc.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "loadingBar.h"
 #include "map.h"
@@ -488,57 +489,112 @@ void writeSeaMapFile(double* sea_map, int width, int height, char path[])
 
 
 
-// void writeColorMapFiles(color** color_map, int width, int height, char path[])
-// {
-//     // TODO : two files to write : colorInt_map and colorDouble_map
+void writeColorIntMapFile(color** color_map, int width, int height, char path[])
+{
+    FILE* f = NULL;
 
-//     FILE* f = NULL;
+    f = fopen(path, "w");
 
-//     f = fopen(path, "w");
+    if (f != NULL)
+    {
+        fprintf(f, "Color Int Map\n");
 
-//     if (f != NULL)
-//     {
-//         fprintf(f, "Map\n");
+        // Writing the parameters
+        fprintf(f, "width=%d\nheight=%d\n", width, height);
 
-//         // Writing the parameters
-//         fprintf(f, "map_width=%d\nmap_height=%d\nchunk_width=%d\nchunk_height=%d\n", map_width, map_height, chunk_width, chunk_height);
+        // Writing the vectors
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                color* color = color_map[j + i * width];
 
-//         int width = map_width * chunk_width;
-//         int height = map_height * chunk_height;
+                if (j != width - 1)
+                {
+                    fprintf(f, "(%d,%d,%d)\t", color->red_int, color->green_int, color->blue_int);
+                }
+                else
+                {
+                    fprintf(f, "(%d,%d,%d)\n", color->red_int, color->green_int, color->blue_int);
+                }
+            }
+        }
 
-//         // Writing the vectors
-//         for (int i = 0; i < height; i++)
-//         {
-//             for (int j = 0; j < width; j++)
-//             {
-//                 double value = *getMapValue(map, j, i);
-
-//                 if (j != width - 1)
-//                 {
-//                     fprintf(f, "% .8lf\t", value);
-//                 }
-//                 else
-//                 {
-//                     fprintf(f, "% .8lf\n", value);
-//                 }
-//             }
-//         }
-
-//         fclose(f);
-//     }
-//     else
-//     {
-//         printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
-//         return;
-//     }
-// }
+        fclose(f);
+    }
+    else
+    {
+        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
+        return;
+    }
+}
 
 
 
-void writeCompleteMapFiles(completeMap* complete_map, char path[])
+void writeColorDoubleMapFile(color** color_map, int width, int height, char path[])
+{
+    FILE* f = NULL;
+
+    f = fopen(path, "w");
+
+    if (f != NULL)
+    {
+        fprintf(f, "Color Double Map\n");
+
+        // Writing the parameters
+        fprintf(f, "width=%d\nheight=%d\n", width, height);
+
+        // Writing the vectors
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                color* color = color_map[j + i * width];
+
+                if (j != width - 1)
+                {
+                    fprintf(f, "(%.8lf,%.8lf,%.8lf)\t", color->red_double, color->green_double, color->blue_double);
+                }
+                else
+                {
+                    fprintf(f, "(%.8lf,%.8lf,%.8lf)\n", color->red_double, color->green_double, color->blue_double);
+                }
+            }
+        }
+
+        fclose(f);
+    }
+    else
+    {
+        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
+        return;
+    }
+}
+
+
+
+void writeCompleteMapFiles(completeMap* complete_map, char folder_path[])
 {
     //! TEMPORARY
-    writeSeaMapFile(complete_map->sea_values, complete_map->width, complete_map->height, path);
+    struct stat st = {0};
+
+    if (stat(folder_path, &st) == -1)
+    {
+        // Should check what 0700 permissions are exactly.
+        mkdir(folder_path, 0700);
+    }
+
+    char sea_map_path[200] = "";
+    snprintf(sea_map_path, sizeof(sea_map_path), "%ssea_map.txt", folder_path);
+    writeSeaMapFile(complete_map->sea_values, complete_map->width, complete_map->height, sea_map_path);
+
+    char color_int_path[200] = "";
+    snprintf(color_int_path, sizeof(color_int_path), "%scolor_int_map.txt", folder_path);
+    writeColorIntMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_int_path);
+
+    char color_double_path[200] = "";
+    snprintf(color_double_path, sizeof(color_double_path), "%scolor_double_map.txt", folder_path);
+    writeColorDoubleMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_double_path);
 }
 
 

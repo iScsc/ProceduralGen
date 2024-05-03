@@ -98,9 +98,9 @@ int main()
 
 
         printf("File creation...\n");
-        char path[200] = "../saves/completeMap_test.txt";
+        char folder_path[200] = "../saves/completeMap_test/";
 
-        writeCompleteMapFiles(new_complete_map, path);
+        writeCompleteMapFiles(new_complete_map, folder_path);
         printf("File should be written now.\n");
 
 
