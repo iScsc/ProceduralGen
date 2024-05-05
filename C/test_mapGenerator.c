@@ -71,7 +71,10 @@ int main()
     {
         clock_t start_time = clock();
 
-        time_t seed = time(NULL);
+        // time_t seed = #time(NULL);
+        // printf("Seed used for the generation : %ld\n", seed);
+
+        long int seed = 436517554376;
         printf("Seed used for the generation : %ld\n", seed);
 
         setRandomSeed(seed); //? Comment this to make it not random, or give a constant rather than time(NULL)
@@ -80,15 +83,16 @@ int main()
 
         int dimensions[] = {2, 5, 11};
         int final_size = lcmOfArray(nb_layers, dimensions);
+        printf("Final size : %d\n", final_size);
 
         double weights[] = {1, .1, .01};
 
-        int width = 7;
-        int height = 5;
+        int width = 7;   //7;
+        int height = 5;   //5;
 
-        double sea_level = -.1;
+        double sea_level = -.15;
 
-        int display_loading = 1;
+        int display_loading = 0;      //1;
 
         printf("Generating a complete map with given parameters...\n");
         completeMap* new_complete_map = fullGen(nb_layers, dimensions, weights, width, height, sea_level, display_loading);
@@ -97,11 +101,11 @@ int main()
 
 
 
-        printf("File creation...\n");
-        char folder_path[200] = "../saves/completeMap_test/";
+        // printf("File creation...\n");
+        // char folder_path[200] = "../saves/completeMap_test/";
 
-        writeCompleteMapFiles(new_complete_map, folder_path);
-        printf("File should be written now.\n");
+        // writeCompleteMapFiles(new_complete_map, folder_path);
+        // printf("File should be written now.\n");
 
 
 
