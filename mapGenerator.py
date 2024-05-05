@@ -362,28 +362,18 @@ class mapGenerator:
     
     
     
-    def printMap(grid_sizes : int | list[int], map_factors : int | float | list[int] | list[float], water_level : float,
-                  water_map : list[list[float]], color_map : list[list[float]], map_size : tuple[int] = (1,1)):
+    def printMap(map_size_in_chunks : tuple[int], map_size_in_points : tuple[int], water_level : float, water_map : list[list[float]], color_map : list[list[float]]):
         """print the given water_map with the corresponding color_map
 
         Args:
-            grid_sizes (int | list[int]): gradient grids sizes
-            map_factors (int | float | list[int] | list[float]): noise factors used to generate the final map (for printing purposes)
-            water_level (float): water level used to generate the final sea map (for printing purposes)
+            map_size_in_chunks (int): dimensions of the map in chunks. Should be (width, height)
+            map_size_in_points (int): dimensions of the map in points. Should be (width, height)
             water_map (list[list[float]]): the water map to be printed.
             color_map (list[list[float]]): the color map used to print the colors.
-            map_size (tuple[int], optional): the size of the final map (in chunks). Defaults to (1,1).
         """
         
-        
-        ppcm = grid_sizes * 10
-        if type(grid_sizes) in LIST_TYPES:
-            n = len(grid_sizes)
-            ppcm = ppcm_of_list(grid_sizes)
-        
         fig = plt.figure(figsize=(20, 10))
-        fig.suptitle("SEED = " + str(mapGenerator.getSeed()) + "\nGrid sizes = " + str(grid_sizes) + " | Noise factors = " + str(map_factors) \
-            + " | Water Level = " + str(water_level))
+        fig.suptitle("Map of size width = {} height = {} and water Level = {}".format(map_size_in_points[0], map_size_in_points[1], water_level))
 
         # 2D Map
         ax2D = fig.add_subplot(1, 2, 1)
@@ -392,22 +382,21 @@ class mapGenerator:
         # 3D Map
         ax3D = fig.add_subplot(1, 2, 2, projection='3d')
 
-        x = np.linspace(0, map_size[1], ppcm * map_size[1])
-        y = np.linspace(0, map_size[0], ppcm * map_size[0])
+        x = np.linspace(0, map_size_in_chunks[0], map_size_in_points[0])
+        y = np.linspace(0, map_size_in_chunks[1], map_size_in_points[1])
         x, y = np.meshgrid(x, y)
 
         print(np.shape(y), np.shape(x), np.shape(water_map), np.shape(color_map))
         surf = ax3D.plot_surface(y, x, np.array(water_map), facecolors=np.array(color_map))
         
-        xylim = max(map_size[0], map_size[1])
+        xylim = max(map_size_in_chunks[0], map_size_in_chunks[1])
         ax3D.set_xlim(0, xylim)
         ax3D.set_ylim(0, xylim)
         
-        zlim = min(map_size[0], map_size[1])
+        zlim = min(map_size_in_chunks[0], map_size_in_chunks[1])
         ax3D.set_zlim(-zlim, zlim)
 
         plt.show(block=False)
-        
         input("Press [Enter] to quit.")
     
     
@@ -423,8 +412,13 @@ class mapGenerator:
         Raises:
             FileNotFoundError: if no file was found at the given path.
 
-        Returns:
-            list[list[float]]: the loaded sea map.
+        Returns:  sea_map, sea_level, map_width, map_height
+            sea_map (list[list[float]]): the numpy array of the loaded sea map.
+            width (int): the map_width_in_points value extracted
+            height (int): the map_height_in_points value extracted
+            sea_level (float): the sea_level value extracted
+            map_width (int): the map_width_in_chunk value extracted
+            map_height (int): the map_height_in_chunk value extracted
         """
         
         if os.path.isfile(sea_map_path):
@@ -436,7 +430,7 @@ class mapGenerator:
             f.close()
             
             # Verify lines exist
-            if len(lines) < 3:
+            if len(lines) < 6:
                 print(RED_COLOR + "File is too short, can not be a correct formatted file!" + RED_COLOR)
                 return
             
@@ -447,9 +441,15 @@ class mapGenerator:
             # Parameters
             width_line = lines[1]
             height_line = lines[2]
+            sea_level_line = lines[3]
+            map_width_line = lines[4]
+            map_height_line = lines[5]
             
             width_parts = width_line.split("=")
             height_parts = height_line.split("=")
+            sea_parts = sea_level_line.split("=")
+            map_width_parts = map_width_line.split("=")
+            map_height_parts = map_height_line.split("=")
             
             try:
                 width = int(width_parts[1])
@@ -463,20 +463,38 @@ class mapGenerator:
                 print(RED_COLOR + "Could not convert '{}' into an int for height parameter !".format(height_parts[1]) + DEFAULT_COLOR)
                 return
             
+            try:
+                sea_level = float(sea_parts[1])
+            except:
+                print(RED_COLOR + "Could not convert '{}' into a float for sea_level parameter !".format(sea_parts[1]) + DEFAULT_COLOR)
+                return
+            
+            try:
+                map_width = int(map_width_parts[1])
+            except:
+                print(RED_COLOR + "Could not convert '{}' into an int for map_width parameter !".format(map_width_parts[1]) + DEFAULT_COLOR)
+                return
+            
+            try:
+                map_height = int(map_height_parts[1])
+            except:
+                print(RED_COLOR + "Could not convert '{}' into an int for map_height parameter !".format(map_height_parts[1]) + DEFAULT_COLOR)
+                return
+            
             print("Sea map has dimensions width = {} and height = {}".format(width, height))
             
-            if len(lines) < 3 + height:
+            if len(lines) < 6 + height:
                 print(RED_COLOR + "File is too short, can not contain the {} lines for the values!".format(height) + RED_COLOR)
                 return
             
             sea_map = [[None for j in range(width)] for i in range(height)]
             
             for i in range(height):
-                line = lines[3 + i]
+                line = lines[6 + i]
                 
                 parts = line.split("\t")
                 
-                if len(parts) < height:
+                if len(parts) < width:
                     print(RED_COLOR + "Line {} is too short, can not be contain the {} lines for the values!".format(3 + i, width) + RED_COLOR)
                     return
                 
@@ -485,8 +503,9 @@ class mapGenerator:
                         sea_map[i][j] = float(parts[j])
                     except:
                         print(RED_COLOR + "Could not convert '{}' into a float for value at indexes i={} j={} !".format(parts[j], i, j) + DEFAULT_COLOR)
+                        return
             
-            return np.array(sea_map)
+            return np.array(sea_map), width, height, sea_level, map_width, map_height
         
         else:
             raise FileNotFoundError(RED_COLOR + "File '{}' was not found!".format(sea_map_path) + DEFAULT_COLOR)
@@ -557,7 +576,7 @@ class mapGenerator:
                 
                 parts = line.replace("(", "").replace(")", "").split("\t")
                 
-                if len(parts) < height:
+                if len(parts) < width:
                     print(RED_COLOR + "Line {} is too short, can not be contain the {} lines for the color values!".format(3 + i, width) + RED_COLOR)
                     return
                 
@@ -568,16 +587,19 @@ class mapGenerator:
                         r = float(vector_parts[0])
                     except:
                         print(RED_COLOR + "Could not convert '{}' into a float for red value at indexes i={} j={} !".format(vector_parts[0], i, j) + DEFAULT_COLOR)
+                        return
                     
                     try:
                         g = float(vector_parts[1])
                     except:
                         print(RED_COLOR + "Could not convert '{}' into a float for green value at indexes i={} j={} !".format(vector_parts[1], i, j) + DEFAULT_COLOR)
+                        return
                     
                     try:
                         b = float(vector_parts[2])
                     except:
                         print(RED_COLOR + "Could not convert '{}' into a float for blue value at indexes i={} j={} !".format(vector_parts[2], i, j) + DEFAULT_COLOR)
+                        return
                     
                     
                     
@@ -601,9 +623,14 @@ class mapGenerator:
         Raises:
             FileNotFoundError: if the folder was not found at the given path.
 
-        Returns: sea_map, color_map
+        Returns: sea_map, color_map, sea_level, map_width_in_chunks, map_height_in_chunks
             sea_map (list[list[float]]): the extracted sea_map from the formatted directory.
             color_map (list[list[tuple[float]]]): the extracted color_map from the formatted directory.
+            map_width_in_points (int): the map_width_in_points value extracted
+            map_height_in_points (int): the map_height_in_points value extracted
+            sea_level (float): the sea_level value extracted
+            map_width_in_chunks (int): the map_width_in_chunk value extracted
+            map_height_in_chunks (int): the map_height_in_chunk value extracted
         """
         
         if os.path.isdir(folder_path):
@@ -611,11 +638,11 @@ class mapGenerator:
             
             color_map_path = os.path.join(folder_path, "color_double_map.txt")
             
-            sea_map = mapGenerator.loadSeaMap(sea_map_path)
+            sea_map, map_width_in_points, map_height_in_points, sea_level, map_width_in_chunks, map_height_in_chunks = mapGenerator.loadSeaMap(sea_map_path)
             
             color_map = mapGenerator.loadColorMap(color_map_path)
             
-            return sea_map, color_map
+            return sea_map, color_map, map_width_in_points, map_height_in_points, sea_level, map_width_in_chunks, map_height_in_chunks
         
         else:
             raise FileNotFoundError(RED_COLOR + "Directory '{}' was not found!".format(folder_path) + DEFAULT_COLOR)
@@ -729,7 +756,7 @@ class mapGenerator:
                         for k in range(n):
                             gsi = grid_sizes[k]
                             
-                            pre_text = "\r      | Generating gradient grid " + str(k + 1) + "/" + str(n) + " of size " + str(gsi) + "...  "
+                            pre_text = "\r      | Generating gradient grid " + str(k + 1) + "/" + str(n) + " of size " + str(gsi + 1) + "...  "
                             gradGrids[k] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading, pre_text=pre_text))
                             
                             if i != 0:
@@ -852,7 +879,35 @@ class mapGenerator:
         
         
         if display_map:
-            mapGenerator.printMap(grid_sizes, map_factors, water_level, water_map, color_map, map_size)
+        
+            fig = plt.figure(figsize=(20, 10))
+            fig.suptitle("SEED = " + str(mapGenerator.getSeed()) + "\nGrid sizes = " + str(grid_sizes) + " | Noise factors = " + str(map_factors) \
+                + " | Water Level = " + str(water_level))
+
+            # 2D Map
+            ax2D = fig.add_subplot(1, 2, 1)
+            ax2D.imshow(color_map)
+
+            # 3D Map
+            ax3D = fig.add_subplot(1, 2, 2, projection='3d')
+
+            x = np.linspace(0, map_size[1], ppcm * map_size[1])
+            y = np.linspace(0, map_size[0], ppcm * map_size[0])
+            x, y = np.meshgrid(x, y)
+
+            print(np.shape(y), np.shape(x), np.shape(water_map), np.shape(color_map))
+            surf = ax3D.plot_surface(y, x, np.array(water_map), facecolors=np.array(color_map))
+            
+            xylim = max(map_size[0], map_size[1])
+            ax3D.set_xlim(0, xylim)
+            ax3D.set_ylim(0, xylim)
+            
+            zlim = min(map_size[0], map_size[1])
+            ax3D.set_zlim(-zlim, zlim)
+
+            plt.show(block=False)
+            
+            input("Press [Enter] to quit.")
         
         
         return complete_map, water_map, color_map
