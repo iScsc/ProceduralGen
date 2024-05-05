@@ -379,12 +379,17 @@ map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], d
 
     int size_factors[number_of_layers];
 
+    // size factors should match gradient grids dimensions - 1
+    int gradGrid_corresponding_dimensions[number_of_layers];
+
     for (int i = 0; i < number_of_layers; i++)
     {
         size_factors[i] = lcm / gradGrids_dimension[i];
+        gradGrid_corresponding_dimensions[i] = gradGrids_dimension[i] + 1;
     }
 
-    map* new_map = newMap(number_of_layers, gradGrids_dimension, gradGrids_dimension, size_factors, layers_factors,
+
+    map* new_map = newMap(number_of_layers, gradGrid_corresponding_dimensions, gradGrid_corresponding_dimensions, size_factors, layers_factors,
                                 map_width, map_height, m_loading);
 
 
@@ -448,7 +453,7 @@ completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_lay
 
 
 
-void writeSeaMapFile(double* sea_map, int width, int height, char path[])
+void writeSeaMapFile(completeMap* completeMap, char path[])
 {
     FILE* f = NULL;
 
@@ -458,14 +463,26 @@ void writeSeaMapFile(double* sea_map, int width, int height, char path[])
     {
         fprintf(f, "Sea Map\n");
 
-        // Writing the parameters
-        fprintf(f, "width=%d\nheight=%d\n", width, height);
+        int width = completeMap->width;
+        int height = completeMap->height;
 
+        double sea_level = completeMap->sea_level;
+
+        // Writing the parameters
+        fprintf(f, "width=%d\nheight=%d\nsea_level=% .8lf\n", width, height, sea_level);
+
+        map* current_map = completeMap->map;
+        int map_width = current_map->map_width;
+        int map_height = current_map->map_height;
+
+        fprintf(f, "map_width_in_chunks=%d\nmap_height_in_chunks=%d\n", map_width, map_height);
+
+        // Writing the values
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
             {
-                double value = sea_map[j + i * width];
+                double value = *getCompleteMapSeaValue(completeMap, j, i);
 
                 if (j != width - 1)
                 {
@@ -586,7 +603,7 @@ void writeCompleteMapFiles(completeMap* complete_map, char folder_path[])
 
     char sea_map_path[200] = "";
     snprintf(sea_map_path, sizeof(sea_map_path), "%ssea_map.txt", folder_path);
-    writeSeaMapFile(complete_map->sea_values, complete_map->width, complete_map->height, sea_map_path);
+    writeSeaMapFile(complete_map, sea_map_path);
 
     char color_int_path[200] = "";
     snprintf(color_int_path, sizeof(color_int_path), "%scolor_int_map.txt", folder_path);

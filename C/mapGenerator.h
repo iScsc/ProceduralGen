@@ -83,6 +83,9 @@ void printCompleteMap(completeMap* completeMap);
 
 
 
+
+void writeSeaMapFile(completeMap* completeMap, char path[]);
+
 void writeColorMapFiles(color** color_map, int width, int height, char path[]);
 
 void writeCompleteMapFiles(completeMap* complete_map, char path[]);
