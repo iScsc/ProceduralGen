@@ -131,7 +131,7 @@ color* colorize(double value, double sea_level, double min_value, double max_val
     color* new_color = calloc(1, sizeof(color));
 
     int i = (int) ((value - min_value) * 255. / (max_value - min_value));
-    int s = (int) ((value - min_value) * 200. / (max_value - min_value));
+    int s = (int) ((value - min_value) * 200. / (sea_level - min_value));
 
     //? Show red dots on zero values.
     if (value == 0)
@@ -144,7 +144,7 @@ color* colorize(double value, double sea_level, double min_value, double max_val
         new_color->green_double = 0;
         new_color->blue_double = 0;
     }
-    else if (value < sea_level)
+    else if (value <= sea_level)
     {
         new_color->red_int = 50;
         new_color->green_int = 50;
