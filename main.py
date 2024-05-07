@@ -23,7 +23,7 @@ if LOAD:
 if GENERATE:
     start = time.time()
     #SEED = 909729265464 #rd.randint(0, 1000000000000)
-    SEED = 436517554376 # mapGenerator.getRandSeed()
+    SEED = mapGenerator.getRandSeed() #1714995019 #436517554376 # mapGenerator.getRandSeed()
     # Interesting seeds :
     # 909729265464
     # 436517554376
@@ -52,5 +52,5 @@ if GENERATE:
     SEA_LEVEL = -0.15
 
 
-    full_map, sea_map, cmap_float = mapGenerator.fullGen(GRID_SIZE, VALUE_FACTOR, SEA_LEVEL, map_size=MAP_SIZE, display_loading = False, display_map = False)
+    full_map, sea_map, cmap_float = mapGenerator.fullGen(GRID_SIZE, VALUE_FACTOR, SEA_LEVEL, map_size=MAP_SIZE, display_loading = False, display_map = True)
     print("The whole generation took {} seconds.".format(time.time() - start))

@@ -71,10 +71,9 @@ int main()
     {
         clock_t start_time = clock();
 
-        // time_t seed = #time(NULL);
-        // printf("Seed used for the generation : %ld\n", seed);
+        time_t seed = time(NULL);
+        // long int seed = 1714995019;    //436517554376;
 
-        long int seed = 436517554376;
         printf("Seed used for the generation : %ld\n", seed);
 
         setRandomSeed(seed); //? Comment this to make it not random, or give a constant rather than time(NULL)
@@ -101,11 +100,11 @@ int main()
 
 
 
-        // printf("File creation...\n");
-        // char folder_path[200] = "../saves/completeMap_test/";
+        printf("File creation...\n");
+        char folder_path[200] = "../saves/completeMap_test/";
 
-        // writeCompleteMapFiles(new_complete_map, folder_path);
-        // printf("File should be written now.\n");
+        writeCompleteMapFiles(new_complete_map, folder_path);
+        printf("File should be written now.\n");
 
 
 
