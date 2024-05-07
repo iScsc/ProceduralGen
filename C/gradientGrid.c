@@ -1,3 +1,12 @@
+/**
+ * @file gradientGrid.c
+ * @author Zyno
+ * @brief gradientGrid structure implementation
+ * @version 0.1
+ * @date 2024-05-07
+ * 
+ */
+
 #include <malloc.h>
 #include <stdlib.h>
 #include <math.h>
@@ -57,9 +66,11 @@ void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loadi
         {
             vector* v = getVector(gradGrid, j, i);
 
+            // generating a random sign for x value
             int sign_x = 1 - 2 * (rand()%2);
             v->x = sign_x * (double) rand()/RAND_MAX;
 
+            // generating a random sign for y value
             int sign_y = 1 - 2 * (rand()%2);
             v->y = sign_y * sqrt(1. - v->x * v->x);
 
@@ -88,6 +99,8 @@ gradientGrid* newGradGrid(int width, int height)
 
     new_grad_grid->width = width;
     new_grad_grid->height = height;
+
+    //! Vector array calloc'd but not initialized
     new_grad_grid->gradients = gradients;
 
     return new_grad_grid;
@@ -115,7 +128,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
     int width = 0;
     int height = 0;
 
-    // Tests on pointers
+    // Tests on given north and west grids
     if (north_grid != NULL && west_grid != NULL)
     {
         int n_width = north_grid->width;
@@ -157,7 +170,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
     }
 
 
-    // Begin of the generation
+    // Begin of the random generation
     if (display_loading != 0)
     {
         char begin_string[200] = "";
@@ -175,10 +188,10 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
         display_grad_grid += 1;
     }
 
+    // First generates a random grid
     gradientGrid* new_grad_grid = newRandomGradGrid(width, height, display_grad_grid);
 
-    // Applying boundary conditions for the newly generated grid
-
+    // Then applies boundary conditions for the newly generated grid
     if (north_grid != NULL)
     {
         clock_t north_start_time = clock();
@@ -289,6 +302,7 @@ void writeGradientGridFile(gradientGrid* gradGrid, char path[])
 
 
 
+// TODO : implement reading function if required.
 gradientGrid* readGradientGridFile(char path[]);
 
 
@@ -323,6 +337,7 @@ void freeGradGrid(gradientGrid* gradGrid)
 {
     if (gradGrid != NULL)
     {
+        // Every gradients will be free'd.
         if (gradGrid->gradients != NULL)
         {
             free(gradGrid->gradients);
