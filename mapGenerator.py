@@ -865,7 +865,7 @@ class mapGenerator:
         if display_loading:
             print("\n- Applying water levels on maps... ")
         
-        water_map, color_map = mapGenerator.setWaterLevel(complete_map, isFloat=True, display_loading=display_loading)
+        water_map, color_map = mapGenerator.setWaterLevel(complete_map, seaLevel=water_level, isFloat=True, display_loading=display_loading)
     
         if display_loading:
             print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
