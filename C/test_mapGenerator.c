@@ -72,7 +72,7 @@ int main()
         clock_t start_time = clock();
 
         time_t seed = time(NULL);
-        // long int seed = 1714995019;    //436517554376;
+        // long int seed = 1714995019;    //436517554376;       //1715794433;
 
         printf("Seed used for the generation : %ld\n", seed);
 
@@ -88,8 +88,8 @@ int main()
 
         double weights[] = {1, .1, .01};
 
-        int width = 7;   //7;
-        int height = 5;   //5;
+        int width = 2;   //7;
+        int height = 2;   //5;
 
         double sea_level = -.15;
 
