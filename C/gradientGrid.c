@@ -243,7 +243,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
         char final_string[200] = "";
 
-        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The adjacent gradient grid generation took a total of %.4lf second(s).\n",
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The adjacent gradient grid generation took a total of %.4lf second(s) in CPU time.\n",
                                 GREEN_COLOR, DEFAULT_COLOR, total_time);
         
         int nb_indents = display_loading - 1;

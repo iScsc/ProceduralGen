@@ -398,7 +398,7 @@ map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], d
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
         char final_string[200] = "";
 
-        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The 2d map generation took a total of %.4lf second(s).\n",
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The 2d map generation took a total of %.4lf second(s) in CPU time.\n",
                                 GREEN_COLOR, DEFAULT_COLOR, total_time);
         
         int nb_indents = display_loading - 1;
@@ -439,7 +439,7 @@ completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_lay
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
         char final_string[200] = "";
 
-        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The complete map generation took a total of %.4lf second(s).\n",
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The complete map generation took a total of %.4lf second(s) in CPU time.\n",
                                 GREEN_COLOR, DEFAULT_COLOR, total_time);
         
         int nb_indents = display_loading - 1;

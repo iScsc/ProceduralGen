@@ -222,7 +222,7 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
         char final_string[200] = "";
 
-        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The chunk generation took a total of %.4lf second(s).\n",
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The chunk generation took a total of %.4lf second(s) in CPU time.\n",
                                 GREEN_COLOR, DEFAULT_COLOR, total_time);
         
         int nb_indents = display_loading - 1;
@@ -355,7 +355,7 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
         char final_string[200] = "";
 
-        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The adjacent chunk generation took a total of %.4lf second(s).\n",
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The adjacent chunk generation took a total of %.4lf second(s) in CPU time.\n",
                                 GREEN_COLOR, DEFAULT_COLOR, total_time);
         
         int nb_indents = display_loading - 1;
