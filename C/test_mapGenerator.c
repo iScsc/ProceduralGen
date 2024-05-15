@@ -80,6 +80,8 @@ int main()
 
         int nb_layers = 3;
 
+        //! Remember that the memory space is square of the dimension. Be cautious!
+        //TODO : Make something to compute the required memory space and ask for user if he really wants to do what he asked.
         int dimensions[] = {2, 5, 11};
         int final_size = lcmOfArray(nb_layers, dimensions);
         printf("Final size : %d\n", final_size);
@@ -91,7 +93,7 @@ int main()
 
         double sea_level = -.15;
 
-        int display_loading = 0;      //1;
+        int display_loading = 1;      //1;
 
         printf("Generating a complete map with given parameters...\n");
         completeMap* new_complete_map = fullGen(nb_layers, dimensions, weights, width, height, sea_level, display_loading);
@@ -112,7 +114,7 @@ int main()
         freeCompleteMap(new_complete_map);
 
         double total_time = (double) (clock() - start_time) / CLOCKS_PER_SEC;
-        printf("The whole map generation of lcm %d took a total of %lf s\n", final_size, total_time);
+        printf("The whole map generation of lcm %d took a total of %lf second(s) in CPU time\n", final_size, total_time);
     }
 
     return 0;
