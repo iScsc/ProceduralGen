@@ -24,7 +24,8 @@
 #define HORIZONTAL_RECTANGLE_CHAR '-'   //"\u25ac"
 
 // ----- Constants
-#define NUMBER_OF_SEGMENTS 21
+#define NUMBER_OF_SEGMENTS  21
+#define PERCENT_DECIMAL     1
 
 #define INDENT_CHAR  '\t'
 

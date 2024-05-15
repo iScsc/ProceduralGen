@@ -3,6 +3,31 @@
 
 #include "loadingBar.h"
 
+double pow_int(double value, int power)
+{
+    if (power == 0)
+    {
+        return 1.;
+    }
+    else if (power < 0)
+    {
+        return 1./pow_int(value, -power);
+    }
+    else
+    {
+        if (power % 2 == 0)
+        {
+            return pow_int(value * value, power/2);
+        }
+        else
+        {
+            return value * pow_int(value, power - 1);
+        }
+    }
+}
+
+
+
 void delay(float waiting_seconds)
 {
     clock_t start_time = clock();
@@ -49,6 +74,9 @@ void print_loading_bar(int value, int max_value, int number_of_segments, char* p
     char end_char = ']';
     char loading_char = HORIZONTAL_RECTANGLE_CHAR;
 
+    char format[20] = "";
+    snprintf(format, sizeof(format), "%s%d%s", "%s%s%c%3.", PERCENT_DECIMAL, "f%%%s");
+
 
 
     float value_per_segment = (float) max_value / number_of_segments;
@@ -81,19 +109,37 @@ void print_loading_bar(int value, int max_value, int number_of_segments, char* p
 
     float percent = (value * 100.) / max_value;
 
-    printf("%s%s%c%3.2f%%%s", pre_text, loading_bar, INDENT_CHAR, percent, post_text);
+    printf(format, pre_text, loading_bar, INDENT_CHAR, percent, post_text);
 }
 
 
 
 void predefined_loading_bar(int value, int max_value, int number_of_segments, char* base_str, int number_of_indents, double start_time)
 {
+    float previous_percent = ((value - 1) * 100.) / max_value;
+    float current_percent = (value * 100.) / max_value;
+
+    // Verifying first if it useful to print it.
+    //! Won't work properly if it used on very long loops -> the CPU elapsed time will 'jump' from values to others when a percent changes.
+
+    double precision = pow_int(10., PERCENT_DECIMAL);
+    double truncated_prev = ((int) previous_percent * precision)/precision;
+    double truncated_curr = ((int) current_percent * precision)/precision;
+
+    if (truncated_prev == truncated_curr)
+    {
+        return;
+    }
+
+
+
+
     double current_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
 
     char end_str[1000] = "";
 
     char time_str[100] = "";
-    snprintf(time_str, sizeof(time_str), " completed - Elapsed time : %.4lf s", current_time);
+    snprintf(time_str, sizeof(time_str), " completed - Elapsed CPU time : %.4lf s", current_time);
 
     if (value == max_value)
     {
