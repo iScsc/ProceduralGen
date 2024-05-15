@@ -541,8 +541,8 @@ class mapGenerator:
                 return
             
             # Description line
-            if "Color Double Map" not in lines[0]:
-                print(RED_COLOR + "Color double map does not contain the correct first line" + DEFAULT_COLOR)
+            if "Color Float Map" not in lines[0]:
+                print(RED_COLOR + "Color float map does not contain the correct first line" + DEFAULT_COLOR)
             
             # Parameters
             width_line = lines[1]
@@ -563,7 +563,7 @@ class mapGenerator:
                 print(RED_COLOR + "Could not convert '{}' into an int for height parameter !".format(height_parts[1]) + DEFAULT_COLOR)
                 return
             
-            print("Color double map has dimensions width = {} and height = {}".format(width, height))
+            print("Color float map has dimensions width = {} and height = {}".format(width, height))
             
             if len(lines) < 3 + height:
                 print(RED_COLOR + "File is too short, can not contain the {} lines for the color values!".format(height) + RED_COLOR)
@@ -636,7 +636,7 @@ class mapGenerator:
         if os.path.isdir(folder_path):
             sea_map_path = os.path.join(folder_path, "sea_map.txt")
             
-            color_map_path = os.path.join(folder_path, "color_double_map.txt")
+            color_map_path = os.path.join(folder_path, "color_float_map.txt")
             
             sea_map, map_width_in_points, map_height_in_points, sea_level, map_width_in_chunks, map_height_in_chunks = mapGenerator.loadSeaMap(sea_map_path)
             

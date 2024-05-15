@@ -12,9 +12,9 @@ struct color
     int green_int;
     int blue_int;
 
-    double red_double;
-    double green_double;
-    double blue_double;
+    float red_float;
+    float green_float;
+    float blue_float;
 };
 
 typedef struct color color;

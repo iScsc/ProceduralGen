@@ -140,9 +140,9 @@ color* colorize(double value, double sea_level, double min_value, double max_val
         new_color->green_int = 0;
         new_color->blue_int = 0;
 
-        new_color->red_double = 1.;
-        new_color->green_double = 0;
-        new_color->blue_double = 0;
+        new_color->red_float = 1.;
+        new_color->green_float = 0;
+        new_color->blue_float = 0;
     }
     else if (value <= sea_level)
     {
@@ -150,9 +150,9 @@ color* colorize(double value, double sea_level, double min_value, double max_val
         new_color->green_int = 50;
         new_color->blue_int = s;
 
-        new_color->red_double = 1./255 * 50;
-        new_color->green_double = 1./255 * 50;
-        new_color->blue_double = 1./255 * s;
+        new_color->red_float = 1./255 * 50;
+        new_color->green_float = 1./255 * 50;
+        new_color->blue_float = 1./255 * s;
     }
     else
     {
@@ -160,9 +160,9 @@ color* colorize(double value, double sea_level, double min_value, double max_val
         new_color->green_int = i;
         new_color->blue_int = 50;
 
-        new_color->red_double = 1./255 * 50;
-        new_color->green_double = 1./255 * i;
-        new_color->blue_double = 1./255 * 50;
+        new_color->red_float = 1./255 * 50;
+        new_color->green_float = 1./255 * i;
+        new_color->blue_float = 1./255 * 50;
     }
 
     return new_color;
@@ -548,7 +548,7 @@ void writeColorIntMapFile(color** color_map, int width, int height, char path[])
 
 
 
-void writeColorDoubleMapFile(color** color_map, int width, int height, char path[])
+void writeColorFloatMapFile(color** color_map, int width, int height, char path[])
 {
     FILE* f = NULL;
 
@@ -556,7 +556,7 @@ void writeColorDoubleMapFile(color** color_map, int width, int height, char path
 
     if (f != NULL)
     {
-        fprintf(f, "Color Double Map\n");
+        fprintf(f, "Color Float Map\n");
 
         // Writing the parameters
         fprintf(f, "width=%d\nheight=%d\n", width, height);
@@ -570,11 +570,11 @@ void writeColorDoubleMapFile(color** color_map, int width, int height, char path
 
                 if (j != width - 1)
                 {
-                    fprintf(f, "(%.8lf,%.8lf,%.8lf)\t", color->red_double, color->green_double, color->blue_double);
+                    fprintf(f, "(%.4f,%.4f,%.4f)\t", color->red_float, color->green_float, color->blue_float);
                 }
                 else
                 {
-                    fprintf(f, "(%.8lf,%.8lf,%.8lf)\n", color->red_double, color->green_double, color->blue_double);
+                    fprintf(f, "(%.4f,%.4f,%.4f)\n", color->red_float, color->green_float, color->blue_float);
                 }
             }
         }
@@ -609,9 +609,9 @@ void writeCompleteMapFiles(completeMap* complete_map, char folder_path[])
     snprintf(color_int_path, sizeof(color_int_path), "%scolor_int_map.txt", folder_path);
     writeColorIntMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_int_path);
 
-    char color_double_path[200] = "";
-    snprintf(color_double_path, sizeof(color_double_path), "%scolor_double_map.txt", folder_path);
-    writeColorDoubleMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_double_path);
+    char color_float_path[200] = "";
+    snprintf(color_float_path, sizeof(color_float_path), "%scolor_float_map.txt", folder_path);
+    writeColorFloatMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_float_path);
 }
 
 
