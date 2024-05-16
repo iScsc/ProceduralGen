@@ -84,7 +84,7 @@ int main()
         //TODO : Make something to compute the required memory space and ask for user if he really wants to do what he asked.
         int dimensions[] = {2, 5, 11};
         int final_size = lcmOfArray(nb_layers, dimensions);
-        printf("Final size : %d\n", final_size);
+        printf("Final size per chunk : %d\n", final_size);
 
         double weights[] = {1, .1, .01};
 
@@ -94,6 +94,50 @@ int main()
         double sea_level = -.15;
 
         int display_loading = 1;      //1;
+
+
+
+        //? MEMORY SPACE REQUIRED
+        long int mem_space_by_chunk = sizeof(chunk) + final_size * final_size * sizeof(double) + nb_layers * (sizeof(double) + sizeof(layer*))
+                                        + sizeof(layer) + final_size * final_size * sizeof(double);
+        
+        for (int i = 0; i < nb_layers; i++)
+        {
+            mem_space_by_chunk += sizeof(gradientGrid) + dimensions[i] * dimensions[i] * sizeof(vector);
+        }
+
+        long int total_memory_space_used = sizeof(completeMap) + width * final_size * height * final_size * (sizeof(double) + sizeof(color*) + sizeof(color)) 
+                                            + sizeof(map) + width * final_size * height * final_size * sizeof(double)
+                                            + width * height * (sizeof(chunk*) + mem_space_by_chunk);
+        
+        printf("The complete memory space used will be around %ld bytes.\n", total_memory_space_used);
+        printf("Do you want to continue ? (1 for Yes, 0 for No)   ->   ");
+
+        int user_input = -1;
+        scanf("%d", &user_input);
+
+        int request = 1;
+        int max_requests = 3;
+
+        while (user_input != 1 && user_input != 0 && request < max_requests)
+        {
+            printf("Your input was not valid. Try again. (You have %d remaining attempts)\n\n", max_requests - request);
+            request += 1;
+
+            printf("The complete memory space used will be around %ld bytes.\n", total_memory_space_used);
+            printf("Do you want to continue ? (1 for Yes, 0 for No)   ->   ");
+
+            scanf("%d", &user_input);
+        }
+        printf("\n");
+
+        if (user_input != 1)
+        {
+            printf("The process was cancelled.\n");
+            return 1;
+        }
+
+
 
         printf("Generating a complete map with given parameters...\n");
         completeMap* new_complete_map = fullGen(nb_layers, dimensions, weights, width, height, sea_level, display_loading);
