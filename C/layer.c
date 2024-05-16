@@ -1,3 +1,12 @@
+/**
+ * @file layer.c
+ * @author Zyno
+ * @brief layer structure and functions implementation
+ * @version 0.1
+ * @date 2024-05-16
+ * 
+ */
+
 #include <malloc.h>
 #include <time.h>
 
@@ -22,6 +31,7 @@ double smoothstep(double w)
 
 double interpolate(double a0, double a1, double w)
 {
+    // Smooth interpolation.
     return a0 + (a1 - a0) * smoothstep(w);
 }
 
@@ -31,6 +41,7 @@ double interpolate(double a0, double a1, double w)
 
 double dotGridGradient(int ix, int iy, double x, double y, gradientGrid* gradient_grid)
 {
+    // differential vector
     double dx = x - (double) ix;
     double dy = y - (double) iy;
 
@@ -43,6 +54,8 @@ double dotGridGradient(int ix, int iy, double x, double y, gradientGrid* gradien
 
 double perlin(double x, double y, gradientGrid* gradient_grid)
 {
+    // perlin noise formula
+
     int x0 = (int) x;
     int y0 = (int) y;
 
@@ -107,7 +120,7 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsign
     int gradGridWidth = gradient_grid->width;
     int gradGridHeight = gradient_grid->height;
 
-    // Size layer must be applied **between** gradient grids points.Thus, the layer dimensions are the following:
+    // Size layer must be applied **between** gradient grids points. Thus, the layer dimensions are the following:
     int width = (gradGridWidth - 1) * size_factor;
     int height = (gradGridHeight - 1) * size_factor;
 
@@ -152,15 +165,11 @@ layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsign
 {
     int g_loading = display_loading;
 
-    // if (display_loading != 0)
-    // {
-    //     indent_print(display_loading - 1, "Generating new layer...\n");
-    //     g_loading += 1;
-    // }
-
+    // Generating a random gradientGrid
     // Size Factor should be set to match gradGrid_width - 1 and gradGrid_height - 1
     gradientGrid* gradient_grid = newRandomGradGrid(gradGrid_width, gradGrid_height, g_loading);
 
+    // Generating layer from the new gradientGrid
     return newLayerFromGradient(gradient_grid, size_factor, g_loading);
 }
 
