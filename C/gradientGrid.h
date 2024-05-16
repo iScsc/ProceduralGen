@@ -18,8 +18,8 @@
  */
 struct vector
 {
-    double x;
-    double y;
+    double x; /**< the x coordinate*/
+    double y; /**< the y coordinate*/
 };
 
 typedef struct vector vector;
@@ -30,9 +30,9 @@ typedef struct vector vector;
  */
 struct gradientGrid
 {
-    int width;
-    int height;
-    vector* gradients;
+    int width; /**< the width of the gradientGrid*/
+    int height; /**< the height of the gradientGrid*/
+    vector* gradients; /**< the pointer to the array of vectors*/
 };
 
 typedef struct gradientGrid gradientGrid;
@@ -63,8 +63,8 @@ vector* getVector(gradientGrid* gradGrid, int width_idx, int height_idx);
  * 
  * @param gradGrid (gradientGrid*) : the pointer to the corresponding gradient grid.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
- *                                         If `0` the loading bars won't be printed.
- *                                         If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`
+ *                                         * If `0` the loading bars won't be printed.
+ *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.
  */
 void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loading);
 
@@ -86,8 +86,8 @@ gradientGrid* newGradGrid(int width, int height);
  * @param width (int) : the width of the generated gradient grid.
  * @param height (int) : the height of the generated gradient grid.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
- *                                         If `0` the loading bars won't be printed.
- *                                         If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`
+ *                                         * If `0` the loading bars won't be printed.
+ *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.
  * @return gradientGrid* : the pointer to the generated gradient grid.
  */
 gradientGrid* newRandomGradGrid(int width, int height, unsigned int display_loading);
@@ -100,8 +100,8 @@ gradientGrid* newRandomGradGrid(int width, int height, unsigned int display_load
  * @param north_grid (gradientGrid*) : the pointer to the gradientGrid located at the north (height index < 0)
  * @param west_grid (gradientGrid*) : the pointer to the gradientGrid located at the west (width index < 0)
  * @param display_loading (unsigned int) : the given value defines the behaviour.
- *                                         If `0` the loading bars won't be printed.
- *                                         If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`
+ *                                         * If `0` the loading bars won't be printed.
+ *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.
  * @return gradientGrid* : the pointer to the generated gradient grid.
  */
 gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_grid, unsigned int display_loading);
@@ -117,7 +117,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 void writeGradientGridFile(gradientGrid* gradGrid, char path[]);
 
 /**
- * @brief Reads a gradientGrid file and generates the corresponding gradient grid.
+ * @brief TODO : Reads a gradientGrid file and generates the corresponding gradient grid.
  * 
  * @param path (char[]) : the path to the file to read.
  * @return gradientGrid* : the pointer to the generated gradient grid.

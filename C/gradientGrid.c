@@ -60,6 +60,7 @@ void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loadi
     int width = gradGrid->width;
     int height = gradGrid->height;
 
+    // Generating random vectors
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
@@ -110,8 +111,10 @@ gradientGrid* newGradGrid(int width, int height)
 
 gradientGrid* newRandomGradGrid(int width, int height, unsigned int display_loading)
 {
+    // Generating a new gradientGrid with not initialized vectors
     gradientGrid* new_grad_grid = newGradGrid(width, height);
 
+    // Initializing vectors to random ones
     regenerateRandomGradGrid(new_grad_grid, display_loading);
 
     return new_grad_grid;
@@ -185,6 +188,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
     int display_grad_grid = display_loading;
     if (display_loading != 0)
     {
+        // Indenting once more the random generation
         display_grad_grid += 1;
     }
 
@@ -238,6 +242,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
         }
     }
 
+    // Printing the time elapsed.
     if (display_loading == 1)
     {
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
