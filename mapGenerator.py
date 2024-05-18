@@ -363,10 +363,10 @@ class mapGenerator:
 
         Args:
             map_size_in_chunks (tuple[int]): the number of chunks by row and columns in the map
-            chunk_size_in_points (tuple[int]): the number of points by row and columns in t=a chunk
+            chunk_size_in_points (tuple[int]): the number of points by row and columns in a chunk
             map (list[list[float]]): the map
             max_a (float, optional): max added altitude. Defaults to 1.
-            min_a (float, optional): min adde altitude. Defaults to -1.
+            min_a (float, optional): min adde altitude. Defaults to -0.5
             
         Returns:
             the updated map
