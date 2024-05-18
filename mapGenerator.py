@@ -358,7 +358,7 @@ class mapGenerator:
     def interpolate2D(a1:float,a2:float,a3:float,a4:float,x:float,y:float):
         return a1+(a2-a1)*x+(a3-a1)*y+(a1+a4-a2-a3)*x*y
     
-    def addMeanAltitude(map_size_in_chunks : tuple[int], chunk_size_in_points : tuple[int], map : list[list[float]], max_a : float = 1, min_a : float = -0.1):
+    def addMeanAltitude(map_size_in_chunks : tuple[int], chunk_size_in_points : tuple[int], map : list[list[float]], max_a : float = 1, min_a : float = -0.5):
         """Add a 'mean' altitude to all chunks in a map with smoothing in order to avoid cliffs at chunks' border
 
         Args:
@@ -371,7 +371,7 @@ class mapGenerator:
         Returns:
             the updated map
         """
-        res=[[0 for j in range(len(map[0]))]for i in range(len(map))]
+        res=[[map[i][j] for j in range(len(map[0]))]for i in range(len(map))]
         # generating mean altitudes for each chunk + borders (to simplify border conditions)
         altitude:list[list[float]]=[] #[[0,0,0,0],[0,1,0,0],[0,0,0,0]]
         for i in range(map_size_in_chunks[0]+2):
@@ -386,44 +386,11 @@ class mapGenerator:
                 a4=altitude[i+1][j+1]
                 for pi in range(chunk_size_in_points[0]):
                     for pj in range(chunk_size_in_points[1]):
-                        if (i!=0) and (j!=0): #TODO size%2
+                        if (i!=0) and (j!=0): 
                             x=pi/chunk_size_in_points[0]
                             y=pj/chunk_size_in_points[1]
                             alt=mapGenerator.interpolate2D(a1,a2,a3,a4,x,y)
-                            res[pi+(int)(i-0.5)*chunk_size_in_points[0]][pj+(int)(j-0.5)*chunk_size_in_points[1]]+=alt
-                        # x,y=0,0
-                        # if pi>=chunk_size_in_points[0]*0.5: #bottom half of the chunk
-                        #     if pj>=chunk_size_in_points[1]*0.5: #bottom right corner
-                        #         x=pj/chunk_size_in_points[1]-0.5
-                        #         y=pi/chunk_size_in_points[0]-0.5
-                        #         a1=altitude[ai][aj]
-                        #         a2=altitude[ai][aj+1]
-                        #         a3=altitude[ai+1][aj]
-                        #         a4=altitude[ai+1][aj+1]
-                        #     else: #bottom left corner
-                        #         x=pj/chunk_size_in_points[1]+0.5
-                        #         y=pi/chunk_size_in_points[0]-0.5
-                        #         a1=altitude[ai][aj-1]
-                        #         a2=altitude[ai][aj]
-                        #         a3=altitude[ai+1][aj-1]
-                        #         a4=altitude[ai+1][aj]
-                        # else: #top half
-                        #     if pj>=chunk_size_in_points[1]*0.5: #top right corner
-                        #         x=pj/chunk_size_in_points[1]-0.5
-                        #         y=pi/chunk_size_in_points[0]+0.5
-                        #         a1=altitude[ai-1][aj]
-                        #         a2=altitude[ai-1][aj+1]
-                        #         a3=altitude[ai][aj]
-                        #         a4=altitude[ai][aj+1]
-                        #     else: #top left corner
-                        #         x=pj/chunk_size_in_points[1]+0.5
-                        #         y=pi/chunk_size_in_points[0]+0.5
-                        #         a1=altitude[ai-1][aj-1]
-                        #         a2=altitude[ai-1][aj]
-                        #         a3=altitude[ai][aj-1]
-                        #         a4=altitude[ai][aj]
-                        # alt=mapGenerator.interpolate2D(a1,a2,a3,a4,y,x)
-                        # res[pi+i*chunk_size_in_points[0]][pj+j*chunk_size_in_points[1]]+=alt
+                            res[pi+(int)(i-0.5)*chunk_size_in_points[0]][pj+(int)(j-0.5)*chunk_size_in_points[1]]+=alt #TODO chunk_size_in_point not even
         return res
         
     
