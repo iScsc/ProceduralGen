@@ -378,46 +378,52 @@ class mapGenerator:
             altitude.append([])
             for j in range(map_size_in_chunks[1]+2):
                 altitude[i].append((max_a-min_a)*rd.random()+min_a)
-        for i in range(map_size_in_chunks[0]):
-            for j in range(map_size_in_chunks[1]):
+        for i in range(map_size_in_chunks[0]+1):
+            for j in range(map_size_in_chunks[1]+1):
+                a1=altitude[i][j]
+                a2=altitude[i+1][j]
+                a3=altitude[i][j+1]
+                a4=altitude[i+1][j+1]
                 for pi in range(chunk_size_in_points[0]):
                     for pj in range(chunk_size_in_points[1]):
-                        ai,aj=i+1,j+1
-                        alt=0
-                        a1,a2,a3,a4=0,0,0,0
-                        x,y=0,0
-                        if pi>=chunk_size_in_points[0]*0.5: #bottom half of the chunk
-                            if pj>=chunk_size_in_points[1]*0.5: #bottom right corner
-                                x=pj/chunk_size_in_points[1]-0.5
-                                y=pi/chunk_size_in_points[0]-0.5
-                                a1=altitude[ai][aj]
-                                a2=altitude[ai][aj+1]
-                                a3=altitude[ai+1][aj]
-                                a4=altitude[ai+1][aj+1]
-                            else: #bottom left corner
-                                x=pj/chunk_size_in_points[1]+0.5
-                                y=pi/chunk_size_in_points[0]-0.5
-                                a1=altitude[ai][aj-1]
-                                a2=altitude[ai][aj]
-                                a3=altitude[ai+1][aj-1]
-                                a4=altitude[ai+1][aj]
-                        else: #top half
-                            if pj>=chunk_size_in_points[1]*0.5: #top right corner
-                                x=pj/chunk_size_in_points[1]-0.5
-                                y=pi/chunk_size_in_points[0]+0.5
-                                a1=altitude[ai-1][aj]
-                                a2=altitude[ai-1][aj+1]
-                                a3=altitude[ai][aj]
-                                a4=altitude[ai][aj+1]
-                            else: #top left corner
-                                x=pj/chunk_size_in_points[1]+0.5
-                                y=pi/chunk_size_in_points[0]+0.5
-                                a1=altitude[ai-1][aj-1]
-                                a2=altitude[ai-1][aj]
-                                a3=altitude[ai][aj-1]
-                                a4=altitude[ai][aj]
-                        alt=mapGenerator.interpolate2D(a1,a2,a3,a4,y,x)
-                        res[pi+i*chunk_size_in_points[0]][pj+j*chunk_size_in_points[1]]+=alt
+                        if (i!=0) and (j!=0): #TODO size%2
+                            x=pi/chunk_size_in_points[0]
+                            y=pj/chunk_size_in_points[1]
+                            alt=mapGenerator.interpolate2D(a1,a2,a3,a4,x,y)
+                            res[pi+(int)(i-0.5)*chunk_size_in_points[0]][pj+(int)(j-0.5)*chunk_size_in_points[1]]+=alt
+                        # x,y=0,0
+                        # if pi>=chunk_size_in_points[0]*0.5: #bottom half of the chunk
+                        #     if pj>=chunk_size_in_points[1]*0.5: #bottom right corner
+                        #         x=pj/chunk_size_in_points[1]-0.5
+                        #         y=pi/chunk_size_in_points[0]-0.5
+                        #         a1=altitude[ai][aj]
+                        #         a2=altitude[ai][aj+1]
+                        #         a3=altitude[ai+1][aj]
+                        #         a4=altitude[ai+1][aj+1]
+                        #     else: #bottom left corner
+                        #         x=pj/chunk_size_in_points[1]+0.5
+                        #         y=pi/chunk_size_in_points[0]-0.5
+                        #         a1=altitude[ai][aj-1]
+                        #         a2=altitude[ai][aj]
+                        #         a3=altitude[ai+1][aj-1]
+                        #         a4=altitude[ai+1][aj]
+                        # else: #top half
+                        #     if pj>=chunk_size_in_points[1]*0.5: #top right corner
+                        #         x=pj/chunk_size_in_points[1]-0.5
+                        #         y=pi/chunk_size_in_points[0]+0.5
+                        #         a1=altitude[ai-1][aj]
+                        #         a2=altitude[ai-1][aj+1]
+                        #         a3=altitude[ai][aj]
+                        #         a4=altitude[ai][aj+1]
+                        #     else: #top left corner
+                        #         x=pj/chunk_size_in_points[1]+0.5
+                        #         y=pi/chunk_size_in_points[0]+0.5
+                        #         a1=altitude[ai-1][aj-1]
+                        #         a2=altitude[ai-1][aj]
+                        #         a3=altitude[ai][aj-1]
+                        #         a4=altitude[ai][aj]
+                        # alt=mapGenerator.interpolate2D(a1,a2,a3,a4,y,x)
+                        # res[pi+i*chunk_size_in_points[0]][pj+j*chunk_size_in_points[1]]+=alt
         return res
         
     
