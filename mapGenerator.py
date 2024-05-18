@@ -308,8 +308,8 @@ class mapGenerator:
         if isFloat:
             scale = 1/255
         
-        i = int((value - min_value) * 255/(max_value - min_value))
-        s = int((value - min_value) * 200/(seaLevel - min_value))
+        i = int((value - min_value) * 255/(max_value - min_value)) if min_value!=max_value else 0
+        s = int((value - min_value) * 200/(seaLevel - min_value)) if min_value!=max_value else 0
         
         if value < seaLevel:
             return (scale * 50, scale * 50, scale * s)
@@ -354,6 +354,72 @@ class mapGenerator:
                     print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text, end_text=time_str), end="")
         
         return seaMap, colorMap
+    
+    def interpolate2D(a1:float,a2:float,a3:float,a4:float,x:float,y:float):
+        return a1+(a2-a1)*x+(a3-a1)*y+(a1+a4-a2-a3)*x*y
+    
+    def addMeanAltitude(map_size_in_chunks : tuple[int], chunk_size_in_points : tuple[int], map : list[list[float]], max_a : float = 1, min_a : float = -0.1):
+        """Add a 'mean' altitude to all chunks in a map with smoothing in order to avoid cliffs at chunks' border
+
+        Args:
+            map_size_in_chunks (tuple[int]): the number of chunks by row and columns in the map
+            chunk_size_in_points (tuple[int]): the number of points by row and columns in t=a chunk
+            map (list[list[float]]): the map
+            max_a (float, optional): max added altitude. Defaults to 1.
+            min_a (float, optional): min adde altitude. Defaults to -1.
+            
+        Returns:
+            the updated map
+        """
+        res=[[0 for j in range(len(map[0]))]for i in range(len(map))]
+        # generating mean altitudes for each chunk + borders (to simplify border conditions)
+        altitude:list[list[float]]=[] #[[0,0,0,0],[0,1,0,0],[0,0,0,0]]
+        for i in range(map_size_in_chunks[0]+2):
+            altitude.append([])
+            for j in range(map_size_in_chunks[1]+2):
+                altitude[i].append((max_a-min_a)*rd.random()+min_a)
+        for i in range(map_size_in_chunks[0]):
+            for j in range(map_size_in_chunks[1]):
+                for pi in range(chunk_size_in_points[0]):
+                    for pj in range(chunk_size_in_points[1]):
+                        ai,aj=i+1,j+1
+                        alt=0
+                        a1,a2,a3,a4=0,0,0,0
+                        x,y=0,0
+                        if pi>=chunk_size_in_points[0]*0.5: #bottom half of the chunk
+                            if pj>=chunk_size_in_points[1]*0.5: #bottom right corner
+                                x=pj/chunk_size_in_points[1]-0.5
+                                y=pi/chunk_size_in_points[0]-0.5
+                                a1=altitude[ai][aj]
+                                a2=altitude[ai][aj+1]
+                                a3=altitude[ai+1][aj]
+                                a4=altitude[ai+1][aj+1]
+                            else: #bottom left corner
+                                x=pj/chunk_size_in_points[1]+0.5
+                                y=pi/chunk_size_in_points[0]-0.5
+                                a1=altitude[ai][aj-1]
+                                a2=altitude[ai][aj]
+                                a3=altitude[ai+1][aj-1]
+                                a4=altitude[ai+1][aj]
+                        else: #top half
+                            if pj>=chunk_size_in_points[1]*0.5: #top right corner
+                                x=pj/chunk_size_in_points[1]-0.5
+                                y=pi/chunk_size_in_points[0]+0.5
+                                a1=altitude[ai-1][aj]
+                                a2=altitude[ai-1][aj+1]
+                                a3=altitude[ai][aj]
+                                a4=altitude[ai][aj+1]
+                            else: #top left corner
+                                x=pj/chunk_size_in_points[1]+0.5
+                                y=pi/chunk_size_in_points[0]+0.5
+                                a1=altitude[ai-1][aj-1]
+                                a2=altitude[ai-1][aj]
+                                a3=altitude[ai][aj-1]
+                                a4=altitude[ai][aj]
+                        alt=mapGenerator.interpolate2D(a1,a2,a3,a4,y,x)
+                        res[pi+i*chunk_size_in_points[0]][pj+j*chunk_size_in_points[1]]+=alt
+        return res
+        
     
     
     #--------------------------------# class all-in methods #--------------------------------#
@@ -861,6 +927,7 @@ class mapGenerator:
         if I != 1 or J != 1:
             complete_map = np.concatenate([np.concatenate(global_map[i], axis=1) for i in range(len(global_map))], axis=0)
         
+        complete_map = mapGenerator.addMeanAltitude(map_size,(ppcm,ppcm),complete_map)
         
         if display_loading:
             print("\n- Applying water levels on maps... ")
