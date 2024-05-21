@@ -1,3 +1,12 @@
+/**
+ * @file mapGenerator.c
+ * @author Zyno and BlueNZ
+ * @brief mapGenerator structure and functions implementations
+ * @version 0.2
+ * @date 2024-06-19
+ * 
+ */
+
 #include <malloc.h>
 #include <time.h>
 #include <sys/stat.h>
@@ -6,13 +15,18 @@
 #include "map.h"
 #include "mapGenerator.h"
 
-//? For positive integers only. Should not be an issue here.
 int gcd(int a, int b)
 {
     if (a == 0 || b == 0)
     {
         printf("%sERROR : can't find the greatest common divisor of 0 !%s\n", RED_COLOR, DEFAULT_COLOR);
         return 0;
+    }
+
+    if (a < 0 || b < 0)
+    {
+        printf("%sERROR : this algorithm can't find the greatest common divisor of negative numbers !%s\n", RED_COLOR, DEFAULT_COLOR);
+        return -1;
     }
 
     while (a != b)
@@ -34,6 +48,12 @@ int gcd(int a, int b)
 
 int lcm(int a, int b)
 {
+    if (a < 0 || b < 0)
+    {
+        printf("%sERROR : this algorithm can't find the greatest common divisor of negative numbers !%s\n", RED_COLOR, DEFAULT_COLOR);
+        return -1;
+    }
+
     if (a == 0 || b == 0)
     {
         return 0;
@@ -54,9 +74,37 @@ int lcmOfArray(int nb, int array[nb])
     {
         common = lcm(array[0], array[1]);
 
+        // We already know that the answer won't change
+        if (common == 0)
+        {
+            return 0;
+        }
+
+        else if (common == -1)
+        {
+            printf("%sERROR : this algorithm can't find the greatest common divisor of negative numbers but array[0] = %d and array[1] = %d !%s\n",
+                RED_COLOR, array[0], array[1], DEFAULT_COLOR);
+            return -1;
+        }
+
+
+        // Computing the following lcm
         for (int i = 2; i < nb; i++)
         {
             common = lcm(common, array[i]);
+
+            // We already know that the answer won't change
+            if (common == 0)
+            {
+                return 0;
+            }
+
+            else if (common == -1)
+            {
+                printf("%sERROR : this algorithm can't find the greatest common divisor of negative numbers but array[%d] = %d !%s\n",
+                 RED_COLOR, i, array[i], DEFAULT_COLOR);
+                return -1;
+            }
         }
     }
 
@@ -133,7 +181,7 @@ color* colorize(double value, double sea_level, double min_value, double max_val
     int i = (int) ((value - min_value) * 255. / (max_value - min_value));
     int s = (int) ((value - min_value) * 200. / (sea_level - min_value));
 
-    //? Show red dots on zero values.
+    //? Show red dots on zero values. Could be removed.
     if (value == 0)
     {
         new_color->red_int = 255;
@@ -180,6 +228,7 @@ color** generateColorMap(map* map, double sea_level, unsigned int display_loadin
 
     if (map != NULL)
     {
+        // Initialize
         int width = map->map_width * map->chunk_width;
         int height = map->map_height * map->chunk_height;
 
@@ -194,8 +243,6 @@ color** generateColorMap(map* map, double sea_level, unsigned int display_loadin
         double max_value = *getMapValue(map, 0, 0);
 
         // Getting min and max values.
-
-
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
@@ -214,6 +261,7 @@ color** generateColorMap(map* map, double sea_level, unsigned int display_loadin
 
                 if (display_loading != 0)
                 {
+                    // Begin of the loading bar, which will be finished in the following loop
                     int nb_indents = display_loading - 1;
 
                     char base_str[100] = "Generating color map...            ";
@@ -224,8 +272,7 @@ color** generateColorMap(map* map, double sea_level, unsigned int display_loadin
         }
 
 
-        // Generating colors
-
+        // Generating colors now
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
@@ -238,6 +285,7 @@ color** generateColorMap(map* map, double sea_level, unsigned int display_loadin
 
                 if (display_loading != 0)
                 {
+                    // End of the loading bar, which was started in the previous loop
                     int nb_indents = display_loading - 1;
 
                     char base_str[100] = "Generating color map...            ";
@@ -261,6 +309,7 @@ double* setSeaLevel(map* map, double sea_level, unsigned int display_loading)
 
     if (map != NULL)
     {
+        // Initialize
         int width = map->map_width * map->chunk_width;
         int height = map->map_height * map->chunk_height;
 
@@ -271,6 +320,7 @@ double* setSeaLevel(map* map, double sea_level, unsigned int display_loading)
             return NULL;
         }
 
+        // Flattening the altitude values on the sea
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
@@ -312,6 +362,7 @@ completeMap* newCompleteMapFromMap(map* p_map, double sea_level, unsigned int di
 
     if (p_map != NULL)
     {
+        // Initialize the completeMap structure
         complete_map = calloc(1, sizeof(completeMap));
 
         int width = p_map->map_width * p_map->chunk_width;
@@ -322,7 +373,8 @@ completeMap* newCompleteMapFromMap(map* p_map, double sea_level, unsigned int di
         complete_map->height = height;
 
         complete_map->sea_level = sea_level;
-        
+
+        // Get the corresponding sea map
         complete_map->sea_values = setSeaLevel(p_map, sea_level, display_loading);
 
         if (display_loading != 0)
@@ -330,7 +382,8 @@ completeMap* newCompleteMapFromMap(map* p_map, double sea_level, unsigned int di
             int nb_indents = display_loading - 1;
             indent_print(nb_indents, "\n");
         }
-
+        
+        // Get the corresponding color map
         complete_map->color_map = generateColorMap(p_map, sea_level, display_loading);
     }
 
@@ -343,12 +396,14 @@ completeMap* newCompleteMap(int number_of_layers, int gradGrids_width[number_of_
                             int size_factors[number_of_layers], double layers_factors[number_of_layers],
                             int map_width, int map_height, double sea_level, unsigned int display_loading)
 {
+    // Generates a new map from scratch
     map* map = newMap(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, map_width, map_height, display_loading);
 
     completeMap* complete_map = NULL;
 
     if (map != NULL)
     {
+        // If the map generation was successful, generates a completeMap from it
         complete_map = newCompleteMapFromMap(map, sea_level, display_loading);
     }
 
@@ -359,7 +414,6 @@ completeMap* newCompleteMap(int number_of_layers, int gradGrids_width[number_of_
 
 
 
-//? Generate square chunks with automatic size factors.
 map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], double layers_factors[number_of_layers],
                     int map_width, int map_height, unsigned int display_loading)
 {
@@ -371,14 +425,17 @@ map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], d
     {
         int nb_indents = display_loading - 1;
         indent_print(nb_indents, "Generating a 2d map...\n");
+
+        // The map generation loading bars will be indented once more
         m_loading += 1;
     }
 
+    // Get the final map size
     int lcm = lcmOfArray(number_of_layers, gradGrids_dimension);
 
     int size_factors[number_of_layers];
 
-    // size factors should match gradient grids dimensions - 1
+    // Generates a new dimension array : size factors should match gradient grids dimensions - 1
     int gradGrid_corresponding_dimensions[number_of_layers];
 
     for (int i = 0; i < number_of_layers; i++)
@@ -388,6 +445,7 @@ map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], d
     }
 
 
+    // Generates the corresponding map
     map* new_map = newMap(number_of_layers, gradGrid_corresponding_dimensions, gradGrid_corresponding_dimensions, size_factors, layers_factors,
                                 map_width, map_height, m_loading);
 
@@ -409,7 +467,6 @@ map* get2dMap(int number_of_layers, int gradGrids_dimension[number_of_layers], d
 
 
 
-//? Generate square chunks with automatic size factors and creates sea and color maps.
 completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_layers], double layers_factors[number_of_layers],
                          int map_width, int map_height, double sea_level, unsigned int display_loading)
 {
@@ -420,9 +477,11 @@ completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_lay
     {
         int nb_indents = display_loading - 1;
         indent_print(nb_indents, "Generating a complete map...\n");
+        // The map generation loading bars will be indented once more
         m_loading += 1;
     }
 
+    // Generates a new map
     map* new_map = get2dMap(number_of_layers, gradGrids_dimension, layers_factors, map_width, map_height, m_loading);
 
     if (display_loading != 0)
@@ -431,6 +490,7 @@ completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_lay
         indent_print(nb_indents, "\n");
     }
 
+    // Generates the completeMap from it
     completeMap* new_complete_map = newCompleteMapFromMap(new_map, sea_level, m_loading);
 
     if (display_loading == 1)
@@ -591,23 +651,30 @@ void writeColorFloatMapFile(color** color_map, int width, int height, char path[
 
 void writeCompleteMapFiles(completeMap* complete_map, char folder_path[])
 {
-    //! TEMPORARY
+    //! TEMPORARY? -> File storage may be ineffective because of the space complexity of it.
+    //! These files are big!
     struct stat st = {0};
 
+    // Generates a directory if it does not exist
     if (stat(folder_path, &st) == -1)
     {
-        // Should check what 0700 permissions are exactly.
+        // Should check what 0700 permissions are exactly, but that's how it works to create a directory.
         mkdir(folder_path, 0700);
     }
 
+    // Generates the sea map file
     char sea_map_path[200] = "";
     snprintf(sea_map_path, sizeof(sea_map_path), "%ssea_map.txt", folder_path);
     writeSeaMapFile(complete_map, sea_map_path);
 
+
+    // Generates the color int map file
     char color_int_path[200] = "";
     snprintf(color_int_path, sizeof(color_int_path), "%scolor_int_map.txt", folder_path);
     writeColorIntMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_int_path);
 
+
+    // Generates the color float map file
     char color_float_path[200] = "";
     snprintf(color_float_path, sizeof(color_float_path), "%scolor_float_map.txt", folder_path);
     writeColorFloatMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_float_path);
