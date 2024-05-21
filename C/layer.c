@@ -41,7 +41,7 @@ double interpolate(double a0, double a1, double w)
 
 double dotGridGradient(int ix, int iy, double x, double y, gradientGrid* gradient_grid)
 {
-    // differential vector
+    // Differential vector
     double dx = x - (double) ix;
     double dy = y - (double) iy;
 
@@ -54,7 +54,7 @@ double dotGridGradient(int ix, int iy, double x, double y, gradientGrid* gradien
 
 double perlin(double x, double y, gradientGrid* gradient_grid)
 {
-    // perlin noise formula
+    // Perlin noise formula
 
     int x0 = (int) x;
     int y0 = (int) y;

@@ -38,7 +38,7 @@
 
 
 /**
- * @brief chunk structure
+ * @brief A chunk structure.
  * 
  */
 struct chunk

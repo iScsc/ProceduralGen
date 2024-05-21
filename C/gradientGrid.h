@@ -25,7 +25,7 @@ struct vector
 typedef struct vector vector;
 
 /**
- * @brief A 2d gradient vector array
+ * @brief A 2d gradient vector array.
  * 
  */
 struct gradientGrid

@@ -15,7 +15,7 @@
 // ----- Structure definition -----
 
 /**
- * @brief A layer structure
+ * @brief A layer structure.
  * 
  */
 struct layer

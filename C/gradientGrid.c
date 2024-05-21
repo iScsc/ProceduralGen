@@ -67,11 +67,11 @@ void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loadi
         {
             vector* v = getVector(gradGrid, j, i);
 
-            // generating a random sign for x value
+            // Generating a random sign for x value
             int sign_x = 1 - 2 * (rand()%2);
             v->x = sign_x * (double) rand()/RAND_MAX;
 
-            // generating a random sign for y value
+            // Generating a random sign for y value
             int sign_y = 1 - 2 * (rand()%2);
             v->y = sign_y * sqrt(1. - v->x * v->x);
 
@@ -81,7 +81,7 @@ void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loadi
 
                 int nb_indents = (display_loading - 1);
 
-                // max :  (width - 1) + (height - 1) * width  =  width * height - 1
+                // Max index :  (width - 1) + (height - 1) * width  =  width * height - 1
                 predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
             }
         }

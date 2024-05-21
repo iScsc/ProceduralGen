@@ -55,7 +55,7 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
     new_chunk->number_of_layers = number_of_layers;
 
 
-    // copy layer factors to ensure dynamic allocation
+    // Copy layer factors to ensure dynamic allocation
     double* factors = calloc(number_of_layers, sizeof(double));
     for (int i = 0; i < number_of_layers; i++)
     {
@@ -64,7 +64,7 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
     new_chunk->layers_factors = factors;
 
 
-    // copy layers list to ensure dynamic allocation
+    // Copy layers list to ensure dynamic allocation
     layer** layers_list = calloc(number_of_layers, sizeof(layer*));
     for (int i = 0; i < number_of_layers; i++)
     {
@@ -180,7 +180,7 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
             indent_print(display_loading - 1, to_print);
         }
 
-        // size_factors should match gradient_grids dimensions - 1
+        // Size_factors should match gradient_grids dimensions - 1
         layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], g_loading);
 
 
@@ -231,7 +231,7 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
         }
     }
 
-    // size_factors should match gradient_grids dimensions - 1
+    // Size_factors should match gradient_grids dimensions - 1
     int width = (gradGrids_width[0] - 1) * size_factors[0];
     int height = (gradGrids_height[0] - 1) * size_factors[0];
     
