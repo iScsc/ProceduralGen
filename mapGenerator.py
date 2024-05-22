@@ -387,12 +387,13 @@ class mapGenerator:
                 a4=altitude[i+1][j+1]
                 for pi in range(chunk_size_in_points[0]):
                     for pj in range(chunk_size_in_points[1]):
-                        if (i<map_size_in_chunks[0] or pi<chunk_size_in_points[0]*0.5) and (j<map_size_in_chunks[1] or pj<chunk_size_in_points[1]*0.5) and (i!=0 or pi>=(chunk_size_in_points[0]*0.5)) and (j!=0 or pj>=(chunk_size_in_points[1]*0.5)): 
+                        if (i<map_size_in_chunks[0] or pi<chunk_size_in_points[0]*0.5) and (j<map_size_in_chunks[1] or pj<chunk_size_in_points[1]*0.5) \
+                            and (i!=0 or pi>=(chunk_size_in_points[0]*0.5)) and (j!=0 or pj>=(chunk_size_in_points[1]*0.5)): #guards agianst out of bounds semi-chunks and even/odd shenanigans
                             x=pi/chunk_size_in_points[0]
                             y=pj/chunk_size_in_points[1]
                             alt=mapGenerator.interpolate2D(a1,a2,a3,a4,x,y)
                             # if (j==0 and pj<chunk_size_in_points[1]//2+3) : print(pi+floor((i-0.5)*chunk_size_in_points[0]),pj+floor((j-0.5)*chunk_size_in_points[1]),alt)
-                            res[pi+floor((i-0.5)*chunk_size_in_points[0])][pj+floor((j-0.5)*chunk_size_in_points[1])]+=alt #TODO chunk_size_in_point not even
+                            res[pi+floor((i-0.5)*chunk_size_in_points[0])][pj+floor((j-0.5)*chunk_size_in_points[1])]+=alt
         return res
         
     
