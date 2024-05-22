@@ -1,6 +1,7 @@
 import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
+from math import ceil,floor
 
 import os
 import time
@@ -356,7 +357,7 @@ class mapGenerator:
         return seaMap, colorMap
     
     def interpolate2D(a1:float,a2:float,a3:float,a4:float,x:float,y:float):
-        return a1+(a2-a1)*x+(a3-a1)*y+(a1+a4-a2-a3)*x*y
+        return a1+(a2-a1)*mapGenerator.smoothstep(x)+(a3-a1)*mapGenerator.smoothstep(y)+(a1+a4-a2-a3)*mapGenerator.smoothstep(x)*mapGenerator.smoothstep(y)
     
     def addMeanAltitude(map_size_in_chunks : tuple[int], chunk_size_in_points : tuple[int], map : list[list[float]], max_a : float = 1, min_a : float = -0.5):
         """Add a 'mean' altitude to all chunks in a map with smoothing in order to avoid cliffs at chunks' border
@@ -371,26 +372,27 @@ class mapGenerator:
         Returns:
             the updated map
         """
-        res=[[map[i][j] for j in range(len(map[0]))]for i in range(len(map))]
+        res=[[0 for j in range(len(map[0]))]for i in range(len(map))]
         # generating mean altitudes for each chunk + borders (to simplify border conditions)
         altitude:list[list[float]]=[] #[[0,0,0,0],[0,1,0,0],[0,0,0,0]]
         for i in range(map_size_in_chunks[0]+2):
             altitude.append([])
             for j in range(map_size_in_chunks[1]+2):
                 altitude[i].append((max_a-min_a)*rd.random()+min_a)
-        for i in range(map_size_in_chunks[0]+1):
-            for j in range(map_size_in_chunks[1]+1):
+        for i in range(0,map_size_in_chunks[0]+1):
+            for j in range(0,map_size_in_chunks[1]+1):
                 a1=altitude[i][j]
                 a2=altitude[i+1][j]
                 a3=altitude[i][j+1]
                 a4=altitude[i+1][j+1]
                 for pi in range(chunk_size_in_points[0]):
                     for pj in range(chunk_size_in_points[1]):
-                        if (i!=0) and (j!=0): 
+                        if (i<map_size_in_chunks[0] or pi<chunk_size_in_points[0]*0.5) and (j<map_size_in_chunks[1] or pj<chunk_size_in_points[1]*0.5) and (i!=0 or pi>=(chunk_size_in_points[0]*0.5)) and (j!=0 or pj>=(chunk_size_in_points[1]*0.5)): 
                             x=pi/chunk_size_in_points[0]
                             y=pj/chunk_size_in_points[1]
                             alt=mapGenerator.interpolate2D(a1,a2,a3,a4,x,y)
-                            res[pi+(int)(i-0.5)*chunk_size_in_points[0]][pj+(int)(j-0.5)*chunk_size_in_points[1]]+=alt #TODO chunk_size_in_point not even
+                            # if (j==0 and pj<chunk_size_in_points[1]//2+3) : print(pi+floor((i-0.5)*chunk_size_in_points[0]),pj+floor((j-0.5)*chunk_size_in_points[1]),alt)
+                            res[pi+floor((i-0.5)*chunk_size_in_points[0])][pj+floor((j-0.5)*chunk_size_in_points[1])]+=alt #TODO chunk_size_in_point not even
         return res
         
     
