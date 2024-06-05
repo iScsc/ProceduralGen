@@ -346,3 +346,33 @@ void freeGradGrid(gradientGrid* gradGrid)
         free(gradGrid);
     }
 }
+
+gradientGrid* copy(gradientGrid* grad) 
+{
+    gradientGrid* res = calloc(1,sizeof(gradientGrid));
+
+    res->width=grad->width;
+    res->height=grad->height;
+
+    res->gradients = calloc(res->width*res->height,sizeof(vector));
+    for (int i=0; i<res->width; i++)
+    {
+        for (int j=0; j<res->height; j++)
+        {
+            *getVector(res,i,j)=*copyVect(getVector(grad,i,j));
+        }
+    }
+
+    return res;
+
+}
+
+vector* copyVect(vector* vect) 
+{
+    vector*res = calloc(1, sizeof(vector));
+
+    res->x=vect->x;
+    res->y=vect->y;
+
+    return res;
+}
