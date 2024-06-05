@@ -25,6 +25,10 @@ double* getMapValue(map* map, int width_idx, int height_idx);
 chunk* getChunk(map* map, int width_idx, int height_idx);
 
 
+double interpolate2D(double a1, double a2, double a3, double a4, double x, double y);
+
+map* addMeanAltitude(map* p_map);
+
 
 map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], unsigned int display_loading);
 
@@ -42,5 +46,7 @@ map* readMapFile(char path[]);
 void printMap(map* map);
 
 void freeMap(map* map);
+
+map* copy(map* p_map) ;
 
 #endif

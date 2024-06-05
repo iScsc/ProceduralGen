@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "loadingBar.h"
 #include "gradientGrid.h"
@@ -55,6 +56,60 @@ chunk* getChunk(map* map, int width_idx, int height_idx)
     return map->chunks[height_idx * width + width_idx];
 }
 
+
+
+
+double interpolate2D(double a1, double a2, double a3, double a4, double x, double y) 
+{
+    return a1 + (a2 - a1) * smoothstep(x) + (a3 - a1) * smoothstep(y) + (a1 + a4 - a2 - a3) * smoothstep(x) * smoothstep(y);
+}
+
+map* addMeanAltitude(map* p_map) 
+{
+    int np = p_map->chunk_width;
+    int mp = p_map->chunk_height;
+    int nc = p_map->map_width;
+    int mc = p_map->map_height;
+
+    map* res = copy(p_map);
+
+    double altitude[nc+2][mc+2];
+
+    for (int i=0; i<nc+2; i++)
+    {
+        for (int j=0; j<mc+2; j++)
+        {
+            altitude[i][j]=-1+2*rand()/RAND_MAX;
+        }
+    }
+
+    for (int i=0; i<nc+1; i++)
+    {
+        for (int j=0; j<mc+1; j++)
+        {
+            double a1=altitude[i][j];
+            double a2=altitude[i+1][j];
+            double a3=altitude[i][j+1];
+            double a4=altitude[i+1][j+1];
+
+            for (int pi=0; pi<np; pi++)
+            {
+                for (int pj=0; pj<mp; pj++)
+                {
+                    if ((i<nc || pi<np*0.5) && (j<mc || pj<mp*0.5) && (i!=0 || pi>=np*0.5) && (j!=0 || pj>=mp*0.5)) 
+                    {
+                        double x=pi*1./np;
+                        double y=pj*1./mp;
+                        double alt = interpolate2D(a1,a2,a3,a4,x,y);
+                        *getMapValue(res,i,j)+=alt;
+                    }
+                }
+            }
+        }
+    }
+
+    return res;
+}
 
 
 
@@ -343,4 +398,31 @@ void freeMap(map* map)
 
         free(map);
     }
+}
+
+map* copy(map* p_map) 
+{
+    map* res = calloc(1, sizeof(map));
+
+    res->map_width=p_map->map_width;
+    res->map_height=p_map->map_height;
+    res->chunk_width=p_map->chunk_width;
+    res->chunk_height=p_map->chunk_height;
+
+    res->chunks=copy(p_map->chunks);
+
+    int n = res->chunk_width*res->map_width;
+    int m = res->chunk_height*res->map_height;
+
+    res->map_values = calloc(n*m, sizeof(double));
+
+    for (int i=0; i<n; i++)
+    {
+        for (int j=0; j<m; j++)
+        {
+            *getMapValue(res,i,j)=*getMapValue(p_map,i,j);
+        }
+    }
+
+    return res;
 }
