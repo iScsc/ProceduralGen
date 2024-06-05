@@ -177,7 +177,8 @@ class mapGenerator:
     
     
     
-    def randomGradGrid2D(size : tuple[int], display_loading : bool = False, pre_text : str = "\r      Generating random gradient grid... "):
+    def randomGradGrid2D(size : tuple[int], display_loading : bool = False, pre_text : str = "\r      Generating random gradient grid... "
+                         , offset=0, factor=1):
         """Generate the random gradient grid 2D with given size.
 
         Args:
@@ -200,7 +201,7 @@ class mapGenerator:
                 x = -1 + 2 * rd.random()
                 y = (-1) ** rd.randint(0, 1) * np.sqrt(1 - x ** 2)
                 
-                grid2D[i][j] = (x, y)
+                grid2D[i][j] = (factor*x, factor*y)
                 
                 if display_loading:
                     t = time.time() - start_time
@@ -231,7 +232,7 @@ class mapGenerator:
         
         return dx * grid[ix][iy][0] + dy * grid[ix][iy][1]
 
-    def perlin(x, y, grid):
+    def perlin(x, y, grid, offset=0, factor=1):
         """computes the perlin value.
 
         Args:
@@ -259,9 +260,9 @@ class mapGenerator:
         ix1 = mapGenerator.interpolate(n0, n1, sx)
         value = mapGenerator.interpolate(ix0, ix1, sy)
 
-        return value
+        return offset + factor * value
 
-    def generateMap2D(grid, sizeFactor = 10, display_loading : bool = False, pre_text : str = "\r      Generating map...                  "):
+    def generateMap2D(grid, sizeFactor = 10, display_loading : bool = False, pre_text : str = "\r      Generating map...                  ", offset=0, factor=1):
         """generates a map 2d layer from the gradient grid and size factor.
 
         Args:
@@ -282,7 +283,7 @@ class mapGenerator:
         
         for i in range(I):
             for j in range(J):
-                map[i][j] = mapGenerator.perlin(i/sizeFactor, j/sizeFactor, grid)
+                map[i][j] = mapGenerator.perlin(i/sizeFactor, j/sizeFactor, grid, offset, factor)
                 
                 if display_loading:
                     t = time.time() - start_time
@@ -751,13 +752,24 @@ class mapGenerator:
                         if display_loading:
                             print("   Map " + str(i*J + j + 1) +"/" + str(I*J) + "...")
                 
+                        off = 0
+                        fact = 1
+                        if i == 0 and j == 0:
+                            off = 0
+                            fact = 1
+                        if i == 1 and j == 1:
+                            fact = 1
+                        
+                        print(off, fact)
+                        
                         gradGrids = [None for k in range(n)]
                         
                         for k in range(n):
                             gsi = grid_sizes[k]
                             
                             pre_text = "\r      | Generating gradient grid " + str(k + 1) + "/" + str(n) + " of size " + str(gsi + 1) + "...  "
-                            gradGrids[k] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading, pre_text=pre_text))
+                            gradGrids[k] = np.array(mapGenerator.randomGradGrid2D((gsi + 1, gsi + 1), display_loading=display_loading,
+                                                                                  pre_text=pre_text, offset=off, factor=fact))
                             
                             if i != 0:
                                 gradGrids[k][0, :] = global_grid[i - 1][j][k][-1, :]
@@ -782,11 +794,20 @@ class mapGenerator:
                         
                         maps = [None for k in range(n)]
                         
+                        off = 0
+                        fact = 1
+                        # if i == 0 and j == 0:
+                        #     off = 0
+                        #     fact = 1
+                            
+                        # print(off, fact)
+                        
                         for k in range(n):
                             gsi = grid_sizes[k]
                             
                             pre_text = "\r      | Generating map " + str(k + 1) + "/" + str(n) + "...  "
-                            maps[k] = np.array(mapGenerator.generateMap2D(global_grid[i][j][k], ppcm//gsi, display_loading=display_loading, pre_text=pre_text))
+                            maps[k] = np.array(mapGenerator.generateMap2D(global_grid[i][j][k], ppcm//gsi, display_loading=display_loading,
+                                                                          pre_text=pre_text, offset=off, factor=fact))
                             if display_loading:
                                 print(GREEN_COLOR + " Success!" + DEFAULT_COLOR)
                         
