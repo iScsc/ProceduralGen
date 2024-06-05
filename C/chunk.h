@@ -95,4 +95,6 @@ void printChunk(chunk* chunk);
 
 void freeChunk(chunk* chunk);
 
+chunk* copy(chunk* p_chunk);
+
 #endif
