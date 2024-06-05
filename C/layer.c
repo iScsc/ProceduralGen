@@ -258,3 +258,26 @@ void freeLayer(layer* layer)
         free(layer);
     }
 }
+
+layer* copy(layer * p_layer)
+{
+    layer* res = calloc(1, sizeof(layer));
+
+    res->width=p_layer->width;
+    res->height=p_layer->height;
+
+    res->size_factor=p_layer->size_factor;
+
+    res->gradient_grid=copy(p_layer->gradient_grid);
+
+    res->values = calloc(res->width*res->height, sizeof(double));
+    for (int i=0; i<res->width; i++)
+    {
+        for (int j=0; j<res->height; j++)
+        {
+            *getLayerValue(res,i,j)=*getLayerValue(p_layer,i,j);
+        }
+    }
+
+    return res;
+}
