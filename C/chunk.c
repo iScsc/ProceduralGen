@@ -514,7 +514,7 @@ chunk* copyChunk(chunk* p_chunk)
     res->layers = calloc(nbr,sizeof(layer*));
     for (int i=0; i<nbr; i++)
     {
-        res->layers[i]=copy(p_chunk->layers[i]);
+        res->layers[i]=copyLayer(p_chunk->layers[i]);
     }
 
     res->chunk_values = calloc(n*m, sizeof(double));

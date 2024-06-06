@@ -268,7 +268,7 @@ layer* copyLayer(layer * p_layer)
 
     res->size_factor=p_layer->size_factor;
 
-    res->gradient_grid=copy(p_layer->gradient_grid);
+    res->gradient_grid=copyGrad(p_layer->gradient_grid);
 
     res->values = calloc(res->width*res->height, sizeof(double));
     for (int i=0; i<res->width; i++)

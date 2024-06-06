@@ -409,7 +409,7 @@ map* copyMap(map* p_map)
     res->chunk_width=p_map->chunk_width;
     res->chunk_height=p_map->chunk_height;
 
-    res->chunks=copy(p_map->chunks);
+    res->chunks=copyChunk(p_map->chunks);
 
     int n = res->chunk_width*res->map_width;
     int m = res->chunk_height*res->map_height;
