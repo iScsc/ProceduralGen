@@ -129,7 +129,8 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
         chunk** chunks_list = calloc(map_width * map_height, sizeof(chunk*));
         for (int i = 0; i < map_width * map_height; i++)
         {
-            chunks_list[i] = chunks[i];
+            chunks_list[i] = copyChunk(chunks[i]);
+            freeChunk(chunks[i]);
         }
         new_map->chunks = chunks_list;
 
@@ -409,7 +410,14 @@ map* copyMap(map* p_map)
     res->chunk_width=p_map->chunk_width;
     res->chunk_height=p_map->chunk_height;
 
-    res->chunks=copyChunk(p_map->chunks);
+    res->chunks = calloc(res->chunk_width*res->chunk_height,sizeof(chunk*));
+    for (int i=0; i<res->map_width; i++)
+    {
+        for (int j=0; j<res->map_height; j++)
+        {
+            res->chunks[i*res->map_width+j]=copyChunk(p_map->chunks[i*p_map->map_width+j]);
+        }
+    }
 
     int n = res->chunk_width*res->map_width;
     int m = res->chunk_height*res->map_height;

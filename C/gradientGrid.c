@@ -359,7 +359,9 @@ gradientGrid* copyGrad(gradientGrid* grad)
     {
         for (int j=0; j<res->height; j++)
         {
-            *getVector(res,i,j)=*copyVect(getVector(grad,i,j));
+            vector* vect=copyVect(getVector(grad,i,j));
+            *getVector(res,i,j)=*vect;
+            free(vect);
         }
     }
 
