@@ -79,7 +79,7 @@ map* addMeanAltitude(map* p_map)
     {
         for (int j=0; j<mc+2; j++)
         {
-            altitude[i][j]=-1+2*rand()/RAND_MAX;
+            altitude[i][j]=-0.5+2*rand()*1./RAND_MAX;
         }
     }
 
@@ -98,10 +98,13 @@ map* addMeanAltitude(map* p_map)
                 {
                     if ((i<nc || pi<np*0.5) && (j<mc || pj<mp*0.5) && (i!=0 || pi>=np*0.5) && (j!=0 || pj>=mp*0.5)) 
                     {
+                        int ii=pi+(int)((i-0.5)*res->chunk_width);
+                        int jj=pj+(int)((j-0.5)*res->chunk_height);
                         double x=pi*1./np;
                         double y=pj*1./mp;
                         double alt = interpolate2D(a1,a2,a3,a4,x,y);
-                        *getMapValue(res,i,j)+=alt;
+                        *getMapValue(res,ii,jj)+=alt;
+
                     }
                 }
             }
