@@ -71,7 +71,7 @@ map* addMeanAltitude(map* p_map)
     int nc = p_map->map_width;
     int mc = p_map->map_height;
 
-    map* res = copy(p_map);
+    map* res = copyMap(p_map);
 
     double altitude[nc+2][mc+2];
 
@@ -400,7 +400,7 @@ void freeMap(map* map)
     }
 }
 
-map* copy(map* p_map) 
+map* copyMap(map* p_map) 
 {
     map* res = calloc(1, sizeof(map));
 

@@ -347,7 +347,7 @@ void freeGradGrid(gradientGrid* gradGrid)
     }
 }
 
-gradientGrid* copy(gradientGrid* grad) 
+gradientGrid* copyGrad(gradientGrid* grad) 
 {
     gradientGrid* res = calloc(1,sizeof(gradientGrid));
 

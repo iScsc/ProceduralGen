@@ -47,6 +47,6 @@ void printMap(map* map);
 
 void freeMap(map* map);
 
-map* copy(map* p_map) ;
+map* copyMap(map* p_map) ;
 
 #endif

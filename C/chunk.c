@@ -493,7 +493,7 @@ void freeChunk(chunk* chunk)
     }
 }
 
-chunk* copy(chunk* p_chunk)
+chunk* copyChunk(chunk* p_chunk)
 {
     chunk* res = calloc(1,sizeof(chunk));
 
