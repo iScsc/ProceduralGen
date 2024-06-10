@@ -37,6 +37,7 @@ struct chunk
     int width;
     int height;
     double* chunk_values;
+    double base_altitude;
 };
 
 typedef struct chunk chunk;

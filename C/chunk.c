@@ -1,6 +1,7 @@
 #include <malloc.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "loadingBar.h"
 #include "gradientGrid.h"
@@ -67,6 +68,8 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
     new_chunk->height = height;
     new_chunk->chunk_values = chunk_values;
 
+    new_chunk->base_altitude=0;
+
     return new_chunk;
 }
 
@@ -123,6 +126,7 @@ void regenerateChunk(chunk* chunk, unsigned int display_loading)
             *value /= divisor;
         }
     }
+    chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
 }
 
 
@@ -525,6 +529,8 @@ chunk* copyChunk(chunk* p_chunk)
             *getChunkValue(res,i,j)=*getChunkValue(p_chunk,i,j);
         }
     }
+
+    res->base_altitude=p_chunk->base_altitude;
 
     return res;
 }
