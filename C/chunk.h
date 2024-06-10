@@ -80,6 +80,7 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
 chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], 
                         double layers_factors[number_of_layers], unsigned int display_loading);
 
+chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], double layers_factors[number_of_layers]);
 
 
 chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int display_loading);
