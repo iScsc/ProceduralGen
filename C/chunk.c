@@ -236,6 +236,34 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
     return new_chunk;
 }
 
+chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], double layers_factors[number_of_layers])
+{
+    chunk* new_chunk = calloc(1, sizeof(chunk));
+
+    new_chunk->number_of_layers = number_of_layers;
+
+    // size_factors should match gradient_grids dimensions - 1
+    int width = (gradGrids_width[0] - 1) * size_factors[0];
+    int height = (gradGrids_height[0] - 1) * size_factors[0];
+    new_chunk->width = width;
+    new_chunk->height = height;
+
+    // copy layer factors to ensure dynamic allocation
+    double* factors = calloc(number_of_layers, sizeof(double));
+    for (int i = 0; i < number_of_layers; i++)
+    {
+        factors[i] = layers_factors[i];
+    }
+    new_chunk->layers_factors = factors;
+
+    new_chunk->chunk_values = NULL;
+
+    new_chunk->layers = NULL;
+
+    new_chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
+
+    return new_chunk;
+}
 
 
 

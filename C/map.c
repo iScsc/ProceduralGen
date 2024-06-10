@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <time.h>
-#include <stdlib.h>
 
 #include "loadingBar.h"
 #include "gradientGrid.h"
@@ -56,6 +55,20 @@ chunk* getChunk(map* map, int width_idx, int height_idx)
     return map->chunks[height_idx * width + width_idx];
 }
 
+chunk* getVirtualChunk(map* map, int width_idx, int height_idx)
+{
+    int width = map->map_width+2;
+    int height = map->map_height+2;
+
+    if (height_idx<0 || height_idx>=height || width<0 || width_idx>=width) return NULL;
+
+    if (width_idx==0) return map->virtual_chunks[height_idx];
+    else if (width_idx==width-1) return map->virtual_chunks[height+height_idx];
+    else if (height_idx==0) return map->virtual_chunks[2*height+width_idx];
+    else if (height_idx==height-1) return map->virtual_chunks[2*height+width-2+width_idx];
+
+    return NULL;
+}
 
 
 
@@ -64,7 +77,7 @@ double interpolate2D(double a1, double a2, double a3, double a4, double x, doubl
     return a1 + (a2 - a1) * smoothstep(x) + (a3 - a1) * smoothstep(y) + (a1 + a4 - a2 - a3) * smoothstep(x) * smoothstep(y);
 }
 
-map* addMeanAltitude(map* p_map, int display_loading) 
+map* addMeanAltitude(map* p_map, unsigned int display_loading) 
 {
     if (display_loading != 0)
     {
@@ -84,19 +97,45 @@ map* addMeanAltitude(map* p_map, int display_loading)
 
     clock_t start_time = clock();
 
-    for (int i=0; i<nc+2; i++)
+    for (int i=0; i<nc; i++)
     {
-        for (int j=0; j<mc+2; j++)
+        for (int j=0; j<mc; j++)
         {
-            altitude[i][j]=-0.5+2*rand()*1./RAND_MAX;
+            altitude[i+1][j+1]=getChunk(res,i,j)->base_altitude;
             if (display_loading != 0)
             {
                 int nb_indents = display_loading - 1;
 
-                char base_str[100] = "Generating altitude values...           ";
+                char base_str[100] = "Getting altitude values...           ";
 
-                predefined_loading_bar(j + i * (nc+2), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                predefined_loading_bar(j + i * (nc), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
             }
+        }
+    }
+    for (int i=0;i<nc+2;i++) 
+    {
+        altitude[i][0]=getVirtualChunk(res,i,0)->base_altitude;
+        altitude[i][mc+1]=getVirtualChunk(res,i,mc+1)->base_altitude;
+        if (display_loading != 0)
+        {
+            int nb_indents = display_loading - 1;
+
+            char base_str[100] = "Getting altitude values...           ";
+
+            predefined_loading_bar(i*2 + (mc) * (nc), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+        }
+    }
+    for (int j=1;j<mc+1;j++) 
+    {
+        altitude[0][j]=getVirtualChunk(res,0,j)->base_altitude;
+        altitude[nc+1][j]=getVirtualChunk(res,nc+1,j)->base_altitude;
+        if (display_loading != 0)
+        {
+            int nb_indents = display_loading - 1;
+
+            char base_str[100] = "Getting altitude values...           ";
+
+            predefined_loading_bar(j*2 + (mc+2) * (nc), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
         }
     }
 
@@ -158,7 +197,7 @@ map* addMeanAltitude(map* p_map, int display_loading)
 
 
 
-map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], unsigned int display_loading)
+map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -178,6 +217,16 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
             chunks_list[i] = chunks[i];
         }
         new_map->chunks = chunks_list;
+
+        // copy virtual chunks list to ensure dynamic allocation
+        chunk** v_chunks_list = calloc((map_height+2+map_width+2)*2-4, sizeof(chunk*));
+        for (int i = 0; i < (map_height+2+map_width+2)*2-4; i++)
+        {
+            // v_chunks_list[i] = copyChunk(virtual_chunks[i]);
+            // freeChunk(virtual_chunks[i]);
+            v_chunks_list[i] = virtual_chunks[i];
+        }
+        new_map->virtual_chunks = v_chunks_list;
 
 
         chunk* firstChunk = getChunk(new_map, 0, 0);
@@ -232,6 +281,7 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
     clock_t start_time = clock();
 
     chunk* chunks[map_width * map_height];
+    chunk* virtual_chunks[(map_height+2+map_width+2)*2-4];
 
     int c_loading = display_loading;
     
@@ -294,9 +344,45 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
                 indent_print(display_loading, "\n");
             }
         }
+    }    
+    
+    if (display_loading != 0)
+    {
+        indent_print(display_loading - 1, "Virtual Chunks generation before generating map...\n");
     }
+    for (int j = 0; j < (map_height+2+map_width+2)*2-4; j++)
+    {
+        clock_t chunk_start_time = clock();
 
-    map* new_map = newMapFromChunks(map_width, map_height, chunks, display_loading);
+        chunk* current_chunk = NULL;
+
+        if (display_loading != 0)
+        {
+            char to_print[200] = "";
+            snprintf(to_print, sizeof(to_print), "Generating virtual chunk %d...\n", j, (map_height+2+map_width+2)*2-4);
+
+            indent_print(display_loading, to_print);
+        }
+        current_chunk = newVirtualChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors);
+
+        virtual_chunks[j] = current_chunk;
+        
+        if (display_loading != 0)
+        {
+            double total_time = (double) (clock() - chunk_start_time)/CLOCKS_PER_SEC;
+            char final_string[200] = "";
+
+            snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s The virtual chunk generation took a total of %.4lf second(s) in CPU time.\n",
+                                    GREEN_COLOR, DEFAULT_COLOR, total_time);
+            
+            int nb_indents = display_loading;
+            indent_print(nb_indents, final_string);
+
+            indent_print(display_loading, "\n");
+        }
+    }    
+
+    map* new_map = newMapFromChunks(map_width, map_height, chunks, virtual_chunks, display_loading);
 
     if (display_loading == 1)
     {
