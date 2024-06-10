@@ -64,24 +64,57 @@ double interpolate2D(double a1, double a2, double a3, double a4, double x, doubl
     return a1 + (a2 - a1) * smoothstep(x) + (a3 - a1) * smoothstep(y) + (a1 + a4 - a2 - a3) * smoothstep(x) * smoothstep(y);
 }
 
-map* addMeanAltitude(map* p_map) 
+map* addMeanAltitude(map* p_map, int display_loading) 
 {
+    if (display_loading != 0)
+    {
+        indent_print(display_loading - 1, "Adding base altitude on Generated Map...\n");
+        display_loading += 2;
+    }
+
     int np = p_map->chunk_width;
     int mp = p_map->chunk_height;
     int nc = p_map->map_width;
     int mc = p_map->map_height;
 
-    map* res = copyMap(p_map);
+    // map* res = copyMap(p_map);
+    map* res=p_map;
 
     double altitude[nc+2][mc+2];
+
+    clock_t start_time = clock();
 
     for (int i=0; i<nc+2; i++)
     {
         for (int j=0; j<mc+2; j++)
         {
             altitude[i][j]=-0.5+2*rand()*1./RAND_MAX;
+            if (display_loading != 0)
+            {
+                int nb_indents = display_loading - 1;
+
+                char base_str[100] = "Generating altitude values...           ";
+
+                predefined_loading_bar(j + i * (nc+2), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+            }
         }
     }
+            
+    if (display_loading != 0)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s base altitude generation took a total of %.4lf second(s) in CPU time.\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading;
+        indent_print(nb_indents, final_string);
+
+        indent_print(display_loading, "\n");
+    }
+
+    start_time = clock();
 
     for (int i=0; i<nc+1; i++)
     {
@@ -104,11 +137,32 @@ map* addMeanAltitude(map* p_map)
                         double y=pj*1./mp;
                         double alt = interpolate2D(a1,a2,a3,a4,x,y);
                         *getMapValue(res,ii,jj)+=alt;
-
                     }
                 }
             }
+            if (display_loading != 0)
+            {
+                int nb_indents = display_loading - 1;
+
+                char base_str[100] = "Adding altitude values...           ";
+
+                predefined_loading_bar(j + i * (nc+2), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+            }
         }
+    }
+            
+    if (display_loading != 0)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s base altitude generation took a total of %.4lf second(s) in CPU time.\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading;
+        indent_print(nb_indents, final_string);
+
+        indent_print(display_loading, "\n");
     }
 
     return res;
@@ -132,8 +186,9 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
         chunk** chunks_list = calloc(map_width * map_height, sizeof(chunk*));
         for (int i = 0; i < map_width * map_height; i++)
         {
-            chunks_list[i] = copyChunk(chunks[i]);
-            freeChunk(chunks[i]);
+            // chunks_list[i] = copyChunk(chunks[i]);
+            // freeChunk(chunks[i]);
+            chunks_list[i] = chunks[i];
         }
         new_map->chunks = chunks_list;
 
@@ -171,6 +226,8 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
                 }
             }
         }
+
+        new_map = addMeanAltitude(new_map,display_loading);
 
         return new_map;
     }

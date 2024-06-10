@@ -317,16 +317,13 @@ completeMap* newCompleteMapFromMap(map* p_map, double sea_level, unsigned int di
         int width = p_map->map_width * p_map->chunk_width;
         int height = p_map->map_height * p_map->chunk_height;
 
-        map* leveled_map = addMeanAltitude(p_map);
-        freeMap(p_map);
-
-        complete_map->map = leveled_map;
+        complete_map->map = p_map;
         complete_map->width = width;
         complete_map->height = height;
 
         complete_map->sea_level = sea_level;
         
-        complete_map->sea_values = setSeaLevel(leveled_map, sea_level, display_loading);
+        complete_map->sea_values = setSeaLevel(p_map, sea_level, display_loading);
 
         if (display_loading != 0)
         {
@@ -334,7 +331,7 @@ completeMap* newCompleteMapFromMap(map* p_map, double sea_level, unsigned int di
             indent_print(nb_indents, "\n");
         }
 
-        complete_map->color_map = generateColorMap(leveled_map, sea_level, display_loading);
+        complete_map->color_map = generateColorMap(p_map, sea_level, display_loading);
     }
 
     return complete_map;
