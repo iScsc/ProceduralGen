@@ -415,23 +415,27 @@ void writeChunkFile(chunk* chunk, char path[])
         int number_of_layers = chunk->number_of_layers;
         int width = chunk->width;
         int height = chunk->height;
+        double base_altitude = chunk->base_altitude;
 
-        fprintf(f, "number_of_layers=%d\nwidth=%d\nheight=%d\n", number_of_layers, width, height);
+        fprintf(f, "number_of_layers=%d\nwidth=%d\nheight=%d\nbase_altitude=%8lf\n", number_of_layers, width, height, base_altitude);
 
         // Writing the values
-        for (int i = 0; i < height; i++)
+        if (chunk->chunk_values!=NULL)
         {
-            for (int j = 0; j < width; j++)
+            for (int i = 0; i < height; i++)
             {
-                double value = *getChunkValue(chunk, j, i);
+                for (int j = 0; j < width; j++)
+                {
+                    double value = *getChunkValue(chunk, j, i);
 
-                if (j != width - 1)
-                {
-                    fprintf(f, "% .8lf\t", value);
-                }
-                else
-                {
-                    fprintf(f, "% .8lf\n", value);
+                    if (j != width - 1)
+                    {
+                        fprintf(f, "% .8lf\t", value);
+                    }
+                    else
+                    {
+                        fprintf(f, "% .8lf\n", value);
+                    }
                 }
             }
         }
