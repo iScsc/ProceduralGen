@@ -99,22 +99,7 @@ map* addMeanAltitude(map* p_map, int display_loading)
             }
         }
     }
-            
-    if (display_loading != 0)
-    {
-        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
-        char final_string[200] = "";
 
-        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s base altitude generation took a total of %.4lf second(s) in CPU time.\n",
-                                GREEN_COLOR, DEFAULT_COLOR, total_time);
-        
-        int nb_indents = display_loading;
-        indent_print(nb_indents, final_string);
-
-        indent_print(display_loading, "\n");
-    }
-
-    start_time = clock();
 
     for (int i=0; i<nc+1; i++)
     {
@@ -146,10 +131,12 @@ map* addMeanAltitude(map* p_map, int display_loading)
 
                 char base_str[100] = "Adding altitude values...           ";
 
-                predefined_loading_bar(j + i * (nc+2), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                predefined_loading_bar(j + i * (nc+1), (nc+1) * (mc+1) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
             }
         }
     }
+
+    display_loading-=2;
             
     if (display_loading != 0)
     {
