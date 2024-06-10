@@ -34,7 +34,7 @@ double interpolate2D(double a1, double a2, double a3, double a4, double x, doubl
 map* addMeanAltitude(map* p_map, unsigned int display_loading);
 
 
-map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], unsigned int display_loading);
+map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], unsigned int display_loading);
 
 map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers],
                  int size_factors[number_of_layers], double layers_factors[number_of_layers], int map_width, int map_height, unsigned int display_loading);

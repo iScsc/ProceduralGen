@@ -359,7 +359,7 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
         if (display_loading != 0)
         {
             char to_print[200] = "";
-            snprintf(to_print, sizeof(to_print), "Generating virtual chunk %d...\n", j, (map_height+2+map_width+2)*2-4);
+            snprintf(to_print, sizeof(to_print), "Generating virtual chunk %d/%d...\n", j+1, (map_height+2+map_width+2)*2-4);
 
             indent_print(display_loading, to_print);
         }
