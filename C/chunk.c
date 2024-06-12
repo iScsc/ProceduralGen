@@ -1,6 +1,7 @@
 #include <malloc.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "loadingBar.h"
 #include "gradientGrid.h"
@@ -67,6 +68,8 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
     new_chunk->height = height;
     new_chunk->chunk_values = chunk_values;
 
+    new_chunk->base_altitude=0;
+
     return new_chunk;
 }
 
@@ -123,6 +126,7 @@ void regenerateChunk(chunk* chunk, unsigned int display_loading)
             *value /= divisor;
         }
     }
+    chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
 }
 
 
@@ -232,6 +236,34 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
     return new_chunk;
 }
 
+chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], double layers_factors[number_of_layers])
+{
+    chunk* new_chunk = calloc(1, sizeof(chunk));
+
+    new_chunk->number_of_layers = number_of_layers;
+
+    // size_factors should match gradient_grids dimensions - 1
+    int width = (gradGrids_width[0] - 1) * size_factors[0];
+    int height = (gradGrids_height[0] - 1) * size_factors[0];
+    new_chunk->width = width;
+    new_chunk->height = height;
+
+    // copy layer factors to ensure dynamic allocation
+    double* factors = calloc(number_of_layers, sizeof(double));
+    for (int i = 0; i < number_of_layers; i++)
+    {
+        factors[i] = layers_factors[i];
+    }
+    new_chunk->layers_factors = factors;
+
+    new_chunk->chunk_values = NULL;
+
+    new_chunk->layers = NULL;
+
+    new_chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
+
+    return new_chunk;
+}
 
 
 
@@ -383,23 +415,27 @@ void writeChunkFile(chunk* chunk, char path[])
         int number_of_layers = chunk->number_of_layers;
         int width = chunk->width;
         int height = chunk->height;
+        double base_altitude = chunk->base_altitude;
 
-        fprintf(f, "number_of_layers=%d\nwidth=%d\nheight=%d\n", number_of_layers, width, height);
+        fprintf(f, "number_of_layers=%d\nwidth=%d\nheight=%d\nbase_altitude=%8lf\n", number_of_layers, width, height, base_altitude);
 
         // Writing the values
-        for (int i = 0; i < height; i++)
+        if (chunk->chunk_values!=NULL)
         {
-            for (int j = 0; j < width; j++)
+            for (int i = 0; i < height; i++)
             {
-                double value = *getChunkValue(chunk, j, i);
+                for (int j = 0; j < width; j++)
+                {
+                    double value = *getChunkValue(chunk, j, i);
 
-                if (j != width - 1)
-                {
-                    fprintf(f, "% .8lf\t", value);
-                }
-                else
-                {
-                    fprintf(f, "% .8lf\n", value);
+                    if (j != width - 1)
+                    {
+                        fprintf(f, "% .8lf\t", value);
+                    }
+                    else
+                    {
+                        fprintf(f, "% .8lf\n", value);
+                    }
                 }
             }
         }
@@ -491,4 +527,42 @@ void freeChunk(chunk* chunk)
 
         free(chunk);
     }
+}
+
+chunk* copyChunk(chunk* p_chunk)
+{
+    chunk* res = calloc(1,sizeof(chunk));
+
+    res->width=p_chunk->width;
+    res->height=p_chunk->height;
+    int n = res->width;
+    int m = res->height;
+
+    res->number_of_layers=p_chunk->number_of_layers;
+    int nbr = res->number_of_layers;
+
+    res->layers_factors = calloc(nbr,sizeof(double));
+    for (int i=0; i<nbr; i++)
+    {
+        res->layers_factors[i]=p_chunk->layers_factors[i];
+    }
+
+    res->layers = calloc(nbr,sizeof(layer*));
+    for (int i=0; i<nbr; i++)
+    {
+        res->layers[i]=copyLayer(p_chunk->layers[i]);
+    }
+
+    res->chunk_values = calloc(n*m, sizeof(double));
+    for (int i=0; i<n; i++)
+    {
+        for (int j=0; j<m; j++) 
+        {
+            *getChunkValue(res,i,j)=*getChunkValue(p_chunk,i,j);
+        }
+    }
+
+    res->base_altitude=p_chunk->base_altitude;
+
+    return res;
 }

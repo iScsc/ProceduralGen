@@ -1,6 +1,7 @@
 import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
+from math import ceil,floor
 
 import os
 import time
@@ -308,8 +309,8 @@ class mapGenerator:
         if isFloat:
             scale = 1/255
         
-        i = int((value - min_value) * 255/(max_value - min_value))
-        s = int((value - min_value) * 200/(seaLevel - min_value))
+        i = int((value - min_value) * 255/(max_value - min_value)) if min_value!=max_value else 0
+        s = int((value - min_value) * 200/(seaLevel - min_value)) if min_value!=max_value else 0
         
         if value < seaLevel:
             return (scale * 50, scale * 50, scale * s)
@@ -354,6 +355,47 @@ class mapGenerator:
                     print(loading_bar(j + i * J, I * J - 1, mapGenerator.NUMBER_OF_SEGMENTS, pre_text=pre_text, end_text=time_str), end="")
         
         return seaMap, colorMap
+    
+    def interpolate2D(a1:float,a2:float,a3:float,a4:float,x:float,y:float):
+        return a1+(a2-a1)*mapGenerator.smoothstep(x)+(a3-a1)*mapGenerator.smoothstep(y)+(a1+a4-a2-a3)*mapGenerator.smoothstep(x)*mapGenerator.smoothstep(y)
+    
+    def addMeanAltitude(map_size_in_chunks : tuple[int], chunk_size_in_points : tuple[int], map : list[list[float]], max_a : float = 1, min_a : float = -0.5):
+        """Add a 'mean' altitude to all chunks in a map with smoothing in order to avoid cliffs at chunks' border
+
+        Args:
+            map_size_in_chunks (tuple[int]): the number of chunks by row and columns in the map
+            chunk_size_in_points (tuple[int]): the number of points by row and columns in a chunk
+            map (list[list[float]]): the map
+            max_a (float, optional): max added altitude. Defaults to 1.
+            min_a (float, optional): min adde altitude. Defaults to -0.5
+            
+        Returns:
+            the updated map
+        """
+        res=[[0 for j in range(len(map[0]))]for i in range(len(map))]
+        # generating mean altitudes for each chunk + borders (to simplify border conditions)
+        altitude:list[list[float]]=[] #[[0,0,0,0],[0,1,0,0],[0,0,0,0]]
+        for i in range(map_size_in_chunks[0]+2):
+            altitude.append([])
+            for j in range(map_size_in_chunks[1]+2):
+                altitude[i].append((max_a-min_a)*rd.random()+min_a)
+        for i in range(0,map_size_in_chunks[0]+1):
+            for j in range(0,map_size_in_chunks[1]+1):
+                a1=altitude[i][j]
+                a2=altitude[i+1][j]
+                a3=altitude[i][j+1]
+                a4=altitude[i+1][j+1]
+                for pi in range(chunk_size_in_points[0]):
+                    for pj in range(chunk_size_in_points[1]):
+                        if (i<map_size_in_chunks[0] or pi<chunk_size_in_points[0]*0.5) and (j<map_size_in_chunks[1] or pj<chunk_size_in_points[1]*0.5) \
+                            and (i!=0 or pi>=(chunk_size_in_points[0]*0.5)) and (j!=0 or pj>=(chunk_size_in_points[1]*0.5)): #guards agianst out of bounds semi-chunks and even/odd shenanigans
+                            x=pi/chunk_size_in_points[0]
+                            y=pj/chunk_size_in_points[1]
+                            alt=mapGenerator.interpolate2D(a1,a2,a3,a4,x,y)
+                            # if (j==0 and pj<chunk_size_in_points[1]//2+3) : print(pi+floor((i-0.5)*chunk_size_in_points[0]),pj+floor((j-0.5)*chunk_size_in_points[1]),alt)
+                            res[pi+floor((i-0.5)*chunk_size_in_points[0])][pj+floor((j-0.5)*chunk_size_in_points[1])]+=alt
+        return res
+        
     
     
     #--------------------------------# class all-in methods #--------------------------------#
@@ -861,6 +903,7 @@ class mapGenerator:
         if I != 1 or J != 1:
             complete_map = np.concatenate([np.concatenate(global_map[i], axis=1) for i in range(len(global_map))], axis=0)
         
+        complete_map = mapGenerator.addMeanAltitude(map_size,(ppcm,ppcm),complete_map)
         
         if display_loading:
             print("\n- Applying water levels on maps... ")

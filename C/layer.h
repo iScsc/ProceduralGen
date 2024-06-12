@@ -52,4 +52,6 @@ void printLayer(layer* layer);
 
 void freeLayer(layer* layer);
 
+layer* copyLayer(layer * p_layer);
+
 #endif

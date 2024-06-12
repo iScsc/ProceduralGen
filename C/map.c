@@ -55,11 +55,149 @@ chunk* getChunk(map* map, int width_idx, int height_idx)
     return map->chunks[height_idx * width + width_idx];
 }
 
+chunk* getVirtualChunk(map* map, int width_idx, int height_idx)
+{
+    int width = map->map_width+2;
+    int height = map->map_height+2;
+
+    if (height_idx<0 || height_idx>=height || width<0 || width_idx>=width) return NULL;
+
+    if (width_idx==0) return map->virtual_chunks[height_idx];
+    else if (width_idx==width-1) return map->virtual_chunks[height+height_idx];
+    else if (height_idx==0) return map->virtual_chunks[2*height-1+width_idx];
+    else if (height_idx==height-1) return map->virtual_chunks[2*height+width-3+width_idx];
+
+    return NULL;
+}
+
+
+
+double interpolate2D(double a1, double a2, double a3, double a4, double x, double y) 
+{
+    return a1 + (a2 - a1) * smoothstep(x) + (a3 - a1) * smoothstep(y) + (a1 + a4 - a2 - a3) * smoothstep(x) * smoothstep(y);
+}
+
+map* addMeanAltitude(map* p_map, unsigned int display_loading) 
+{
+    if (display_loading != 0)
+    {
+        indent_print(display_loading - 1, "Adding base altitude on Generated Map...\n");
+        display_loading += 2;
+    }
+
+    int np = p_map->chunk_width;
+    int mp = p_map->chunk_height;
+    int nc = p_map->map_width;
+    int mc = p_map->map_height;
+
+    // map* res = copyMap(p_map);
+    map* res=p_map;
+
+    double altitude[nc+2][mc+2];
+
+    clock_t start_time = clock();
+    clock_t start_getting_time = clock();
+
+    for (int i=0; i<nc; i++)
+    {
+        for (int j=0; j<mc; j++)
+        {
+            altitude[i+1][j+1]=getChunk(res,i,j)->base_altitude;
+            if (display_loading != 0)
+            {
+                int nb_indents = display_loading - 1;
+
+                char base_str[100] = "Getting chunks base altitude values...      ";
+
+                predefined_loading_bar(j + i * (mc), (nc) * (mc) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_getting_time);
+            }
+        }
+    }
+    start_getting_time=clock();
+    for (int j=0;j<mc+2;j++) 
+    {
+        altitude[0][j]=getVirtualChunk(res,0,j)->base_altitude;
+        altitude[nc+1][j]=getVirtualChunk(res,nc+1,j)->base_altitude;
+        if (display_loading != 0)
+        {
+            int nb_indents = display_loading - 1;
+
+            char base_str[100] = "Getting virtual chunks altitude values...   ";
+
+            predefined_loading_bar(j*2+2, 2*(mc+2+nc+2), NUMBER_OF_SEGMENTS, base_str, nb_indents, start_getting_time);
+        }
+    }
+    for (int i=1;i<nc+1;i++) 
+    {
+        altitude[i][0]=getVirtualChunk(res,i,0)->base_altitude;
+        altitude[i][mc+1]=getVirtualChunk(res,i,mc+1)->base_altitude;
+        if (display_loading != 0)
+        {
+            int nb_indents = display_loading - 1;
+
+            char base_str[100] = "Getting virtual chunks altitude values...   ";
+
+            predefined_loading_bar(i*2+4 +2*(mc+2), 2*(mc+2+nc+2), NUMBER_OF_SEGMENTS, base_str, nb_indents, start_getting_time);
+        }
+    }
+
+
+    clock_t start_adding_time = clock();
+    for (int i=0; i<nc+1; i++)
+    {
+        for (int j=0; j<mc+1; j++)
+        {
+            double a1=altitude[i][j];
+            double a2=altitude[i+1][j];
+            double a3=altitude[i][j+1];
+            double a4=altitude[i+1][j+1];
+
+            for (int pi=0; pi<np; pi++)
+            {
+                for (int pj=0; pj<mp; pj++)
+                {
+                    if ((i<nc || pi<np*0.5) && (j<mc || pj<mp*0.5) && (i!=0 || pi>=np*0.5) && (j!=0 || pj>=mp*0.5)) 
+                    {
+                        int ii=pi+(int)((i-0.5)*res->chunk_width);
+                        int jj=pj+(int)((j-0.5)*res->chunk_height);
+                        double x=pi*1./np;
+                        double y=pj*1./mp;
+                        double alt = interpolate2D(a1,a2,a3,a4,x,y);
+                        *getMapValue(res,ii,jj)+=alt;
+                    }
+                }
+            }
+            if (display_loading != 0)
+            {
+                int nb_indents = display_loading - 1;
+
+                char base_str[100] = "Adding altitude values...                   ";
+
+                predefined_loading_bar(j + i * (mc+1), (nc+1) * (mc+1) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_adding_time);
+            }
+        }
+    }
+
+    display_loading-=2;
+    if (display_loading != 0)
+    {
+        double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
+        char final_string[200] = "";
+
+        snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s base altitude generation took a total of %.4lf second(s) in CPU time.\n",
+                                GREEN_COLOR, DEFAULT_COLOR, total_time);
+        
+        int nb_indents = display_loading-1;
+        indent_print(nb_indents, final_string);
+    }
+
+    return res;
+}
 
 
 
 
-map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], unsigned int display_loading)
+map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -74,9 +212,21 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
         chunk** chunks_list = calloc(map_width * map_height, sizeof(chunk*));
         for (int i = 0; i < map_width * map_height; i++)
         {
+            // chunks_list[i] = copyChunk(chunks[i]);
+            // freeChunk(chunks[i]);
             chunks_list[i] = chunks[i];
         }
         new_map->chunks = chunks_list;
+
+        // copy virtual chunks list to ensure dynamic allocation
+        chunk** v_chunks_list = calloc((map_height+2+map_width+2)*2-4, sizeof(chunk*));
+        for (int i = 0; i < (map_height+2+map_width+2)*2-4; i++)
+        {
+            // v_chunks_list[i] = copyChunk(virtual_chunks[i]);
+            // freeChunk(virtual_chunks[i]);
+            v_chunks_list[i] = virtual_chunks[i];
+        }
+        new_map->virtual_chunks = v_chunks_list;
 
 
         chunk* firstChunk = getChunk(new_map, 0, 0);
@@ -113,6 +263,8 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
             }
         }
 
+        new_map = addMeanAltitude(new_map,display_loading);
+
         return new_map;
     }
     else
@@ -129,6 +281,7 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
     clock_t start_time = clock();
 
     chunk* chunks[map_width * map_height];
+    chunk* virtual_chunks[(map_height+2+map_width+2)*2-4];
 
     int c_loading = display_loading;
     
@@ -191,9 +344,28 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
                 indent_print(display_loading, "\n");
             }
         }
-    }
+    }    
 
-    map* new_map = newMapFromChunks(map_width, map_height, chunks, display_loading);
+    clock_t v_start_time=clock();
+    for (int j = 0; j < (map_height+2+map_width+2)*2-4; j++)
+    {
+        chunk* current_chunk = NULL;
+        
+        if (display_loading != 0)
+        {
+            int nb_indents = display_loading - 1;
+
+            char base_str[100] = "Generating virtual chunks...       ";
+
+            predefined_loading_bar(j+1,(map_height+2+map_width+2)*2-4, NUMBER_OF_SEGMENTS, base_str, nb_indents, v_start_time);
+        }
+
+        current_chunk = newVirtualChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors);
+
+        virtual_chunks[j] = current_chunk;
+    }    
+
+    map* new_map = newMapFromChunks(map_width, map_height, chunks, virtual_chunks, display_loading);
 
     if (display_loading == 1)
     {
@@ -341,6 +513,56 @@ void freeMap(map* map)
             free(map->chunks);
         }
 
+        if (map->virtual_chunks != NULL)
+        {
+            for (int j = 0; j < map_height+2; j++)
+            {
+                freeChunk(getVirtualChunk(map, 0, j));
+                freeChunk(getVirtualChunk(map, map_width+1, j));
+            }
+            for (int j = 1; j < map_width+1; j++)
+            {
+                freeChunk(getVirtualChunk(map, j, 0));
+                freeChunk(getVirtualChunk(map, j, map_height+1));
+            }
+
+            free(map->virtual_chunks);
+        }
+
         free(map);
     }
+}
+
+map* copyMap(map* p_map) 
+{
+    map* res = calloc(1, sizeof(map));
+
+    res->map_width=p_map->map_width;
+    res->map_height=p_map->map_height;
+    res->chunk_width=p_map->chunk_width;
+    res->chunk_height=p_map->chunk_height;
+
+    res->chunks = calloc(res->chunk_width*res->chunk_height,sizeof(chunk*));
+    for (int i=0; i<res->map_width; i++)
+    {
+        for (int j=0; j<res->map_height; j++)
+        {
+            res->chunks[i*res->map_width+j]=copyChunk(p_map->chunks[i*p_map->map_width+j]);
+        }
+    }
+
+    int n = res->chunk_width*res->map_width;
+    int m = res->chunk_height*res->map_height;
+
+    res->map_values = calloc(n*m, sizeof(double));
+
+    for (int i=0; i<n; i++)
+    {
+        for (int j=0; j<m; j++)
+        {
+            *getMapValue(res,i,j)=*getMapValue(p_map,i,j);
+        }
+    }
+
+    return res;
 }

@@ -140,4 +140,8 @@ void printGradientGrid(gradientGrid* gradGrid);
  */
 void freeGradGrid(gradientGrid* gradGrid);
 
+gradientGrid* copyGrad(gradientGrid* grad);
+
+vector* copyVect(vector* vect);
+
 #endif

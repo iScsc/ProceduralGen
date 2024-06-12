@@ -88,8 +88,8 @@ int main()
 
         double weights[] = {1, .1, .01};
 
-        int width = 2;   //7;
-        int height = 2;   //5;
+        int width = 4;   //7;
+        int height = 5;   //5;
 
         double sea_level = -.15;
 
@@ -105,7 +105,7 @@ int main()
         printf("File creation...\n");
         char folder_path[200] = "../saves/completeMap_test/";
 
-        writeCompleteMapFiles(new_complete_map, folder_path);
+        // writeCompleteMapFiles(new_complete_map, folder_path);
         printf("File should be written now.\n");
 
 
@@ -114,7 +114,7 @@ int main()
         freeCompleteMap(new_complete_map);
 
         double total_time = (double) (clock() - start_time) / CLOCKS_PER_SEC;
-        printf("The whole map generation of lcm %d took a total of %lf second(s) in CPU time\n", final_size, total_time);
+        printf("The whole map generation of lcm %d size %d x %d took a total of %lf second(s) in CPU time\n", final_size, width, height, total_time);
     }
 
     return 0;

@@ -306,25 +306,24 @@ double* setSeaLevel(map* map, double sea_level, unsigned int display_loading)
 
 
 
-completeMap* newCompleteMapFromMap(map* map, double sea_level, unsigned int display_loading)
+completeMap* newCompleteMapFromMap(map* p_map, double sea_level, unsigned int display_loading)
 {
     completeMap* complete_map = NULL;
 
-    if (map != NULL)
+    if (p_map != NULL)
     {
         complete_map = calloc(1, sizeof(completeMap));
 
-        int width = map->map_width * map->chunk_width;
-        int height = map->map_height * map->chunk_height;
+        int width = p_map->map_width * p_map->chunk_width;
+        int height = p_map->map_height * p_map->chunk_height;
 
-        complete_map->map = map;
+        complete_map->map = p_map;
         complete_map->width = width;
         complete_map->height = height;
 
         complete_map->sea_level = sea_level;
-
         
-        complete_map->sea_values = setSeaLevel(map, sea_level, display_loading);
+        complete_map->sea_values = setSeaLevel(p_map, sea_level, display_loading);
 
         if (display_loading != 0)
         {
@@ -332,7 +331,7 @@ completeMap* newCompleteMapFromMap(map* map, double sea_level, unsigned int disp
             indent_print(nb_indents, "\n");
         }
 
-        complete_map->color_map = generateColorMap(map, sea_level, display_loading);
+        complete_map->color_map = generateColorMap(p_map, sea_level, display_loading);
     }
 
     return complete_map;
