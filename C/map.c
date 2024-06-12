@@ -96,6 +96,7 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
     double altitude[nc+2][mc+2];
 
     clock_t start_time = clock();
+    clock_t start_getting_time = clock();
 
     for (int i=0; i<nc; i++)
     {
@@ -106,12 +107,13 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
             {
                 int nb_indents = display_loading - 1;
 
-                char base_str[100] = "Getting altitude values...           ";
+                char base_str[100] = "Getting chunks base altitude values...      ";
 
-                predefined_loading_bar(j + i * (nc), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                predefined_loading_bar(j + i * (mc), (nc) * (mc) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_getting_time);
             }
         }
     }
+    start_getting_time=clock();
     for (int j=0;j<mc+2;j++) 
     {
         altitude[0][j]=getVirtualChunk(res,0,j)->base_altitude;
@@ -120,9 +122,9 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
         {
             int nb_indents = display_loading - 1;
 
-            char base_str[100] = "Getting altitude values...           ";
+            char base_str[100] = "Getting virtual chunks altitude values...   ";
 
-            predefined_loading_bar(j*2 + (mc) * (nc), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+            predefined_loading_bar(j*2+2, 2*(mc+2+nc+2), NUMBER_OF_SEGMENTS, base_str, nb_indents, start_getting_time);
         }
     }
     for (int i=1;i<nc+1;i++) 
@@ -133,13 +135,14 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
         {
             int nb_indents = display_loading - 1;
 
-            char base_str[100] = "Getting altitude values...           ";
+            char base_str[100] = "Getting virtual chunks altitude values...   ";
 
-            predefined_loading_bar(i*2 + (mc) * (nc+2), (nc+2) * (mc+2) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+            predefined_loading_bar(i*2+4 +2*(mc+2), 2*(mc+2+nc+2), NUMBER_OF_SEGMENTS, base_str, nb_indents, start_getting_time);
         }
     }
 
 
+    clock_t start_adding_time = clock();
     for (int i=0; i<nc+1; i++)
     {
         for (int j=0; j<mc+1; j++)
@@ -168,15 +171,14 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
             {
                 int nb_indents = display_loading - 1;
 
-                char base_str[100] = "Adding altitude values...           ";
+                char base_str[100] = "Adding altitude values...                   ";
 
-                predefined_loading_bar(j + i * (nc+1), (nc+1) * (mc+1) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                predefined_loading_bar(j + i * (mc+1), (nc+1) * (mc+1) - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_adding_time);
             }
         }
     }
 
     display_loading-=2;
-            
     if (display_loading != 0)
     {
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
@@ -185,10 +187,8 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
         snprintf(final_string, sizeof(final_string), "%sSUCCESS :%s base altitude generation took a total of %.4lf second(s) in CPU time.\n",
                                 GREEN_COLOR, DEFAULT_COLOR, total_time);
         
-        int nb_indents = display_loading;
+        int nb_indents = display_loading-1;
         indent_print(nb_indents, final_string);
-
-        indent_print(display_loading, "\n");
     }
 
     return res;
@@ -355,7 +355,7 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
         {
             int nb_indents = display_loading - 1;
 
-            char base_str[100] = "Generating virtual chunks...           ";
+            char base_str[100] = "Generating virtual chunks...       ";
 
             predefined_loading_bar(j+1,(map_height+2+map_width+2)*2-4, NUMBER_OF_SEGMENTS, base_str, nb_indents, v_start_time);
         }
