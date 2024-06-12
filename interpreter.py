@@ -3,28 +3,34 @@ def encode(object : object, indent : int=0) -> str:
     
     obj_class = object.__class__
     
-    obj_str = "{"
-    obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]
-    
+    obj_str = ""
     
     #? Match base types
     
-    obj_type = type(object)
-    
-    if (obj_type in [int, float, complex, list, tuple, str, bytearray, bytes]):
-        obj_str += "\n\tvalue: " + str(object)
+    if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes] or object==None):
+        if (indent>0):
+            obj_str=str(object)
+        else:
+            obj_str = "{"
+            obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]
+            obj_str += "\n\tvalue: " + str(object)
+            obj_str += "\n}"
     
     
     #? If object :
     
     else :
+        obj_str = "{"
+        obj_str += "\n\t" + "\t"*indent + "__class__: " + str(obj_class).split("'")[1].split(".")[-1]
+        
         obj_dict = object.__dict__ 
            
         for arg in obj_dict:
-            obj_str += ",\n\t" + arg + ": " + str(object.__getattribute__(arg))
+            obj_str += ",\n\t" + "\t"*indent + arg + ": " + encode(object.__getattribute__(arg), indent=indent+1)
+            
+        obj_str += "\n" + "\t"*indent + "}"
     
     
-    obj_str += "\n}"
     
     return obj_str
 
