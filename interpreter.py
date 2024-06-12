@@ -1,3 +1,4 @@
+import sys
 
 def encode(object : object, indent : int=0) -> str:
     
@@ -36,4 +37,14 @@ def encode(object : object, indent : int=0) -> str:
 
 
 def decode(input_string : str) -> object:
-    pass
+    str_class=""
+    str_dict={}
+    obj_class=getattr(sys.modules[__name__], str_class)
+    object=None
+    if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes]):
+        pass
+    else:
+        object=object.__new__(obj_class)
+        for arg in str_dict:
+            object.__dict__[arg] = decode(str_dict[arg])
+    return object
