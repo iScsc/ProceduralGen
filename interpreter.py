@@ -60,6 +60,12 @@ def decodeList(input_string: str) -> list[object]:
     return object_list
 
 
+def encodeList(object_list: list[object]) -> str:
+    list_string=""
+    for object in object_list:
+        list_string+=encode(object)+'\n'
+    return list_string
+
 def spliter(string:str, start=False):
     """Splits a given string on braces and commas, taking just into acount first level braces.
     For instance: "{{a},b,{c}}" -> ["{a}","b",{c}]
