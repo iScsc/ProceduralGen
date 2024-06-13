@@ -14,7 +14,7 @@ def encode(object : object, indent : int=0) -> str:
         else:
             obj_str = "{"
             obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]
-            obj_str += "\n\tvalue: " + str(object)
+            obj_str += "\n\t__value__: " + str(object)
             obj_str += "\n}"
     
     
@@ -37,12 +37,12 @@ def encode(object : object, indent : int=0) -> str:
 
 
 def decode(input_string : str) -> object:
-    str_class=""
-    str_dict={}
-    obj_class=getattr(sys.modules[__name__], str_class)
+    str_list=spliter(input_string)
+    str_dict=getDict(str_list)
+    obj_class=getClass(str_dict.pop('__class__'))
     object=None
     if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes]):
-        pass
+        object=obj_class(str_dict['__value__'])
     else:
         object=object.__new__(obj_class)
         for arg in str_dict:
@@ -115,3 +115,41 @@ def spliter(string:str, start=False):
     substr=[s for s in substr if s not in ['']]
     
     return substr
+
+def getClass(class_arg: str) -> object:
+    """Returns the class given by a formated string: "<class>"
+    """
+    if class_arg in ['int', 'float', 'complex', 'list', 'tuple', 'str', 'bytearray', 'bytes']:
+        return eval(class_arg)
+    return getattr(sys.modules[__name__], class_arg)
+
+def getDict(str_list: list[str]) -> dict[str: str]:
+    """Returns a dict from a formated stringlist: ["<key>:<value>",...]"""
+    dict={}
+    for arg in str_list:
+        key,value=getKeyValue(arg)
+        dict[key]=value
+    return dict
+
+def getKeyValue(string: str) -> tuple[str,str]:
+    """Returns a pair (key, value) from a formated strong "key: value"."""
+    split_index=string.index(':')
+    key=string[:split_index]
+    value=string[split_index+2:]
+    if value[0] not in "{abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV"and key!="__value__": #primitive types
+        value='{'+getType(value)+',value: '+value+'}'
+    return key,value
+
+def getType(string: str) -> str:
+    """Inferes the type of a formated string and returns "__class__: <class>"."""
+    # TODO bytes and bytearray
+    res="__class__: "
+    char=string[0]
+    if char in ['\'','\"']: return res+'str'
+    elif char=='[': return res+'list'
+    elif char=='(': return res+'tuple'
+    elif char in [str(i) for i in range(10)]:
+        if string.__contains__("j"): return res+'complex'
+        elif string.__contains__("."): return res+'float'
+        else: return res+'int'
+    else: print(string)
