@@ -14,7 +14,7 @@ def encode(object : object, indent : int=0) -> str:
             obj_str=str(object)
         else:
             obj_str = "{"
-            obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]
+            obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+","
             obj_str += "\n\t__value__: " + str(object)
             obj_str += "\n}"
     
