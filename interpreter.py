@@ -1,9 +1,10 @@
 import sys
 
 def encode(object : object, indent : int=0) -> str:
+    """Encodes a given object in a simili JSON format"""
     
     obj_class = object.__class__
-    
+
     obj_str = ""
     
     #? Match base types
@@ -37,6 +38,7 @@ def encode(object : object, indent : int=0) -> str:
 
 
 def decode(input_string : str) -> object:
+    """Decodes a given object from its formated string"""
     str_list=spliter(input_string)
     str_dict=getDict(str_list)
     obj_class=getClass(str_dict.pop('__class__'))
@@ -62,13 +64,6 @@ def spliter(string:str, start=False):
         list(str): The list of substrings 
     """
     
-    #getting brace index
-    
-    brace_open=[] #list of opening brace
-    brace_close=[] #list of closing brace
-    index_open=0 #index of the last opening brace found
-    index_close=0 #index of the last closing brace found
-    
     #removes unwanted chars (to simplify parsing) done only once at the start
     forbidden_char = ["\n", "\t"]
     if start: 
@@ -78,6 +73,12 @@ def spliter(string:str, start=False):
     #removes first opening brace and last closing brace
     elif len(string)>2:
         string=string[1:-1]
+        
+    #getting brace index
+    brace_open=[] #list of opening brace
+    brace_close=[] #list of closing brace
+    index_open=0 #index of the last opening brace found
+    index_close=0 #index of the last closing brace found
     
     while index_open!=-1 and index_close!=-1: # While an opening and closing brace have been found
         index_open=string.find('{',index_open) # find the next  parethesis index starting from the last one
@@ -93,8 +94,7 @@ def spliter(string:str, start=False):
                 brace_close.append(index_close)
                 index_close+=1
     
-    #getting substrings
-    
+    #getting substrings  
     substr=[] # list of substrings to be returned
     
     if (len(brace_open)==0): # no brace found: split the string only on commas
