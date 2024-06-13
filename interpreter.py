@@ -38,7 +38,7 @@ def encode(object : object, indent : int=0) -> str:
 
 
 def decode(input_string : str) -> object:
-    """Decodes a given object from its formated string"""
+    """Decodes a given object from its formated string (without \\n and \\t, else use decodeList)"""
     str_list=spliter(input_string)
     str_dict=getDict(str_list)
     obj_class=getClass(str_dict.pop('__class__'))
@@ -50,6 +50,14 @@ def decode(input_string : str) -> object:
         for arg in str_dict:
             object.__dict__[arg] = decode(str_dict[arg])
     return object
+
+
+def decodeList(input_string: str) -> list[object]:
+    object_list=[]
+    str_list=spliter(input_string,True)
+    for object_string in str_list:
+        object_list.append(decode(object_string))
+    return object_list
 
 
 def spliter(string:str, start=False):
