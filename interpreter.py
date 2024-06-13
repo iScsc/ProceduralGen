@@ -53,6 +53,7 @@ def decode(input_string : str) -> object:
 
 
 def decodeList(input_string: str) -> list[object]:
+    """Decodes a list of object from its formated string"""
     object_list=[]
     str_list=spliter(input_string,True)
     for object_string in str_list:
@@ -61,6 +62,7 @@ def decodeList(input_string: str) -> list[object]:
 
 
 def encodeList(object_list: list[object]) -> str:
+    """Encodes a list of objects in a simili JSON format"""
     list_string=""
     for object in object_list:
         list_string+=encode(object)+'\n'
@@ -138,7 +140,7 @@ def getClass(class_arg: str) -> object:
     return getattr(sys.modules[__name__], class_arg)
 
 def getDict(str_list: list[str]) -> dict[str: str]:
-    """Returns a dict from a formated stringlist: ["<key>:<value>",...]"""
+    """Returns a dict from a formated stringlist: ["<key>: <value>",...]"""
     dict={}
     for arg in str_list:
         key,value=getKeyValue(arg)
