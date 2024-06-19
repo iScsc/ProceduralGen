@@ -141,7 +141,7 @@ void predefined_loading_bar(int value, int max_value, int number_of_segments, ch
     float current_percent = (value * 100.) / max_value;
 
     // Verifying first if it useful to print it.
-    //! Won't work properly if it used on very long loops -> the CPU elapsed time will 'jump' from values to others when a percent changes.
+    //! Won't work **properly** if it used on very long loops -> the CPU elapsed time will 'jump' from values to others when a percent changes.
     //! But a very long loop in C means the map is gigantic and, in our case, would not even be able to generate because it would take way too much memory.
 
     double precision = pow_int(10., PERCENT_DECIMAL);

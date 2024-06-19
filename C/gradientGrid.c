@@ -1,9 +1,9 @@
 /**
  * @file gradientGrid.c
- * @author Zyno
+ * @author Zyno and BlueNZ
  * @brief gradientGrid structure implementation
- * @version 0.1
- * @date 2024-05-07
+ * @version 0.2
+ * @date 2024-06-19
  * 
  */
 
@@ -262,6 +262,44 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
 
 
 
+gradientGrid* copyGrad(gradientGrid* grad) 
+{
+    gradientGrid* res = calloc(1,sizeof(gradientGrid));
+
+    res->width=grad->width;
+    res->height=grad->height;
+
+    res->gradients = calloc(res->width*res->height,sizeof(vector));
+    for (int i=0; i<res->width; i++)
+    {
+        for (int j=0; j<res->height; j++)
+        {
+            vector* vect=copyVect(getVector(grad,i,j));
+            *getVector(res,i,j)=*vect;
+            free(vect);
+        }
+    }
+
+    return res;
+
+}
+
+
+
+vector* copyVect(vector* vect) 
+{
+    vector*res = calloc(1, sizeof(vector));
+
+    res->x=vect->x;
+    res->y=vect->y;
+
+    return res;
+}
+
+
+
+
+
 void writeGradientGridFile(gradientGrid* gradGrid, char path[])
 {
     FILE* f = NULL;
@@ -350,36 +388,4 @@ void freeGradGrid(gradientGrid* gradGrid)
 
         free(gradGrid);
     }
-}
-
-gradientGrid* copyGrad(gradientGrid* grad) 
-{
-    gradientGrid* res = calloc(1,sizeof(gradientGrid));
-
-    res->width=grad->width;
-    res->height=grad->height;
-
-    res->gradients = calloc(res->width*res->height,sizeof(vector));
-    for (int i=0; i<res->width; i++)
-    {
-        for (int j=0; j<res->height; j++)
-        {
-            vector* vect=copyVect(getVector(grad,i,j));
-            *getVector(res,i,j)=*vect;
-            free(vect);
-        }
-    }
-
-    return res;
-
-}
-
-vector* copyVect(vector* vect) 
-{
-    vector*res = calloc(1, sizeof(vector));
-
-    res->x=vect->x;
-    res->y=vect->y;
-
-    return res;
 }

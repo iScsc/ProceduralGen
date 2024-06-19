@@ -24,7 +24,10 @@ struct map
     int map_height; /**< the number of chunks in height*/
     chunk** chunks; /**< the array of pointers to the corresponding chunk structures*/
 
-    chunk** virtual_chunks; /**< the array of virtual chunks needed for border conditions and future map expansion (C0,CN,L0,LN)*/
+    /**< the array of virtual chunks needed for border conditions and future map expansion.
+    *Stored in order (Col0,ColN,Row0,RowN) without repetition of the corners
+    *Its size is `(map_height+2 + map_width+2)*2 - 4`*/
+    chunk** virtual_chunks;
 
     int chunk_width; /**< the width of each chunk*/
     int chunk_height; /**< the height of each chunk*/
@@ -83,7 +86,7 @@ chunk* getVirtualChunk(map* map, int width_idx, int height_idx);
 double interpolate2D(double a1, double a2, double a3, double a4, double x, double y);
 
 /**
- * @brief Modifies the given map to set process each chunk's base altitude and adapt the final altitude values of the given map.
+ * @brief Modifies the given map to process each chunk's base altitude and adapt the final altitude values of the given map.
  * 
  * @param p_map (map*) : the pointer to the original untreated map.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
@@ -101,7 +104,7 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading);
  * @param map_width (int) : number of chunks in width.
  * @param map_height (int) : number of chunks in height.
  * @param chunks (chunk**) : array of size `map_width * map_height` of pointers to the chunk structures.
- * @param virtual_chunks (chunk**) : array of size `(map_height + 2 + map_width + 2)*2 - 4` of pointers to the virtual chunk structures.
+ * @param virtual_chunks (chunk**) : array of size `(map_height+2 + map_width+2)*2 - 4` of pointers to the virtual chunk structures.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
  *                                         * If `0` the loading bars won't be printed.
  *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.

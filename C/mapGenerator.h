@@ -1,9 +1,9 @@
 /**
  * @file mapGenerator.h
- * @author Zyno
+ * @author Zyno and BlueNZ
  * @brief Header to mapGenerator structure and functions
- * @version 0.1
- * @date 2024-05-21
+ * @version 0.2
+ * @date 2024-06-19
  * 
  */
 

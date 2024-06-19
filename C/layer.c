@@ -1,9 +1,9 @@
 /**
  * @file layer.c
- * @author Zyno
+ * @author Zyno and BlueNZ
  * @brief layer structure and functions implementation
- * @version 0.1
- * @date 2024-05-16
+ * @version 0.2
+ * @date 2024-06-19
  * 
  */
 
@@ -177,6 +177,33 @@ layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsign
 
 
 
+layer* copyLayer(layer * p_layer)
+{
+    layer* res = calloc(1, sizeof(layer));
+
+    res->width=p_layer->width;
+    res->height=p_layer->height;
+
+    res->size_factor=p_layer->size_factor;
+
+    res->gradient_grid=copyGrad(p_layer->gradient_grid);
+
+    res->values = calloc(res->width*res->height, sizeof(double));
+    for (int i=0; i<res->width; i++)
+    {
+        for (int j=0; j<res->height; j++)
+        {
+            *getLayerValue(res,i,j)=*getLayerValue(p_layer,i,j);
+        }
+    }
+
+    return res;
+}
+
+
+
+
+
 void writeLayerFile(layer* layer, char path[])
 {
     FILE* f = NULL;
@@ -266,27 +293,4 @@ void freeLayer(layer* layer)
 
         free(layer);
     }
-}
-
-layer* copyLayer(layer * p_layer)
-{
-    layer* res = calloc(1, sizeof(layer));
-
-    res->width=p_layer->width;
-    res->height=p_layer->height;
-
-    res->size_factor=p_layer->size_factor;
-
-    res->gradient_grid=copyGrad(p_layer->gradient_grid);
-
-    res->values = calloc(res->width*res->height, sizeof(double));
-    for (int i=0; i<res->width; i++)
-    {
-        for (int j=0; j<res->height; j++)
-        {
-            *getLayerValue(res,i,j)=*getLayerValue(p_layer,i,j);
-        }
-    }
-
-    return res;
 }

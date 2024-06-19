@@ -1,9 +1,9 @@
 /**
  * @file gradientGrid.h
- * @author Zyno
+ * @author Zyno and BlueNZ
  * @brief Header to gradient grid structure and functions
- * @version 0.1
- * @date 2024-05-07
+ * @version 0.2
+ * @date 2024-06-19
  * 
  */
 
@@ -94,6 +94,7 @@ gradientGrid* newRandomGradGrid(int width, int height, unsigned int display_load
 
 
 
+//TODO: Extends this definition to make the function able to expand the map on the north and west directions.
 /**
  * @brief Generates a new random gradientGrid with boundary values set to the corresponding adjacent grids'.
  * 
@@ -105,6 +106,24 @@ gradientGrid* newRandomGradGrid(int width, int height, unsigned int display_load
  * @return gradientGrid* : the pointer to the generated gradient grid.
  */
 gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_grid, unsigned int display_loading);
+
+
+
+/**
+ * @brief Makes a deep copy of the given gradientGrid structure.
+ * 
+ * @param grad (gradientGrid*) : the pointer to the gradientGrid to be copied.
+ * @return gradientGrid* : the pointer to the deep copy of the initial gradientGrid.
+ */
+gradientGrid* copyGrad(gradientGrid* grad);
+
+/**
+ * @brief Makes a copy of the given vector structure.
+ * 
+ * @param vect (vector*) : the pointer to the vector to be copied.
+ * @return vector* : the pointer to the copy of the initial vector.
+ */
+vector* copyVect(vector* vect);
 
 
 
@@ -139,9 +158,5 @@ void printGradientGrid(gradientGrid* gradGrid);
  * @param gradGrid (gradientGrid*) : the pointer to the corresponding gradient grid.
  */
 void freeGradGrid(gradientGrid* gradGrid);
-
-gradientGrid* copyGrad(gradientGrid* grad);
-
-vector* copyVect(vector* vect);
 
 #endif

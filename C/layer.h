@@ -1,9 +1,9 @@
 /**
  * @file layer.h
- * @author Zyno
+ * @author Zyno and BlueNZ
  * @brief Header to layer structure and functions
- * @version 0.1
- * @date 2024-05-16
+ * @version 0.2
+ * @date 2024-06-19
  * 
  */
 
@@ -123,6 +123,16 @@ layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsign
 
 
 /**
+ * @brief Makes a deep copy of the given layer structure.
+ * 
+ * @param p_layer (layer*) : the pointer to the layer to be copied.
+ * @return layer* : the pointer to the deep copy of the initial layer.
+ */
+layer* copyLayer(layer * p_layer);
+
+
+
+/**
  * @brief Writes the layer structure to a file at the given path.
  * 
  * @param layer (layer*) : the pointer to the layer structure to be written.
@@ -155,7 +165,5 @@ void printLayer(layer* layer);
  * @note the linked gradientGrid will also be correctly free'd and requires no user treatment.
  */
 void freeLayer(layer* layer);
-
-layer* copyLayer(layer * p_layer);
 
 #endif
