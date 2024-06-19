@@ -115,18 +115,18 @@ def spliter(string:str, start=False, epurate=False):
     #getting substrings  
     substr=[] # list of substrings to be returned
     
-    if (len(brace_open)==0): # no brace found: split the string only on commas
+    if (len(brace_open)==0): # no brace found: split the string only on semi-colons
         substr+=string.split(';')
         
-    elif (brace_open[0]!=0): # take the begining of the string (before the first brace) and split it on commas 
+    elif (brace_open[0]!=0): # take the begining of the string (before the first brace) and split it on semi-colons 
         substr+=(string[0:brace_open[0]]).split(';')
         
-    for i in range(len(brace_open)): # for each pair of '(' ')', gets what's inbetween
-        substr.append(string[brace_open[i]:brace_close[i]+1])
-        if (i<len(brace_open)-1): # gets what's inbetween pairs and split it on commas
+    for i in range(len(brace_open)): # for each pair of '{' '}', gets what's inbetween braces included and add what preceded (variable name)
+        substr[-1]+=(string[brace_open[i]:brace_close[i]+1])
+        if (i<len(brace_open)-1): # gets what's inbetween pairs and split it on semi-colons
             substr+=(string[brace_close[i]+1:brace_open[i+1]]).split(';')
             
-    if (len(brace_close)>0 and brace_close[-1]!=len(string)-1): # take the end of the string (after the first brace) and split it on commas
+    if (len(brace_close)>0 and brace_close[-1]!=len(string)-1): # take the end of the string (after the first brace) and split it on semi-colons
         substr+=(string[brace_close[-1]+1:]).split(';')
         
     #epurating from void substring and unwanted substrings
@@ -151,7 +151,6 @@ def getDict(str_list: list[str]) -> dict[str: str]:
 
 def getKeyValue(string: str) -> tuple[str,str]:
     """Returns a pair (key, value) from a formated strong "key: value"."""
-    print(string)
     split_index=string.index(':')
     key=string[:split_index]
     value=string[split_index+2:]
@@ -181,6 +180,7 @@ if __name__ == "__main__":
     
     from biome import Biome
     a = Biome()
+    a.bio = Biome()
     s = encode(a)
     print(s)
     l = spliter(s,False,True)
