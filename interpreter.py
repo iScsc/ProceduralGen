@@ -1,21 +1,23 @@
 import sys
 
-def encode(object : object, indent : int=0) -> str:
+def encode(obj : object, indent : int=0) -> str:
     """Encodes a given object in a simili JSON format"""
     
-    obj_class = object.__class__
+    obj_class = obj.__class__
 
     obj_str = ""
     
     #? Match base types
     
-    if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes] or object==None):
+    if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes] or obj==None):
         if (indent>0):
-            obj_str=str(object)
+            if obj_class==str: obj_str="\""+obj+"\""
+            else : obj_str=str(obj)
         else:
             obj_str = "{"
             obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+","
-            obj_str += "\n\t__value__: " + str(object)
+            if obj_class==str: obj_str += "\n\t__value__: " +"\""+obj+"\""
+            else : obj_str += "\n\t__value__: " + str(obj)
             obj_str += "\n}"
     
     
@@ -25,10 +27,10 @@ def encode(object : object, indent : int=0) -> str:
         obj_str = "{"
         obj_str += "\n\t" + "\t"*indent + "__class__: " + str(obj_class).split("'")[1].split(".")[-1]
         
-        obj_dict = object.__dict__ 
+        obj_dict = obj.__dict__ 
            
         for arg in obj_dict:
-            obj_str += ",\n\t" + "\t"*indent + arg + ": " + encode(object.__getattribute__(arg), indent=indent+1)
+            obj_str += ",\n\t" + "\t"*indent + arg + ": " + encode(obj.__getattribute__(arg), indent=indent+1)
             
         obj_str += "\n" + "\t"*indent + "}"
     
@@ -37,9 +39,9 @@ def encode(object : object, indent : int=0) -> str:
     return obj_str
 
 
-def decode(input_string : str) -> object:
-    """Decodes a given object from its formated string (without \\n and \\t, else use decodeList)"""
-    str_list=spliter(input_string)
+def decode(input_string : str, start:bool = False) -> object:
+    """Decodes a given object from its formated string (if manual use set start as True)"""
+    str_list=spliter(input_string,False,start)
     str_dict=getDict(str_list)
     obj_class=getClass(str_dict.pop('__class__'))
     obj=None
@@ -55,7 +57,7 @@ def decode(input_string : str) -> object:
 def decodeList(input_string: str) -> list[object]:
     """Decodes a list of object from its formated string"""
     object_list=[]
-    str_list=spliter(input_string,True)
+    str_list=spliter(input_string,True,True)
     for object_string in str_list:
         object_list.append(decode(object_string))
     return object_list
@@ -68,7 +70,7 @@ def encodeList(object_list: list[object]) -> str:
         list_string+=encode(object)+'\n'
     return list_string
 
-def spliter(string:str, start=False):
+def spliter(string:str, start=False, epurate=False):
     """Splits a given string on braces and commas, taking just into acount first level braces.
     For instance: "{{a},b,{c}}" -> ["{a}","b",{c}]
 
@@ -82,12 +84,12 @@ def spliter(string:str, start=False):
     
     #removes unwanted chars (to simplify parsing) done only once at the start
     forbidden_char = ["\n", "\t"]
-    if start: 
+    if epurate: 
         for char in forbidden_char:
             string=string.replace(char,'')
     
     #removes first opening brace and last closing brace
-    elif len(string)>2:
+    if not start and len(string)>2:
         string=string[1:-1]
         
     #getting brace index
@@ -177,14 +179,11 @@ def getType(string: str) -> str:
 if __name__ == "__main__":
     
     from biome import Biome
-    a = Biome()
-    a.bio = Biome()
+    a = "etert'tre"
     s = encode(a)
     print(s)
-    
-    
-    print("b:")
-    b = decodeList(s)
-    
-    print(encode(b))
+    l = spliter(s,False,True)
+    print(l)
+    b = decode(s,True)
+    print(b)
     
