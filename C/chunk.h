@@ -196,6 +196,16 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
 
 
 /**
+ * @brief Makes a deep copy of the given chunk structure.
+ * 
+ * @param p_chunk (chunk*) : the pointer to the chunk to be copied.
+ * @return chunk* : the pointer to the deep copy of the initial chunk.
+ */
+chunk* copyChunk(chunk* p_chunk);
+
+
+
+/**
  * @brief Writes the chunk structure to a file at the given path.
  * 
  * @param chunk (chunk*) : pointer to the chunk to be written.
@@ -228,13 +238,5 @@ void printChunk(chunk* chunk);
  * @note Every layer structures composing the chunk will also be free'd.
  */
 void freeChunk(chunk* chunk);
-
-/**
- * @brief Makes a deep copy of the given chunk structure.
- * 
- * @param p_chunk (chunk*) : the pointer to the chunk to be copied.
- * @return chunk* : the pointer to the deep copy of the initial chunk.
- */
-chunk* copyChunk(chunk* p_chunk);
 
 #endif

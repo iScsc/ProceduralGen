@@ -157,11 +157,11 @@ int main()
 
         //? Comment this if you don't want to save it in a file.
         //! WARNING : ../saves/ the folder must exist for it to work properly
-        printf("File creation...\n");
-        char folder_path[200] = "../saves/completeMap_test/";
+        // printf("File creation...\n");
+        // char folder_path[200] = "../saves/completeMap_test/";
 
         // writeCompleteMapFiles(new_complete_map, folder_path);
-        printf("File should be written now.\n");
+        // printf("File should be written now.\n");
 
 
 

@@ -138,6 +138,16 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
 
 
 /**
+ * @brief Makes a deep copy of the given map structure.
+ * 
+ * @param p_map (map*) : the pointer to the map to be copied.
+ * @return map* : the pointer to the deep copy of the initial map.
+ */
+map* copyMap(map* p_map) ;
+
+
+
+/**
  * @brief Writes the map structure into a file at the given path.
  * 
  * @param map (map*) : pointer to the map structure to write.
@@ -170,13 +180,5 @@ void printMap(map* map);
  * @note Every chunk structures composing the chunk will also be free'd.
  */
 void freeMap(map* map);
-
-/**
- * @brief Makes a deep copy of the given map structure.
- * 
- * @param p_map (map*) : the pointer to the map to be copied.
- * @return map* : the pointer to the deep copy of the initial map.
- */
-map* copyMap(map* p_map) ;
 
 #endif

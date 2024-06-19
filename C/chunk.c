@@ -429,6 +429,48 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
 
 
 
+chunk* copyChunk(chunk* p_chunk)
+{
+    chunk* res = calloc(1,sizeof(chunk));
+
+    res->width=p_chunk->width;
+    res->height=p_chunk->height;
+    int n = res->width;
+    int m = res->height;
+
+    res->number_of_layers=p_chunk->number_of_layers;
+    int nbr = res->number_of_layers;
+
+    res->layers_factors = calloc(nbr,sizeof(double));
+    for (int i=0; i<nbr; i++)
+    {
+        res->layers_factors[i]=p_chunk->layers_factors[i];
+    }
+
+    res->layers = calloc(nbr,sizeof(layer*));
+    for (int i=0; i<nbr; i++)
+    {
+        res->layers[i]=copyLayer(p_chunk->layers[i]);
+    }
+
+    res->chunk_values = calloc(n*m, sizeof(double));
+    for (int i=0; i<n; i++)
+    {
+        for (int j=0; j<m; j++) 
+        {
+            *getChunkValue(res,i,j)=*getChunkValue(p_chunk,i,j);
+        }
+    }
+
+    res->base_altitude=p_chunk->base_altitude;
+
+    return res;
+}
+
+
+
+
+
 void writeChunkFile(chunk* chunk, char path[])
 {
     FILE* f = NULL;
@@ -555,42 +597,4 @@ void freeChunk(chunk* chunk)
 
         free(chunk);
     }
-}
-
-chunk* copyChunk(chunk* p_chunk)
-{
-    chunk* res = calloc(1,sizeof(chunk));
-
-    res->width=p_chunk->width;
-    res->height=p_chunk->height;
-    int n = res->width;
-    int m = res->height;
-
-    res->number_of_layers=p_chunk->number_of_layers;
-    int nbr = res->number_of_layers;
-
-    res->layers_factors = calloc(nbr,sizeof(double));
-    for (int i=0; i<nbr; i++)
-    {
-        res->layers_factors[i]=p_chunk->layers_factors[i];
-    }
-
-    res->layers = calloc(nbr,sizeof(layer*));
-    for (int i=0; i<nbr; i++)
-    {
-        res->layers[i]=copyLayer(p_chunk->layers[i]);
-    }
-
-    res->chunk_values = calloc(n*m, sizeof(double));
-    for (int i=0; i<n; i++)
-    {
-        for (int j=0; j<m; j++) 
-        {
-            *getChunkValue(res,i,j)=*getChunkValue(p_chunk,i,j);
-        }
-    }
-
-    res->base_altitude=p_chunk->base_altitude;
-
-    return res;
 }

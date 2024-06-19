@@ -410,6 +410,44 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
 
 
 
+map* copyMap(map* p_map) 
+{
+    map* res = calloc(1, sizeof(map));
+
+    res->map_width=p_map->map_width;
+    res->map_height=p_map->map_height;
+    res->chunk_width=p_map->chunk_width;
+    res->chunk_height=p_map->chunk_height;
+
+    res->chunks = calloc(res->chunk_width*res->chunk_height,sizeof(chunk*));
+    for (int i=0; i<res->map_width; i++)
+    {
+        for (int j=0; j<res->map_height; j++)
+        {
+            res->chunks[i*res->map_width+j]=copyChunk(p_map->chunks[i*p_map->map_width+j]);
+        }
+    }
+
+    int n = res->chunk_width*res->map_width;
+    int m = res->chunk_height*res->map_height;
+
+    res->map_values = calloc(n*m, sizeof(double));
+
+    for (int i=0; i<n; i++)
+    {
+        for (int j=0; j<m; j++)
+        {
+            *getMapValue(res,i,j)=*getMapValue(p_map,i,j);
+        }
+    }
+
+    return res;
+}
+
+
+
+
+
 void writeMapFile(map* map, char path[])
 {
     FILE* f = NULL;
@@ -555,38 +593,4 @@ void freeMap(map* map)
 
         free(map);
     }
-}
-
-map* copyMap(map* p_map) 
-{
-    map* res = calloc(1, sizeof(map));
-
-    res->map_width=p_map->map_width;
-    res->map_height=p_map->map_height;
-    res->chunk_width=p_map->chunk_width;
-    res->chunk_height=p_map->chunk_height;
-
-    res->chunks = calloc(res->chunk_width*res->chunk_height,sizeof(chunk*));
-    for (int i=0; i<res->map_width; i++)
-    {
-        for (int j=0; j<res->map_height; j++)
-        {
-            res->chunks[i*res->map_width+j]=copyChunk(p_map->chunks[i*p_map->map_width+j]);
-        }
-    }
-
-    int n = res->chunk_width*res->map_width;
-    int m = res->chunk_height*res->map_height;
-
-    res->map_values = calloc(n*m, sizeof(double));
-
-    for (int i=0; i<n; i++)
-    {
-        for (int j=0; j<m; j++)
-        {
-            *getMapValue(res,i,j)=*getMapValue(p_map,i,j);
-        }
-    }
-
-    return res;
 }
