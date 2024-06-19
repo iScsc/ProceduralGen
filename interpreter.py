@@ -15,7 +15,7 @@ def encode(obj : object, indent : int=0) -> str:
             else : obj_str=str(obj)
         else:
             obj_str = "{"
-            obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+","
+            obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+";"
             if obj_class==str: obj_str += "\n\t__value__: " +"\""+obj+"\""
             else : obj_str += "\n\t__value__: " + str(obj)
             obj_str += "\n}"
@@ -30,7 +30,7 @@ def encode(obj : object, indent : int=0) -> str:
         obj_dict = obj.__dict__ 
            
         for arg in obj_dict:
-            obj_str += ",\n\t" + "\t"*indent + arg + ": " + encode(obj.__getattribute__(arg), indent=indent+1)
+            obj_str += ";\n\t" + "\t"*indent + arg + ": " + encode(obj.__getattribute__(arg), indent=indent+1)
             
         obj_str += "\n" + "\t"*indent + "}"
     
@@ -71,8 +71,8 @@ def encodeList(object_list: list[object]) -> str:
     return list_string
 
 def spliter(string:str, start=False, epurate=False):
-    """Splits a given string on braces and commas, taking just into acount first level braces.
-    For instance: "{{a},b,{c}}" -> ["{a}","b",{c}]
+    """Splits a given string on braces and semi-colons, taking just into acount first level braces.
+    For instance: "{{a};b;{c}}" -> ["{a}";"b";{c}]
 
     Args:
         string (str): The string to split
@@ -116,18 +116,18 @@ def spliter(string:str, start=False, epurate=False):
     substr=[] # list of substrings to be returned
     
     if (len(brace_open)==0): # no brace found: split the string only on commas
-        substr+=string.split(',')
+        substr+=string.split(';')
         
     elif (brace_open[0]!=0): # take the begining of the string (before the first brace) and split it on commas 
-        substr+=(string[0:brace_open[0]]).split(',')
+        substr+=(string[0:brace_open[0]]).split(';')
         
     for i in range(len(brace_open)): # for each pair of '(' ')', gets what's inbetween
         substr.append(string[brace_open[i]:brace_close[i]+1])
         if (i<len(brace_open)-1): # gets what's inbetween pairs and split it on commas
-            substr+=(string[brace_close[i]+1:brace_open[i+1]]).split(',')
+            substr+=(string[brace_close[i]+1:brace_open[i+1]]).split(';')
             
     if (len(brace_close)>0 and brace_close[-1]!=len(string)-1): # take the end of the string (after the first brace) and split it on commas
-        substr+=(string[brace_close[-1]+1:]).split(',')
+        substr+=(string[brace_close[-1]+1:]).split(';')
         
     #epurating from void substring and unwanted substrings
     substr=[s for s in substr if s not in ['']]
@@ -151,11 +151,12 @@ def getDict(str_list: list[str]) -> dict[str: str]:
 
 def getKeyValue(string: str) -> tuple[str,str]:
     """Returns a pair (key, value) from a formated strong "key: value"."""
+    print(string)
     split_index=string.index(':')
     key=string[:split_index]
     value=string[split_index+2:]
     if value[0] not in "{abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV"and key!="__value__": #primitive types
-        value='{'+getType(value)+',value: '+value+'}'
+        value='{'+getType(value)+';__value__: '+value+'}'
     return key,value
 
 def getType(string: str) -> str:
@@ -179,7 +180,7 @@ def getType(string: str) -> str:
 if __name__ == "__main__":
     
     from biome import Biome
-    a = "etert'tre"
+    a = Biome()
     s = encode(a)
     print(s)
     l = spliter(s,False,True)
