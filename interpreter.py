@@ -42,14 +42,14 @@ def decode(input_string : str) -> object:
     str_list=spliter(input_string)
     str_dict=getDict(str_list)
     obj_class=getClass(str_dict.pop('__class__'))
-    object=None
+    obj=None
     if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes]):
-        object=obj_class(str_dict['__value__'])
+        obj=obj_class(str_dict['__value__'])
     else:
-        object=object.__new__(obj_class)
+        obj=object.__new__(obj_class)
         for arg in str_dict:
-            object.__dict__[arg] = decode(str_dict[arg])
-    return object
+            obj.__dict__[arg] = decode(str_dict[arg])
+    return obj
 
 
 def decodeList(input_string: str) -> list[object]:
@@ -169,3 +169,22 @@ def getType(string: str) -> str:
         elif string.__contains__("."): return res+'float'
         else: return res+'int'
     else: print(string)
+
+
+
+
+
+if __name__ == "__main__":
+    
+    from biome import Biome
+    a = Biome()
+    a.bio = Biome()
+    s = encode(a)
+    print(s)
+    
+    
+    print("b:")
+    b = decodeList(s)
+    
+    print(encode(b))
+    
