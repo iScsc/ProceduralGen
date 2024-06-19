@@ -1,20 +1,39 @@
 ################## VARIABLES ###################
 
+.SUFFIXES:
+
+# Paths
+HEAD = headers/
+SRC = src/
+COMP = compiled/
+BIN = bin/
+
+
+# vpath %.c $(SRC)
+# vpath %.h $(HEAD)
+# vpath %.o $(COMP)
+
+
+
 # Compiler
 DEBUGGING_FLAGS = -g -Wall
-CFLAGS = -std=c99
+CFLAGS = -std=c99 -I$(HEAD)
 OPTI_FLAGS = -O2
 CC = gcc $(CFLAGS) $(DEBUGGING_FLAGS)   # or gcc $(CFLAGS) $(OPTI_FLAGS)
 
 LFLAGS = -lm
 
+
+
 # Valgrind
 VFLAGS = --tool=memcheck --leak-check=full --track-origins=yes
 VALGRIND = valgrind $(VFLAGS)
 
+
+
 # Exectuables
-PROGRAMS = main
-TESTS = test_unicode test_loadingBar test_gradientGrid test_layer test_chunk test_map test_mapGenerator
+PROGRAMS = $(BIN)main
+TESTS = $(BIN)test_*
 
 EXE = $(TESTS) $(PROGRAMS)
 
@@ -24,34 +43,37 @@ EXE = $(TESTS) $(PROGRAMS)
 
 # Generic -----------------------------------
 
-%.o : %.c
+$(COMP)%.o : $(SRC)%.c
 	$(CC) -c $< -o $@
+
 
 
 
 
 # Tests -------------------------------------
 
-test_unicode: test_unicode.o
-	$(CC) test_unicode.c -o test_unicode
+test_unicode: $(COMP)test_unicode.o
+	$(CC) $^ -o $(BIN)$@
 
-test_loadingBar: test_loadingBar.o loadingBar.o
-	$(CC) test_loadingBar.o loadingBar.o -o test_loadingBar
+test_loadingBar: $(COMP)test_loadingBar.o $(COMP)loadingBar.o
+	$(CC) $^ -o $(BIN)$@
 
-test_gradientGrid: test_gradientGrid.o gradientGrid.o loadingBar.o
-	$(CC) test_gradientGrid.o gradientGrid.o loadingBar.o -o test_gradientGrid $(LFLAGS)
+test_gradientGrid: $(COMP)test_gradientGrid.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_layer: test_layer.o layer.o gradientGrid.o loadingBar.o
-	$(CC) test_layer.o layer.o gradientGrid.o loadingBar.o -o test_layer $(LFLAGS)
+test_layer: $(COMP)test_layer.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_chunk: test_chunk.o chunk.o layer.o gradientGrid.o loadingBar.o
-	$(CC) test_chunk.o chunk.o layer.o gradientGrid.o loadingBar.o -o test_chunk $(LFLAGS)
+test_chunk: $(COMP)test_chunk.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_map: test_map.o map.o chunk.o layer.o gradientGrid.o loadingBar.o
-	$(CC) test_map.o map.o chunk.o layer.o gradientGrid.o loadingBar.o -o test_map $(LFLAGS)
+test_map: $(COMP)test_map.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_mapGenerator: test_mapGenerator.o mapGenerator.o map.o chunk.o layer.o gradientGrid.o loadingBar.o
-	$(CC) test_mapGenerator.o mapGenerator.o map.o chunk.o layer.o gradientGrid.o loadingBar.o -o test_mapGenerator $(LFLAGS)
+test_mapGenerator: $(COMP)test_mapGenerator.o $(COMP)mapGenerator.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
+
+test_all : test_unicode test_loadingBar test_gradientGrid test_layer test_chunk test_map test_mapGenerator
 
 # Valgrind ----------------------------------
 
@@ -61,4 +83,4 @@ test_mapGenerator: test_mapGenerator.o mapGenerator.o map.o chunk.o layer.o grad
 # Cleaning ----------------------------------
 
 clean:
-	rm -f *.o $(EXE)
+	rm -f $(COMP)*.o $(EXE)

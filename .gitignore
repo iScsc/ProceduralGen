@@ -6,6 +6,13 @@ __pycache__/
 # vs code and its files
 .vscode
 
+# compiled and executables
+C/compiled/*.o
+C/bin/*
+
+# doxygen
+C/doxygen
+
 # C extensions
 *.so
 
