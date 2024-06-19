@@ -1,3 +1,12 @@
+/**
+ * @file test_mapGenerator.c
+ * @author Zyno
+ * @brief a testing script for the whole mapGenerator implementations
+ * @version 0.1
+ * @date 2024-05-21
+ * 
+ */
+
 #include <stdio.h>
 #include <time.h>
 
@@ -81,7 +90,6 @@ int main()
         int nb_layers = 3;
 
         //! Remember that the memory space is square of the dimension. Be cautious!
-        //TODO : Make something to compute the required memory space and ask for user if he really wants to do what he asked.
         int dimensions[] = {2, 5, 11};
         int final_size = lcmOfArray(nb_layers, dimensions);
         printf("Final size per chunk : %d\n", final_size);
@@ -146,6 +154,9 @@ int main()
 
 
 
+
+        //? Comment this if you don't want to save it in a file.
+        //! WARNING : ../saves/ the folder must exist for it to work properly
         printf("File creation...\n");
         char folder_path[200] = "../saves/completeMap_test/";
 
