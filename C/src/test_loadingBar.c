@@ -1,3 +1,12 @@
+/**
+ * @file test_loadingBar.c
+ * @author Zyno
+ * @brief a testing script for the loading_bar implementation
+ * @version 0.1
+ * @date 2024-05-21
+ * 
+ */
+
 #include <stdio.h>
 #include <time.h>
 

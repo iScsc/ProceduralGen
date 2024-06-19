@@ -1,9 +1,9 @@
 /**
  * @file gradientGrid.c
- * @author Zyno
+ * @author Zyno and BlueNZ
  * @brief gradientGrid structure implementation
- * @version 0.1
- * @date 2024-05-07
+ * @version 0.2
+ * @date 2024-06-19
  * 
  */
 
@@ -60,17 +60,18 @@ void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loadi
     int width = gradGrid->width;
     int height = gradGrid->height;
 
+    // Generating random vectors
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
             vector* v = getVector(gradGrid, j, i);
 
-            // generating a random sign for x value
+            // Generating a random sign for x value
             int sign_x = 1 - 2 * (rand()%2);
             v->x = sign_x * (double) rand()/RAND_MAX;
 
-            // generating a random sign for y value
+            // Generating a random sign for y value
             int sign_y = 1 - 2 * (rand()%2);
             v->y = sign_y * sqrt(1. - v->x * v->x);
 
@@ -80,7 +81,7 @@ void regenerateRandomGradGrid(gradientGrid* gradGrid, unsigned int display_loadi
 
                 int nb_indents = (display_loading - 1);
 
-                // max :  (width - 1) + (height - 1) * width  =  width * height - 1
+                // Max index :  (width - 1) + (height - 1) * width  =  width * height - 1
                 predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
             }
         }
@@ -110,8 +111,10 @@ gradientGrid* newGradGrid(int width, int height)
 
 gradientGrid* newRandomGradGrid(int width, int height, unsigned int display_loading)
 {
+    // Generating a new gradientGrid with not initialized vectors
     gradientGrid* new_grad_grid = newGradGrid(width, height);
 
+    // Initializing vectors to random ones
     regenerateRandomGradGrid(new_grad_grid, display_loading);
 
     return new_grad_grid;
@@ -185,6 +188,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
     int display_grad_grid = display_loading;
     if (display_loading != 0)
     {
+        // Indenting once more the random generation
         display_grad_grid += 1;
     }
 
@@ -238,6 +242,7 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
         }
     }
 
+    // Printing the time elapsed.
     if (display_loading == 1)
     {
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
@@ -251,6 +256,44 @@ gradientGrid* newAdjacentGradGrid(gradientGrid* north_grid, gradientGrid* west_g
     }
 
     return new_grad_grid;
+}
+
+
+
+
+
+gradientGrid* copyGrad(gradientGrid* grad) 
+{
+    gradientGrid* res = calloc(1,sizeof(gradientGrid));
+
+    res->width=grad->width;
+    res->height=grad->height;
+
+    res->gradients = calloc(res->width*res->height,sizeof(vector));
+    for (int i=0; i<res->width; i++)
+    {
+        for (int j=0; j<res->height; j++)
+        {
+            vector* vect=copyVect(getVector(grad,i,j));
+            *getVector(res,i,j)=*vect;
+            free(vect);
+        }
+    }
+
+    return res;
+
+}
+
+
+
+vector* copyVect(vector* vect) 
+{
+    vector*res = calloc(1, sizeof(vector));
+
+    res->x=vect->x;
+    res->y=vect->y;
+
+    return res;
 }
 
 
@@ -345,36 +388,4 @@ void freeGradGrid(gradientGrid* gradGrid)
 
         free(gradGrid);
     }
-}
-
-gradientGrid* copyGrad(gradientGrid* grad) 
-{
-    gradientGrid* res = calloc(1,sizeof(gradientGrid));
-
-    res->width=grad->width;
-    res->height=grad->height;
-
-    res->gradients = calloc(res->width*res->height,sizeof(vector));
-    for (int i=0; i<res->width; i++)
-    {
-        for (int j=0; j<res->height; j++)
-        {
-            vector* vect=copyVect(getVector(grad,i,j));
-            *getVector(res,i,j)=*vect;
-            free(vect);
-        }
-    }
-
-    return res;
-
-}
-
-vector* copyVect(vector* vect) 
-{
-    vector*res = calloc(1, sizeof(vector));
-
-    res->x=vect->x;
-    res->y=vect->y;
-
-    return res;
 }

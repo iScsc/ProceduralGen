@@ -1,3 +1,12 @@
+/**
+ * @file test_mapGenerator.c
+ * @author Zyno
+ * @brief a testing script for the whole mapGenerator implementations
+ * @version 0.1
+ * @date 2024-05-21
+ * 
+ */
+
 #include <stdio.h>
 #include <time.h>
 
@@ -81,10 +90,9 @@ int main()
         int nb_layers = 3;
 
         //! Remember that the memory space is square of the dimension. Be cautious!
-        //TODO : Make something to compute the required memory space and ask for user if he really wants to do what he asked.
         int dimensions[] = {2, 5, 11};
         int final_size = lcmOfArray(nb_layers, dimensions);
-        printf("Final size : %d\n", final_size);
+        printf("Final size per chunk : %d\n", final_size);
 
         double weights[] = {1, .1, .01};
 
@@ -95,6 +103,50 @@ int main()
 
         int display_loading = 1;      //1;
 
+
+
+        //? MEMORY SPACE REQUIRED
+        long int mem_space_by_chunk = sizeof(chunk) + final_size * final_size * sizeof(double) + nb_layers * (sizeof(double) + sizeof(layer*))
+                                        + sizeof(layer) + final_size * final_size * sizeof(double);
+        
+        for (int i = 0; i < nb_layers; i++)
+        {
+            mem_space_by_chunk += sizeof(gradientGrid) + dimensions[i] * dimensions[i] * sizeof(vector);
+        }
+
+        long int total_memory_space_used = sizeof(completeMap) + width * final_size * height * final_size * (sizeof(double) + sizeof(color*) + sizeof(color)) 
+                                            + sizeof(map) + width * final_size * height * final_size * sizeof(double)
+                                            + width * height * (sizeof(chunk*) + mem_space_by_chunk);
+        
+        printf("The complete memory space used will be around %ld bytes.\n", total_memory_space_used);
+        printf("Do you want to continue ? (1 for Yes, 0 for No)   ->   ");
+
+        int user_input = -1;
+        scanf("%d", &user_input);
+
+        int request = 1;
+        int max_requests = 3;
+
+        while (user_input != 1 && user_input != 0 && request < max_requests)
+        {
+            printf("Your input was not valid. Try again. (You have %d remaining attempts)\n\n", max_requests - request);
+            request += 1;
+
+            printf("The complete memory space used will be around %ld bytes.\n", total_memory_space_used);
+            printf("Do you want to continue ? (1 for Yes, 0 for No)   ->   ");
+
+            scanf("%d", &user_input);
+        }
+        printf("\n");
+
+        if (user_input != 1)
+        {
+            printf("The process was cancelled.\n");
+            return 1;
+        }
+
+
+
         printf("Generating a complete map with given parameters...\n");
         completeMap* new_complete_map = fullGen(nb_layers, dimensions, weights, width, height, sea_level, display_loading);
         printf("Generation complete!\n");
@@ -102,11 +154,14 @@ int main()
 
 
 
-        printf("File creation...\n");
-        char folder_path[200] = "../saves/completeMap_test/";
+
+        //? Comment this if you don't want to save it in a file.
+        //! WARNING : ../saves/ the folder must exist for it to work properly
+        // printf("File creation...\n");
+        // char folder_path[200] = "../saves/completeMap_test/";
 
         // writeCompleteMapFiles(new_complete_map, folder_path);
-        printf("File should be written now.\n");
+        // printf("File should be written now.\n");
 
 
 

@@ -1,3 +1,12 @@
+/**
+ * @file map.c
+ * @author Zyno and BlueNZ
+ * @brief map structure and functions implementation
+ * @version 0.2
+ * @date 2024-06-19
+ * 
+ */
+
 #include <stdio.h>
 #include <malloc.h>
 #include <time.h>
@@ -55,6 +64,8 @@ chunk* getChunk(map* map, int width_idx, int height_idx)
     return map->chunks[height_idx * width + width_idx];
 }
 
+
+
 chunk* getVirtualChunk(map* map, int width_idx, int height_idx)
 {
     int width = map->map_width+2;
@@ -72,10 +83,14 @@ chunk* getVirtualChunk(map* map, int width_idx, int height_idx)
 
 
 
+
+
 double interpolate2D(double a1, double a2, double a3, double a4, double x, double y) 
 {
     return a1 + (a2 - a1) * smoothstep(x) + (a3 - a1) * smoothstep(y) + (a1 + a4 - a2 - a3) * smoothstep(x) * smoothstep(y);
 }
+
+
 
 map* addMeanAltitude(map* p_map, unsigned int display_loading) 
 {
@@ -90,7 +105,8 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
     int nc = p_map->map_width;
     int mc = p_map->map_height;
 
-    // map* res = copyMap(p_map);
+    // map* res = copyMap(p_map);   //? Uncomment this and comment the next line to make it so that the functions returns a copy
+                                    //? of the original map with the correct final altitude values.
     map* res=p_map;
 
     double altitude[nc+2][mc+2];
@@ -197,6 +213,7 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
 
 
 
+
 map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], unsigned int display_loading)
 {
     clock_t start_time = clock();
@@ -208,7 +225,7 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
         new_map->map_width = map_width;
         new_map->map_height = map_height;
 
-        // copy chunks list to ensure dynamic allocation
+        // Copy chunks list to ensure dynamic allocation
         chunk** chunks_list = calloc(map_width * map_height, sizeof(chunk*));
         for (int i = 0; i < map_width * map_height; i++)
         {
@@ -229,6 +246,7 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
         new_map->virtual_chunks = v_chunks_list;
 
 
+        // Initialize map parameters
         chunk* firstChunk = getChunk(new_map, 0, 0);
         int chunk_width = firstChunk->width;
         int chunk_height = firstChunk->height;
@@ -243,6 +261,7 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
 
         new_map->map_values = map_values;
 
+        // Copy the correct altitude values
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
@@ -288,9 +307,11 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
     if (display_loading != 0)
     {
         indent_print(display_loading - 1, "Chunks generation before generating map...\n");
+        // Chunks loading bars will be indenting twice more.
         c_loading += 2;
     }
 
+    // Generates the chunks
     for (int i = 0; i < map_height; i++)
     {
         for (int j = 0; j < map_width; j++)
@@ -309,10 +330,12 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
 
             if (i == 0 && j == 0)
             {
+                // First chunk
                 current_chunk = newChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors, c_loading);
             }
             else
             {
+                // Others : adjacent chunks
                 chunk* north_chunk = NULL;
                 chunk* west_chunk = NULL;
 
@@ -363,8 +386,9 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
         current_chunk = newVirtualChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors);
 
         virtual_chunks[j] = current_chunk;
-    }    
+    }
 
+    // Generating the map from the new chunks
     map* new_map = newMapFromChunks(map_width, map_height, chunks, virtual_chunks, display_loading);
 
     if (display_loading == 1)
@@ -380,6 +404,44 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
     }
 
     return new_map;
+}
+
+
+
+
+
+map* copyMap(map* p_map) 
+{
+    map* res = calloc(1, sizeof(map));
+
+    res->map_width=p_map->map_width;
+    res->map_height=p_map->map_height;
+    res->chunk_width=p_map->chunk_width;
+    res->chunk_height=p_map->chunk_height;
+
+    res->chunks = calloc(res->chunk_width*res->chunk_height,sizeof(chunk*));
+    for (int i=0; i<res->map_width; i++)
+    {
+        for (int j=0; j<res->map_height; j++)
+        {
+            res->chunks[i*res->map_width+j]=copyChunk(p_map->chunks[i*p_map->map_width+j]);
+        }
+    }
+
+    int n = res->chunk_width*res->map_width;
+    int m = res->chunk_height*res->map_height;
+
+    res->map_values = calloc(n*m, sizeof(double));
+
+    for (int i=0; i<n; i++)
+    {
+        for (int j=0; j<m; j++)
+        {
+            *getMapValue(res,i,j)=*getMapValue(p_map,i,j);
+        }
+    }
+
+    return res;
 }
 
 
@@ -531,38 +593,4 @@ void freeMap(map* map)
 
         free(map);
     }
-}
-
-map* copyMap(map* p_map) 
-{
-    map* res = calloc(1, sizeof(map));
-
-    res->map_width=p_map->map_width;
-    res->map_height=p_map->map_height;
-    res->chunk_width=p_map->chunk_width;
-    res->chunk_height=p_map->chunk_height;
-
-    res->chunks = calloc(res->chunk_width*res->chunk_height,sizeof(chunk*));
-    for (int i=0; i<res->map_width; i++)
-    {
-        for (int j=0; j<res->map_height; j++)
-        {
-            res->chunks[i*res->map_width+j]=copyChunk(p_map->chunks[i*p_map->map_width+j]);
-        }
-    }
-
-    int n = res->chunk_width*res->map_width;
-    int m = res->chunk_height*res->map_height;
-
-    res->map_values = calloc(n*m, sizeof(double));
-
-    for (int i=0; i<n; i++)
-    {
-        for (int j=0; j<m; j++)
-        {
-            *getMapValue(res,i,j)=*getMapValue(p_map,i,j);
-        }
-    }
-
-    return res;
 }

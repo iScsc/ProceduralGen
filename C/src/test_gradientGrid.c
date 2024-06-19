@@ -1,3 +1,12 @@
+/**
+ * @file test_gradientGrid.c
+ * @author Zyno
+ * @brief a testing script for the gradientGrid implementation
+ * @version 0.1
+ * @date 2024-05-07
+ * 
+ */
+
 #include <stdio.h>
 #include <time.h>
 
@@ -5,7 +14,7 @@
 
 int main()
 {
-    int display_loading = 1;
+    int display_loading = 1; // Means no base indent in prints
 
     int width = 7;
     int height = 5;
@@ -17,7 +26,7 @@ int main()
     gradientGrid* gradGrid = newRandomGradGrid(width, height, display_loading);
 
     printf("Total space used by this gradient grid : %ld\n", sizeof(*gradGrid) + width*height*sizeof(*(gradGrid->gradients)));
-    //                                              Should be :    4 + 4 + 8   + width*height    *      8 + 8
+    //                                              Should be :    4 + 4 + 8   + width*height    *      (8 + 8)
 
 
     printGradientGrid(gradGrid);
@@ -37,6 +46,8 @@ int main()
     printGradientGrid(gradientSouthEast);
 
 
+    //? Comment this if you don't want to save it in a file.
+    //! WARNING : ../saves/ the folder must exist for it to work properly
     printf("File creation...\n");
     char path[200] = "../saves/gradGrid_test.txt";
 

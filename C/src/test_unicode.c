@@ -1,3 +1,12 @@
+/**
+ * @file test_unicode.c
+ * @author Zyno
+ * @brief a file to test some unicode characters printing in order to improve loading bars.
+ * @version 0.1
+ * @date 2024-06-19
+ * 
+ */
+
 #include <stdio.h>
 #include <wchar.h>
 #include <locale.h>

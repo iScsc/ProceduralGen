@@ -1,3 +1,12 @@
+/**
+ * @file test_map.c
+ * @author Zyno
+ * @brief a testing script for the map implementation
+ * @version 0.1
+ * @date 2024-05-21
+ * 
+ */
+
 #include <stdio.h>
 #include <time.h>
 
@@ -31,6 +40,9 @@ int main()
     printMap(my_map);
 
 
+
+    //? Comment this if you don't want to save it in a file.
+    //! WARNING : ../saves/ the folder must exist for it to work properly
     printf("File creation...\n");
     char path[200] = "../saves/map_test.txt";
 

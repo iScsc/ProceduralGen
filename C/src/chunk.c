@@ -1,3 +1,12 @@
+/**
+ * @file chunk.c
+ * @author Zyno and BlueNZ
+ * @brief chunk structure and functions implementation
+ * @version 0.2
+ * @date 2024-06-19
+ * 
+ */
+
 #include <malloc.h>
 #include <stdio.h>
 #include <time.h>
@@ -46,7 +55,7 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
     new_chunk->number_of_layers = number_of_layers;
 
 
-    // copy layer factors to ensure dynamic allocation
+    // Copy layer factors to ensure dynamic allocation
     double* factors = calloc(number_of_layers, sizeof(double));
     for (int i = 0; i < number_of_layers; i++)
     {
@@ -55,7 +64,7 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
     new_chunk->layers_factors = factors;
 
 
-    // copy layers list to ensure dynamic allocation
+    // Copy layers list to ensure dynamic allocation
     layer** layers_list = calloc(number_of_layers, sizeof(layer*));
     for (int i = 0; i < number_of_layers; i++)
     {
@@ -87,6 +96,8 @@ void regenerateChunk(chunk* chunk, unsigned int display_loading)
     double* factors = chunk->layers_factors;
     layer** layers = chunk->layers;
 
+    // Summing the layers altitude and normalizing it with the divisor variable.
+    // It is a weighted average of the altitude by the layers_factors.
     double divisor = 0.;
 
     for (int k = 0; k < nblayers; k++)
@@ -154,9 +165,11 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
 
     if (display_loading != 0)
     {
+        // Indenting once more the layer generation
         g_loading += 1;
     }
 
+    // Generating the required layers
     for (int i = 0; i < number_of_layers; i++)
     {
         if (display_loading != 0)
@@ -167,7 +180,7 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
             indent_print(display_loading - 1, to_print);
         }
 
-        // size_factors should match gradient_grids dimensions - 1
+        // Size_factors should match gradient_grids dimensions - 1
         layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], g_loading);
 
 
@@ -177,6 +190,7 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
         }
     }
 
+    // Generating the chunk
     return newChunkFromLayers(width, height, number_of_layers, layers_factors, layers, display_loading);
 }
 
@@ -193,10 +207,12 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
 
     if (display_loading != 0)
     {
+        // Indenting two times more the layer generation
         l_loading += 2;
         indent_print(display_loading - 1, "Layer generation before generating chunk...\n");
     }
 
+    // Generating the layers from scratch with the given parameters
     for (int i = 0; i < number_of_layers; i++)
     {
         if (display_loading != 0)
@@ -215,12 +231,14 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
         }
     }
 
-    // size_factors should match gradient_grids dimensions - 1
+    // Size_factors should match gradient_grids dimensions - 1
     int width = (gradGrids_width[0] - 1) * size_factors[0];
     int height = (gradGrids_height[0] - 1) * size_factors[0];
     
+    // Generating the chunk
     chunk* new_chunk = newChunkFromLayers(width, height, number_of_layers, layers_factors, layers, display_loading);
 
+    // Printing the time elapsed
     if (display_loading == 1)
     {
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
@@ -277,6 +295,7 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
     int nb_layers = 0;
     double* factors = NULL;
 
+    // Tests on adjacent chunks
     if (north_chunk != NULL && west_chunk != NULL)
     {
         int n_width = north_chunk->width;
@@ -322,6 +341,8 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
         width = n_width;
         height = n_height;
         nb_layers = n_nblayers;
+
+        // Copying the arrays is not necessary here. It will be done by the `newChunkFromGradients` function
         factors = n_factors;
     }
     else if (north_chunk != NULL)
@@ -329,6 +350,8 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
         width = north_chunk->width;
         height = north_chunk->height;
         nb_layers = north_chunk->number_of_layers;
+
+        // Copying the arrays is not necessary here. It will be done by the `newChunkFromGradients` function
         factors = north_chunk->layers_factors;
     }
     else if (west_chunk != NULL)
@@ -336,6 +359,8 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
         width = west_chunk->width;
         height = west_chunk->height;
         nb_layers = west_chunk->number_of_layers;
+
+        // Copying the arrays is not necessary here. It will be done by the `newChunkFromGradients` function
         factors = west_chunk->layers_factors;
     }
     else
@@ -348,6 +373,7 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
     int c_loading = display_loading;
     if (display_loading != 0)
     {
+        // Indenting once more the adjacent gradient grid generation
         indent_print(display_loading - 1, "Generating adjacent chunk...\n");
         c_loading += 1;
     }
@@ -380,8 +406,10 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
         }
     }
 
+    // Chunk generation
     chunk* new_chunk = newChunkFromGradients(width, height, nb_layers, gradientGrids, size_factors, factors, c_loading);
 
+    // Printing the time elapsed
     if (display_loading == 1)
     {
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
@@ -395,6 +423,48 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
     }
 
     return new_chunk;
+}
+
+
+
+
+
+chunk* copyChunk(chunk* p_chunk)
+{
+    chunk* res = calloc(1,sizeof(chunk));
+
+    res->width=p_chunk->width;
+    res->height=p_chunk->height;
+    int n = res->width;
+    int m = res->height;
+
+    res->number_of_layers=p_chunk->number_of_layers;
+    int nbr = res->number_of_layers;
+
+    res->layers_factors = calloc(nbr,sizeof(double));
+    for (int i=0; i<nbr; i++)
+    {
+        res->layers_factors[i]=p_chunk->layers_factors[i];
+    }
+
+    res->layers = calloc(nbr,sizeof(layer*));
+    for (int i=0; i<nbr; i++)
+    {
+        res->layers[i]=copyLayer(p_chunk->layers[i]);
+    }
+
+    res->chunk_values = calloc(n*m, sizeof(double));
+    for (int i=0; i<n; i++)
+    {
+        for (int j=0; j<m; j++) 
+        {
+            *getChunkValue(res,i,j)=*getChunkValue(p_chunk,i,j);
+        }
+    }
+
+    res->base_altitude=p_chunk->base_altitude;
+
+    return res;
 }
 
 
@@ -527,42 +597,4 @@ void freeChunk(chunk* chunk)
 
         free(chunk);
     }
-}
-
-chunk* copyChunk(chunk* p_chunk)
-{
-    chunk* res = calloc(1,sizeof(chunk));
-
-    res->width=p_chunk->width;
-    res->height=p_chunk->height;
-    int n = res->width;
-    int m = res->height;
-
-    res->number_of_layers=p_chunk->number_of_layers;
-    int nbr = res->number_of_layers;
-
-    res->layers_factors = calloc(nbr,sizeof(double));
-    for (int i=0; i<nbr; i++)
-    {
-        res->layers_factors[i]=p_chunk->layers_factors[i];
-    }
-
-    res->layers = calloc(nbr,sizeof(layer*));
-    for (int i=0; i<nbr; i++)
-    {
-        res->layers[i]=copyLayer(p_chunk->layers[i]);
-    }
-
-    res->chunk_values = calloc(n*m, sizeof(double));
-    for (int i=0; i<n; i++)
-    {
-        for (int j=0; j<m; j++) 
-        {
-            *getChunkValue(res,i,j)=*getChunkValue(p_chunk,i,j);
-        }
-    }
-
-    res->base_altitude=p_chunk->base_altitude;
-
-    return res;
 }
