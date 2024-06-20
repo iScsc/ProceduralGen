@@ -2,6 +2,7 @@ import numpy as np
 import random as rd
 
 #? To authorize type hints of class itself (ie GradientGrid here)
+#? answer found here : https://stackoverflow.com/questions/33533148/how-do-i-type-hint-a-method-with-the-type-of-the-enclosing-class
 #from typing import Self                    #? Python 3.11+
 from __future__ import annotations          #? Python 3.7+
 
