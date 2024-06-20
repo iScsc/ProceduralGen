@@ -47,6 +47,7 @@ def decode(input_string : str, start:bool = False) -> object:
     obj=None
     if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes]):
         obj=obj_class(str_dict['__value__'])
+        if obj_class==str: obj=obj[1:-1]
     else:
         obj=object.__new__(obj_class)
         for arg in str_dict:
@@ -186,5 +187,5 @@ if __name__ == "__main__":
     l = spliter(s,False,True)
     print(l)
     b = decode(s,True)
-    print(b)
+    print(b.name)
     
