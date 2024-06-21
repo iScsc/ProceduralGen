@@ -1,10 +1,12 @@
-import numpy as np
-import random as rd
 
 #? To authorize type hints of class itself (ie GradientGrid here)
 #? answer found here : https://stackoverflow.com/questions/33533148/how-do-i-type-hint-a-method-with-the-type-of-the-enclosing-class
 #from typing import Self                    #? Python 3.11+
 from __future__ import annotations          #? Python 3.7+
+
+import numpy as np
+import random as rd
+
 
 
 class GradientGrid:
@@ -95,7 +97,7 @@ class GradientGrid:
         for i in range(self.height):
             
             for j in range(self.width):
-                vec = self.vectors[i][j]
+                vec = self.vectors[i, j]
                 final_str += GradientGrid.VEC_PRINTING_FORMAT.format(vec[0], vec[1])
             
             final_str += "\n"
@@ -105,7 +107,7 @@ class GradientGrid:
     
     
     
-    def regenerate(self, adjacent_grids: tuple = (None, None, None, None)) -> None:
+    def regenerate(self, adjacent_grids: tuple[GradientGrid] = (None, None, None, None)) -> None:
         """Regenerates the random vectors of the GradientGrid. A tuple of adjacent GradientGrids can be given
         in order to apply the correct boundary conditions with the following order : `(NORTH, EAST, SOUTH, WEST)`.
 
