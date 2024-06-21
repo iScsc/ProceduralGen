@@ -13,7 +13,7 @@ class Layer:
     """
     Description :
     -------------
-    The layer class used to generate an height map based on a GradientGrid structure.
+    The layer class used to generate an altitude map based on a GradientGrid structure.
     """
     
     
@@ -121,7 +121,7 @@ class Layer:
     
     
     @staticmethod
-    def write(path: str) -> None:
+    def write(path: str, layer: Layer) -> None:
         #TODO
         pass
     
