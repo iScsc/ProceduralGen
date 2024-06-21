@@ -47,7 +47,7 @@ class GradientGrid:
     
     
     @staticmethod
-    def write(path: str) -> None:
+    def write(path: str, grid: GradientGrid) -> None:
         #TODO
         pass
     
