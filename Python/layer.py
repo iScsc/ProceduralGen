@@ -11,7 +11,7 @@ from gradientGrid import GradientGrid
 
 class Layer:
     """
-    Description :
+    Layer :
     -------------
     The layer class used to generate an altitude map based on a GradientGrid structure.
     """
@@ -120,6 +120,46 @@ class Layer:
     
     
     
+    
+    
+    
+    
+    
+    @staticmethod
+    def generateLayerFromScratch(grid_width: int, grid_height: int, size_factor: int, adj_layers: tuple[Layer] = (None, None, None, None)) -> Layer:
+        """Generates a new GradientGrid structure with the given parameters and then generate a new Layer structure from it.
+        You can additionally specify adjacent layers during the generation to use their GradientGrid as neighbours for the new GradientGrid generation.
+
+        Args:
+            `grid_width` (int): the width to be used to generate an initial gradient grid.
+            `grid_height` (int): the height to be used to generate an initial gradient grid.
+            `size_factor` (int): the size factor to be used to generate the layer. The layer dimensions will be
+                                 `(gradient_grid_dimensions - 1) * size_factor`.
+            `adjacent_layers` (tuple, optional): the tuple of adjacent layers to generate a smooth transition in terrain with correct
+                                                 boundary conditions.
+                                                 The tuple is in order `(NORTH, EAST, SOUTH, WEST)`.
+                                                 Set a layer to None if there are no neighbours in this direction.
+                                                 Defaults to `(None, None, None, None)`.
+        """
+        
+        if not (type(grid_width) is int and type(grid_height) is int and type(size_factor) is int and size_factor > 1):
+            print("Invalid parameters : grid dimensions and size_factor should be integers. Moreover, size_factor should be > 1.")
+            return
+        
+        adj_list = [None, None, None, None]
+        for i in range(len(adj_layers)):
+            layer = adj_layers[i]
+            if type(layer) is Layer:
+                adj_list[i] = layer.grid
+        adj_tuple = tuple(adj_list)
+        
+        
+        grid: GradientGrid = GradientGrid(grid_width, grid_height, adjacent_grids=adj_tuple)
+        
+        return Layer(grid=grid, size_factor=size_factor)
+    
+    
+    
     @staticmethod
     def write(path: str, layer: Layer) -> None:
         #TODO
@@ -135,61 +175,36 @@ class Layer:
     
     #? ------------------------ Instances ------------------------ #
     
-    def __init__(self, grid: GradientGrid = None, grid_width: int = None, grid_height: int = None, size_factor: int = None,
-                 adj_layers: tuple[Layer] = (None, None, None, None)) -> None:
-        """Initializes a new layer instance.
-        It can either be called with:
-            - 
+    
+    def __init__(self, grid: GradientGrid, size_factor: int) -> None:
+        """Initializes a new layer instance from an already existing GradientGrid and a size factor.
+        If no gradient grid are already generated, please use the designated static method `generateLayerFromScratch` to generate the
+        appropriate GradientGrid and then generate the layer structure.
 
         Args:
-            `grid` (GradientGrid, optional): the gradient grid to build the layer from. Defaults to None.
-            `grid_width` (int, optional): the width to be used to generate an initial gradient grid. Defaults to None.
-            `grid_height` (int, optional): the height to be used to generate an initial gradient grid. Defaults to None.
-            `size_factor` (int, optional): the size factor to be used to generate the layer. The layer dimensions will be
-                                           `(gradient_grid_dimensions - 1) * size_factor`. Defaults to None.
-            `adjacent_layers` (tuple, optional): the tuple of adjacent layers to generate a smooth transition in terrain with correct
-                                                 boundary conditions.
-                                                 The tuple is in order `(NORTH, EAST, SOUTH, WEST)`.
-                                                 Set a layer to None if there are no neighbours in this direction.
-                                                 Defaults to `(None, None, None, None)`
+            `grid` (GradientGrid): the gradient grid to build the layer from.
+            `size_factor` (int): the size factor to be used to generate the layer. The layer dimensions will be
+                                 `(gradient_grid_dimensions - 1) * size_factor`.
         """
         
         self.grid = None
-        self.width = 0
-        self.height = 0
+        self.width = None
+        self.height = None
         
-        self.size_factor = 0
+        self.size_factor = None
         
         self.altitude = None
         
-        #? Initializing with a predefined gradient grid
-        if type(grid) is GradientGrid and type(size_factor) is int:
-            self.grid = grid
-            self.size_factor = size_factor
-            
-            self.regenerate()
         
-        #? Initializing with gradient grid parameters
-        elif type(grid_width) is int and type(grid_height) is int and type(size_factor) is int:
-            adj_list = [None, None, None, None]
-            for i in range(len(adj_layers)):
-                layer = adj_layers[i]
-                if type(layer) is Layer:
-                    adj_list[i] = layer.grid
-            adj_tuple = tuple(adj_list)
-            
-            
-            grid: GradientGrid = GradientGrid(grid_width, grid_height, adjacent_grids=adj_tuple)
-            
-            
-            self.grid = grid
-            self.size_factor = size_factor
-            
-            self.regenerate()
+        if not (type(grid) is GradientGrid and type(size_factor) is int and size_factor > 1):
+            print("Invalid parameters. Either gradient grid is None, size_factor is not an integer, or is <= 1.")
+            return
         
-        #? Default initialization
-        else:
-            pass
+        
+        self.grid = grid
+        self.size_factor = size_factor
+        
+        self.regenerate()
     
     
     
@@ -259,7 +274,7 @@ if __name__ == "__main__":
     
     
     print("Trying to generate a layer at the north of the first one :")
-    layern = Layer(grid_width=5, grid_height=5, size_factor=factor, adj_layers=(None, None, layer, None))
+    layern = Layer.generateLayerFromScratch(grid_width=5, grid_height=5, size_factor=factor, adj_layers=(None, None, layer, None))
     print(layer.grid)
     print(layern.grid)
     print(layern)

@@ -11,7 +11,7 @@ import random as rd
 
 class GradientGrid:
     """
-    Description:
+    GradientGrid:
     ------------
     The GradientGrid class used to store the primary randomly generated vectors responsible for the whole Perlin generation
     afterwards.
