@@ -135,11 +135,11 @@ class Layer:
             `grid_height` (int): the height to be used to generate an initial gradient grid.
             `size_factor` (int): the size factor to be used to generate the layer. The layer dimensions will be
                                  `(gradient_grid_dimensions - 1) * size_factor`.
-            `adjacent_layers` (tuple, optional): the tuple of adjacent layers to generate a smooth transition in terrain with correct
-                                                 boundary conditions.
-                                                 The tuple is in order `(NORTH, EAST, SOUTH, WEST)`.
-                                                 Set a layer to None if there are no neighbours in this direction.
-                                                 Defaults to `(None, None, None, None)`.
+            `adjacent_layers` (tuple[Layer], optional): the tuple of adjacent layers to generate a smooth transition in terrain with correct
+                                                        boundary conditions.
+                                                        The tuple is in order `(NORTH, EAST, SOUTH, WEST)`.
+                                                        Set a layer to `None` if there are no neighbours in this direction.
+                                                        Defaults to `(None, None, None, None)`.
         """
         
         if not (type(grid_width) is int and type(grid_height) is int and type(size_factor) is int and size_factor > 1):
