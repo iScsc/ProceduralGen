@@ -185,7 +185,7 @@ def getType(string: str) -> str:
     else: print(string)
 
 def listFromString(string: str) -> list:
-    
+    """Creates a list from a formatted string: "[a,b,c,d]"->[a,b,c,d]"""
     res=[]
     
     for x in listStringSpliter(string):
@@ -196,7 +196,7 @@ def listFromString(string: str) -> list:
 
 
 def listStringSpliter(string: str) -> list[str]:
-    
+    """Splits a string representing a list in its elements"""
     nbrParenthesis=0
     nbrBraket=0
     nbrBrace=0
@@ -228,6 +228,7 @@ def listStringSpliter(string: str) -> list[str]:
     
 
 class temp:
+    """A buffer class, used to simplify some process"""
     def init(self, object=None):
         obj=object
 
