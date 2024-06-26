@@ -40,7 +40,7 @@ def encode(obj : object, indent : int=0) -> str:
 
 
 def decode(input_string : str, start:bool = False) -> object:
-    """Decodes a given object from its formated string (if manual use set start as True)"""
+    """Decodes a given object from its formatted string (if manual use set start as True)"""
     str_list=spliter(input_string,False,start)
     str_dict=getDict(str_list)
     obj_class=getClass(str_dict.pop('__class__'))
@@ -56,7 +56,7 @@ def decode(input_string : str, start:bool = False) -> object:
 
 
 def decodeList(input_string: str) -> list[object]:
-    """Decodes a list of object from its formated string"""
+    """Decodes a list of object from its formatted string"""
     object_list=[]
     str_list=spliter(input_string,True,True)
     for object_string in str_list:
@@ -136,14 +136,14 @@ def spliter(string:str, start=False, epurate=False):
     return substr
 
 def getClass(class_arg: str) -> object:
-    """Returns the class given by a formated string: "<class>"
+    """Returns the class given by a formatted string: "<class>"
     """
     if class_arg in ['int', 'float', 'complex', 'list', 'tuple', 'str', 'bytearray', 'bytes']:
         return eval(class_arg)
     return getattr(sys.modules[__name__], class_arg)
 
 def getDict(str_list: list[str]) -> dict[str: str]:
-    """Returns a dict from a formated stringlist: ["<key>: <value>",...]"""
+    """Returns a dict from a formatted stringlist: ["<key>: <value>",...]"""
     dict={}
     for arg in str_list:
         key,value=getKeyValue(arg)
@@ -151,16 +151,16 @@ def getDict(str_list: list[str]) -> dict[str: str]:
     return dict
 
 def getKeyValue(string: str) -> tuple[str,str]:
-    """Returns a pair (key, value) from a formated strong "key: value"."""
+    """Returns a pair (key, value) from a formatted strong "key: value"."""
     split_index=string.index(':')
     key=string[:split_index]
     value=string[split_index+2:]
-    if value[0] not in "{abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV"and key!="__value__": #primitive types
+    if value[0] not in "{abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"and key!="__value__": #primitive types
         value='{'+getType(value)+';__value__: '+value+'}'
     return key,value
 
 def getType(string: str) -> str:
-    """Inferes the type of a formated string and returns "__class__: <class>"."""
+    """Inferes the type of a formatted string and returns "__class__: <class>"."""
     # TODO bytes and bytearray
     res="__class__: "
     char=string[0]
@@ -188,4 +188,5 @@ if __name__ == "__main__":
     print(l)
     b = decode(s,True)
     print(b.name)
+    print(b.bio.altitude_range)
     
