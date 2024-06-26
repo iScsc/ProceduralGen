@@ -16,7 +16,7 @@ def encode(obj : object, indent : int=0) -> str:
         else:
             obj_str = "{"
             obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+";"
-            if obj_class==str: obj_str += "\n\t__value__: " +"\""+obj+"\""
+            if obj_class==str: obj_str += "\n\t__value__: " +"\""+obj+"\"" #TODO forbid char { } ( ) [ ] , ;
             else : obj_str += "\n\t__value__: " + str(obj)
             obj_str += "\n}"
     
@@ -45,9 +45,11 @@ def decode(input_string : str, start:bool = False) -> object:
     str_dict=getDict(str_list)
     obj_class=getClass(str_dict.pop('__class__'))
     obj=None
-    if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes]):
+    if (obj_class in [int, float, complex, bytearray, bytes]):
         obj=obj_class(str_dict['__value__'])
-        if obj_class==str: obj=obj[1:-1]
+    elif obj_class==str: obj=obj_class(str_dict['__value__'])[1:-1]
+    elif obj_class==list: obj=listFromString(str_dict['__value__'])
+    elif obj_class==tuple: obj=tuple(listFromString(str_dict['__value__']))
     else:
         obj=object.__new__(obj_class)
         for arg in str_dict:
@@ -167,13 +169,57 @@ def getType(string: str) -> str:
     if char in ['\'','\"']: return res+'str'
     elif char=='[': return res+'list'
     elif char=='(': return res+'tuple'
-    elif char in [str(i) for i in range(10)]:
+    elif char in [str(i) for i in range(10)] or char=='-':
         if string.__contains__("j"): return res+'complex'
         elif string.__contains__("."): return res+'float'
         else: return res+'int'
     else: print(string)
 
+def listFromString(string: str) -> list:
+    
+    res=[]
+    
+    for x in listStringSpliter(string):
+        temp_str = '{__class__: temp;obj: '+x+'}'
+        res.append(decode(temp_str).obj)
+    
+    return res
 
+
+def listStringSpliter(string: str) -> list[str]:
+    
+    nbrParenthesis=0
+    nbrBraket=0
+    nbrBrace=0
+    
+    start_index=1
+    end_index=1
+    
+    res=[]
+    
+    while (end_index<len(string)):
+        if string[end_index]==',' and nbrParenthesis==nbrBraket==nbrBrace==0:
+            res.append(string[start_index:end_index])
+            if string[end_index+1]==' ':
+                end_index+=1
+            start_index=end_index+1
+        elif string[end_index]=='(': nbrParenthesis+=1
+        elif string[end_index]==')': nbrParenthesis-=1
+        elif string[end_index]=='[': nbrBraket+=1
+        elif string[end_index]==']': nbrBraket-=1
+        elif string[end_index]=='{': nbrBrace+=1
+        elif string[end_index]=='}': nbrBrace-=1
+        end_index+=1
+        
+    res.append(string[start_index:-1])
+    
+    res = [x for x in res if x!='']
+    
+    return res
+
+class temp:
+    def init(self, object=None):
+        obj=object
 
 
 
@@ -189,4 +235,6 @@ if __name__ == "__main__":
     b = decode(s,True)
     print(b.name)
     print(b.bio.altitude_range)
+    
+    # print(listFromString("(-1,1)"))
     
