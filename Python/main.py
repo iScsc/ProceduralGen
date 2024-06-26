@@ -3,7 +3,7 @@ import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mapGenerator import *
+from old_mapGenerator import *
 
 LOAD = False
 GENERATE = True

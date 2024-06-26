@@ -1,5 +1,5 @@
 # --- Imports
-from mapGenerator import *
+from old_mapGenerator import *
 
 # --- Code
 

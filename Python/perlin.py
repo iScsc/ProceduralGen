@@ -2,7 +2,7 @@ import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mapGenerator import mapGenerator
+from old_mapGenerator import mapGenerator
 
 def ppcm_of_list(l):
     ppcm = 1
