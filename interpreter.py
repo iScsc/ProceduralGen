@@ -1,5 +1,8 @@
 import sys
 
+
+### ---------- Main Methods ---------- ###
+
 def encode(obj : object, indent : int=0) -> str:
     """Encodes a given object in a simili JSON format"""
     
@@ -69,6 +72,7 @@ def decode(input_string : str, start:bool = False) -> object:
         raise DecodeDictError() from e
 
 
+
 def decodeList(input_string: str) -> list[object]:
     """Decodes a list of object from its formatted string"""
     object_list=[]
@@ -95,6 +99,12 @@ def encodeList(object_list: list[object]) -> str:
             if EXCEPT: print(e)
             else: raise
     return list_string
+
+
+
+
+
+### ---------- Auxiliary Methods ---------- ###
 
 def spliter(string:str, start=False, epurate=False):
     """Splits a given string on braces and semi-colons, taking just into acount first level braces.
@@ -160,6 +170,8 @@ def spliter(string:str, start=False, epurate=False):
     
     return substr
 
+
+
 def getClass(class_arg: str) -> object:
     """Returns the class given by a formatted string: "<class>"
     """
@@ -169,6 +181,7 @@ def getClass(class_arg: str) -> object:
         return getattr(sys.modules[__name__], class_arg)
     except AttributeError as e:
         raise DecodeClassError(class_arg) from e
+
 
 def getDict(str_list: list[str]) -> dict[str: str]:
     """Returns a dict from a formatted stringlist: ["<key>: <value>",...]"""
@@ -182,6 +195,7 @@ def getDict(str_list: list[str]) -> dict[str: str]:
             else: raise
     return dict
 
+
 def getKeyValue(string: str) -> tuple[str,str]:
     """Returns a pair (key, value) from a formatted strong "key: value"."""
     try:
@@ -193,6 +207,7 @@ def getKeyValue(string: str) -> tuple[str,str]:
         return key,value
     except (ValueError,IndexError,TypeError) as e:
         raise DecodeArgError(string) from e
+
 
 def getType(string: str) -> str:
     """Inferes the type of a formatted string and returns "__class__: <class>"."""
@@ -210,6 +225,8 @@ def getType(string: str) -> str:
         else: return res+'bytes'
     elif char=='N': return res+'None'
     else: raise DecodeTypeError(string)
+
+
 
 def listFromString(string: str) -> list:
     """Creates a list from a formatted string: "[a,b,c,d]"->[a,b,c,d]"""
@@ -259,11 +276,22 @@ def listStringSpliter(string: str) -> list[str]:
         res = [x for x in res if x!='']
         return res
     
+  
+  
+    
+    
+### ---------- Class ---------- ###
 
 class temp:
     """A buffer class, used to simplify some process"""
     def init(self, object=None):
         obj=object
+
+
+
+
+
+### ---------- Exceptions ---------- ###
 
 EXCEPT=True #if set to True the functions will ignore most of raised exception if possible
 class InterpreterError(Exception):
@@ -287,6 +315,12 @@ class DecodeClassError(InterpreterError):
 class DecodeDictError(InterpreterError):
     """Occures when an object dict hasn't been properly initialised"""
     pass
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
