@@ -12,11 +12,13 @@ def encode(obj : object, indent : int=0) -> str:
     if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes] or obj==None):
         if (indent>0):
             if obj_class==str: obj_str="\""+obj+"\""
+            elif obj_class==bytes: obj_str="b'"+obj.hex()+"'"
             else : obj_str=str(obj)
         else:
             obj_str = "{"
             obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+";"
             if obj_class==str: obj_str += "\n\t__value__: " +"\""+obj+"\"" #TODO forbid char { } ( ) [ ] , ;
+            elif obj_class==bytes: obj_str += "\n\t__value__: b'" + obj.hex()+"'"
             else : obj_str += "\n\t__value__: " + str(obj)
             obj_str += "\n}"
     
@@ -45,11 +47,12 @@ def decode(input_string : str, start:bool = False) -> object:
     str_dict=getDict(str_list)
     obj_class=getClass(str_dict.pop('__class__'))
     obj=None
-    if (obj_class in [int, float, complex, bytearray, bytes]):
+    if (obj_class in [int, float, complex]):
         obj=obj_class(str_dict['__value__'])
     elif obj_class==str: obj=obj_class(str_dict['__value__'])[1:-1]
     elif obj_class==list: obj=listFromString(str_dict['__value__'])
     elif obj_class==tuple: obj=tuple(listFromString(str_dict['__value__']))
+    elif obj_class==bytes: obj=bytes.fromhex(str_dict['__value__'][2:-1])
     else:
         obj=object.__new__(obj_class)
         for arg in str_dict:
@@ -163,7 +166,6 @@ def getKeyValue(string: str) -> tuple[str,str]:
 
 def getType(string: str) -> str:
     """Inferes the type of a formatted string and returns "__class__: <class>"."""
-    # TODO bytes and bytearray
     res="__class__: "
     char=string[0]
     if char in ['\'','\"']: return res+'str'
@@ -173,6 +175,9 @@ def getType(string: str) -> str:
         if string.__contains__("j"): return res+'complex'
         elif string.__contains__("."): return res+'float'
         else: return res+'int'
+    elif char==b:
+        if string.__contains__("bytearray"): return res+'bytearray'
+        else: return res+'bytes'
     else: print(string)
 
 def listFromString(string: str) -> list:
@@ -216,6 +221,7 @@ def listStringSpliter(string: str) -> list[str]:
     res = [x for x in res if x!='']
     
     return res
+    
 
 class temp:
     def init(self, object=None):
@@ -225,16 +231,19 @@ class temp:
 
 if __name__ == "__main__":
     
-    from biome import Biome
-    a = Biome()
-    a.bio = Biome()
-    s = encode(a)
-    print(s)
-    l = spliter(s,False,True)
-    print(l)
-    b = decode(s,True)
-    print(b.name)
-    print(b.bio.altitude_range)
+    # from biome import Biome
+    # a = Biome()
+    # a.bio = Biome()
+    # s = encode(a)
+    # print(s)
+    # l = spliter(s,False,True)
+    # print(l)
+    # b = decode(s,True)
+    # print(b.name)
+    # print(b.bio.altitude_range)
     
     # print(listFromString("(-1,1)"))
+    
+    print(encode(bytes(1)))
+    print(decode(encode(bytes(1)),True))
     
