@@ -6,9 +6,9 @@ from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
 import copy
-from gradientGrid import GradientGrid
-from layer import Layer
-from chunk import Chunk
+from Python.gradientGrid import GradientGrid
+from Python.layer import Layer
+from Python.chunk import Chunk
 
 
 

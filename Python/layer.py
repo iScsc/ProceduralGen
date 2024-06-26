@@ -5,7 +5,7 @@
 from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
-from gradientGrid import GradientGrid
+from Python.gradientGrid import GradientGrid
 
 
 
