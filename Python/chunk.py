@@ -5,6 +5,7 @@
 from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
+import random as rd
 from gradientGrid import GradientGrid
 from layer import Layer
 
@@ -224,6 +225,31 @@ class Chunk:
     
     
     @staticmethod
+    def newVirtualChunk(chunk_width: int, chunk_height: int) -> Chunk:
+        """Generates a new virtual chunk.
+
+        Args:
+            `chunk_width` (int): width of the virtual chunk.
+            `chunk_height` (int): height of the virtual chunk.
+
+        Returns:
+            Chunk: the newly generated virtual chunk
+        """
+        
+        # Initialize an empty chunk
+        virtual_chunk = Chunk([], [])
+        
+        virtual_chunk.width = chunk_width
+        virtual_chunk.height = chunk_height
+        
+        virtual_chunk.base_altitude = -0.5 + 2*rd.random()
+        
+        return virtual_chunk
+    
+    
+    
+    
+    @staticmethod
     def write(path: str, chunk: Chunk) -> None:
         #TODO
         pass
@@ -252,6 +278,7 @@ class Chunk:
         self.layers = None
         
         self.altitude = None
+        self.base_altitude = 0
         
         
         
@@ -282,12 +309,11 @@ class Chunk:
         
         
         # Store layers and factors
-        self.layers = layers
-        self.layers_factors = layers_factors
+        self.layers = layers.copy()
+        self.layers_factors = layers_factors.copy()
         
         # Compute altitude
         self.regenerate()
-            
     
     
     
@@ -374,6 +400,7 @@ class Chunk:
             self.altitude += fac * layer.altitude
         
         self.altitude /= factor_sum
+        self.base_altitude = -0.5 + 2*rd.random()
 
 
 
