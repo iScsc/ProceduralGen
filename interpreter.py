@@ -157,10 +157,11 @@ def getDict(str_list: list[str]) -> dict[str: str]:
 
 def getKeyValue(string: str) -> tuple[str,str]:
     """Returns a pair (key, value) from a formatted strong "key: value"."""
+    # print(string)
     split_index=string.index(':')
     key=string[:split_index]
     value=string[split_index+2:]
-    if value[0] not in "{abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"and key!="__value__": #primitive types
+    if value[0] != "{" and key!="__value__" and key!='__class__': #primitive types
         value='{'+getType(value)+';__value__: '+value+'}'
     return key,value
 
@@ -175,7 +176,7 @@ def getType(string: str) -> str:
         if string.__contains__("j"): return res+'complex'
         elif string.__contains__("."): return res+'float'
         else: return res+'int'
-    elif char==b:
+    elif char=='b':
         if string.__contains__("bytearray"): return res+'bytearray'
         else: return res+'bytes'
     else: print(string)
@@ -242,8 +243,9 @@ if __name__ == "__main__":
     # print(b.name)
     # print(b.bio.altitude_range)
     
-    # print(listFromString("(-1,1)"))
+    t = temp()
+    t.obj=bytes(1)
     
-    print(encode(bytes(1)))
-    print(decode(encode(bytes(1)),True))
+    print(encode(t))
+    print(decode(encode(t),True))
     
