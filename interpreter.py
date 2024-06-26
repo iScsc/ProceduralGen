@@ -56,6 +56,7 @@ def decode(input_string : str, start:bool = False) -> object:
     elif obj_class==tuple: obj=tuple(listFromString(str_dict['__value__']))
     elif obj_class==bytes: obj=bytes.fromhex(str_dict['__value__'][2:-1])
     elif obj_class==bytearray: obj=bytearray.fromhex(str_dict['__value__'][10:-1])
+    elif obj_class==None: return None
     else:
         obj=object.__new__(obj_class)
         for arg in str_dict:
@@ -146,7 +147,7 @@ def spliter(string:str, start=False, epurate=False):
 def getClass(class_arg: str) -> object:
     """Returns the class given by a formatted string: "<class>"
     """
-    if class_arg in ['int', 'float', 'complex', 'list', 'tuple', 'str', 'bytearray', 'bytes']:
+    if class_arg in ['int', 'float', 'complex', 'list', 'tuple', 'str', 'bytearray', 'bytes','NoneType']:
         return eval(class_arg)
     return getattr(sys.modules[__name__], class_arg)
 
@@ -182,6 +183,7 @@ def getType(string: str) -> str:
     elif char=='b':
         if string.__contains__("bytearray"): return res+'bytearray'
         else: return res+'bytes'
+    elif char=='N': return res+'None'
     else: print(string)
 
 def listFromString(string: str) -> list:
