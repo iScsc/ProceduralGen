@@ -9,6 +9,9 @@ import random as rd
 
 
 
+
+
+
 class GradientGrid:
     """
     GradientGrid:

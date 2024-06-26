@@ -1,5 +1,5 @@
 
-#? To authorize type hints of class itself (ie GradientGrid here)
+#? To authorize type hints of class itself (ie Chunk here)
 #? answer found here : https://stackoverflow.com/questions/33533148/how-do-i-type-hint-a-method-with-the-type-of-the-enclosing-class
 #from typing import Self                    #? Python 3.11+
 from __future__ import annotations          #? Python 3.7+
@@ -8,6 +8,8 @@ import numpy as np
 import random as rd
 from gradientGrid import GradientGrid
 from layer import Layer
+
+
 
 
 class Chunk:
@@ -54,7 +56,8 @@ class Chunk:
             The given gradient grid dimensions and size factors should match so that the product `grid_dim * size_factor` is a constant Vector2D.
         """
         
-        #? -------------- Verifications : Begin --------------
+        #* -------------- Verifications : Begin --------------
+        
         if not (type(grid_widths) is list and type(grid_heights) is list and type(size_factors) is list and type(layers_factors) is list):
             print("Error: `grid_widths`, `grid_heights`, `size_factors` and `layers_factors` should be lists!")
             return None
@@ -117,7 +120,8 @@ class Chunk:
             print("Invalid layer factors : sum is 0")
             return None
         
-        #? -------------- Verifications : End --------------
+        #* -------------- Verifications : End --------------
+        
         
         layers = [None for i in range(len_lay)]
         for i in range(len_lay):
@@ -155,7 +159,8 @@ class Chunk:
         """
         
         
-        #? -------------- Verifications : Begin --------------
+        #* -------------- Verifications : Begin --------------
+        
         if not (type(grids) is list and type(size_factors) is list and type(layers_factors) is list):
             print("Error: `grids`, `size_factors` and `layers_factors` should be lists!")
             return None
@@ -212,8 +217,8 @@ class Chunk:
             print("Invalid layer factors : sum is 0")
             return None
         
+        #* -------------- Verifications : End --------------
         
-        #? -------------- Verifications : End --------------
         
         layers = [None for i in range(len_lay)]
         for i in range(len_lay):
@@ -282,6 +287,8 @@ class Chunk:
         
         
         
+        #* -------------- Verifications : Begin --------------
+        
         # Checking types
         if not (type(layers_factors) is list and type(layers) is list):
             return
@@ -292,6 +299,10 @@ class Chunk:
         if len_fac != len_lay:
             print("Invalid sizes : list of layers and list of factors are not of the same length! ({} and {})"
                   .format(len_lay, len_fac))
+            return
+        
+        
+        if len_fac == 0:
             return
         
         
@@ -306,6 +317,7 @@ class Chunk:
                 print("Layer at index {} is not a layer.".format(i))
                 return
         
+        #* -------------- Verifications : End --------------
         
         
         # Store layers and factors
@@ -345,6 +357,9 @@ class Chunk:
     def regenerate(self) -> None:
         """Regenerates the altitude values of the chunk based on its `layers` and `layer_factors` parameters.
         """
+        
+        #* -------------- Verifications : Begin --------------
+        
         # Checking types
         if not (type(self.layers_factors) is list and type(self.layers) is list):
             return
@@ -388,6 +403,7 @@ class Chunk:
             print("Invalid layer factors: the sum of layer factors is 0.")
             return
         
+        #* -------------- Verifications : End --------------
         
         
         
