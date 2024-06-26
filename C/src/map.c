@@ -71,7 +71,7 @@ chunk* getVirtualChunk(map* map, int width_idx, int height_idx)
     int width = map->map_width+2;
     int height = map->map_height+2;
 
-    if (height_idx<0 || height_idx>=height || width<0 || width_idx>=width) return NULL;
+    if (height_idx<0 || height_idx>=height || width_idx<0 || width_idx>=width) return NULL;
 
     if (width_idx==0) return map->virtual_chunks[height_idx];
     else if (width_idx==width-1) return map->virtual_chunks[height+height_idx];
