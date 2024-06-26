@@ -6,8 +6,8 @@ from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
 import random as rd
-from gradientGrid import GradientGrid
-from layer import Layer
+from Python.gradientGrid import GradientGrid
+from Python.layer import Layer
 
 
 
