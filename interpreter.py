@@ -13,12 +13,14 @@ def encode(obj : object, indent : int=0) -> str:
         if (indent>0):
             if obj_class==str: obj_str="\""+obj+"\""
             elif obj_class==bytes: obj_str="b'"+obj.hex()+"'"
+            elif obj_class==bytearray: obj_str="bytearray("+obj.hex()+")"
             else : obj_str=str(obj)
         else:
             obj_str = "{"
             obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+";"
             if obj_class==str: obj_str += "\n\t__value__: " +"\""+obj+"\"" #TODO forbid char { } ( ) [ ] , ;
             elif obj_class==bytes: obj_str += "\n\t__value__: b'" + obj.hex()+"'"
+            elif obj_class==bytearray: obj_str += "\n\t__value__: bytearray("+obj.hex()+")"
             else : obj_str += "\n\t__value__: " + str(obj)
             obj_str += "\n}"
     
@@ -53,6 +55,7 @@ def decode(input_string : str, start:bool = False) -> object:
     elif obj_class==list: obj=listFromString(str_dict['__value__'])
     elif obj_class==tuple: obj=tuple(listFromString(str_dict['__value__']))
     elif obj_class==bytes: obj=bytes.fromhex(str_dict['__value__'][2:-1])
+    elif obj_class==bytearray: obj=bytearray.fromhex(str_dict['__value__'][10:-1])
     else:
         obj=object.__new__(obj_class)
         for arg in str_dict:
@@ -244,8 +247,8 @@ if __name__ == "__main__":
     # print(b.bio.altitude_range)
     
     t = temp()
-    t.obj=bytes(1)
+    t.obj=bytearray("A",'utf-8')
     
     print(encode(t))
-    print(decode(encode(t),True))
+    print(decode(encode(t),True).obj)
     
