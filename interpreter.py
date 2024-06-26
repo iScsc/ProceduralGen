@@ -3,73 +3,85 @@ import sys
 def encode(obj : object, indent : int=0) -> str:
     """Encodes a given object in a simili JSON format"""
     
-    obj_class = obj.__class__
+    try:
+        obj_class = obj.__class__
 
-    obj_str = ""
-    
-    #? Match base types
-    
-    if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes] or obj==None):
-        if (indent>0):
-            if obj_class==str: obj_str="\""+obj+"\""
-            elif obj_class==bytes: obj_str="b'"+obj.hex()+"'"
-            elif obj_class==bytearray: obj_str="bytearray("+obj.hex()+")"
-            else : obj_str=str(obj)
-        else:
-            obj_str = "{"
-            obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+";"
-            if obj_class==str: obj_str += "\n\t__value__: " +"\""+obj+"\"" #TODO forbid char { } ( ) [ ] , ;
-            elif obj_class==bytes: obj_str += "\n\t__value__: b'" + obj.hex()+"'"
-            elif obj_class==bytearray: obj_str += "\n\t__value__: bytearray("+obj.hex()+")"
-            else : obj_str += "\n\t__value__: " + str(obj)
-            obj_str += "\n}"
-    
-    
-    #? If object :
-    
-    else :
-        obj_str = "{"
-        obj_str += "\n\t" + "\t"*indent + "__class__: " + str(obj_class).split("'")[1].split(".")[-1]
+        obj_str = ""
         
-        obj_dict = obj.__dict__ 
-           
-        for arg in obj_dict:
-            obj_str += ";\n\t" + "\t"*indent + arg + ": " + encode(obj.__getattribute__(arg), indent=indent+1)
+        #? Match base types 
+        if (obj_class in [int, float, complex, list, tuple, str, bytearray, bytes] or obj==None):
+            if (indent>0):
+                if obj_class==str: obj_str="\""+obj+"\""
+                elif obj_class==bytes: obj_str="b'"+obj.hex()+"'"
+                elif obj_class==bytearray: obj_str="bytearray("+obj.hex()+")"
+                else : obj_str=str(obj)
+            else:
+                obj_str = "{"
+                obj_str += "\n\t__class__: " + str(obj_class).split("'")[1].split(".")[-1]+";"
+                if obj_class==str: obj_str += "\n\t__value__: " +"\""+obj+"\"" #TODO forbid char { } ( ) [ ] , ;
+                elif obj_class==bytes: obj_str += "\n\t__value__: b'" + obj.hex()+"'"
+                elif obj_class==bytearray: obj_str += "\n\t__value__: bytearray("+obj.hex()+")"
+                else : obj_str += "\n\t__value__: " + str(obj)
+                obj_str += "\n}"
+        
+        #? If object :
+        else :
+            obj_str = "{"
+            obj_str += "\n\t" + "\t"*indent + "__class__: " + str(obj_class).split("'")[1].split(".")[-1]
             
-        obj_str += "\n" + "\t"*indent + "}"
+            obj_dict = obj.__dict__ 
+            
+            for arg in obj_dict:
+                obj_str += ";\n\t" + "\t"*indent + arg + ": " + encode(obj.__getattribute__(arg), indent=indent+1)
+                
+            obj_str += "\n" + "\t"*indent + "}"
+        
+        return obj_str
     
-    
-    
-    return obj_str
+    except Exception:
+        raise InterpreterError("Couldn't encode object"+obj)
 
 
 def decode(input_string : str, start:bool = False) -> object:
     """Decodes a given object from its formatted string (if manual use set start as True)"""
-    str_list=spliter(input_string,False,start)
+    try:
+        str_list=spliter(input_string,False,start)
+    except (IndexError,TypeError):
+        raise InterpreterError("The given string couldn't be parsed into an Arg list")
     str_dict=getDict(str_list)
-    obj_class=getClass(str_dict.pop('__class__'))
-    obj=None
-    if (obj_class in [int, float, complex]):
-        obj=obj_class(str_dict['__value__'])
-    elif obj_class==str: obj=obj_class(str_dict['__value__'])[1:-1]
-    elif obj_class==list: obj=listFromString(str_dict['__value__'])
-    elif obj_class==tuple: obj=tuple(listFromString(str_dict['__value__']))
-    elif obj_class==bytes: obj=bytes.fromhex(str_dict['__value__'][2:-1])
-    elif obj_class==bytearray: obj=bytearray.fromhex(str_dict['__value__'][10:-1])
-    elif obj_class==None: return None
-    else:
-        obj=object.__new__(obj_class)
-        for arg in str_dict:
-            obj.__dict__[arg] = decode(str_dict[arg])
-    return obj
+    try:
+        obj_class=getClass(str_dict.pop('__class__'))
+        obj=None
+        if (obj_class in [int, float, complex]):
+            obj=obj_class(str_dict['__value__'])
+        elif obj_class==str: obj=obj_class(str_dict['__value__'])[1:-1]
+        elif obj_class==list: obj=listFromString(str_dict['__value__'])
+        elif obj_class==tuple: obj=tuple(listFromString(str_dict['__value__']))
+        elif obj_class==bytes: obj=bytes.fromhex(str_dict['__value__'][2:-1])
+        elif obj_class==bytearray: obj=bytearray.fromhex(str_dict['__value__'][10:-1])
+        elif obj_class==None: return None
+        else:
+            obj=object.__new__(obj_class)
+            for arg in str_dict:
+                obj.__dict__[arg] = decode(str_dict[arg])
+        return obj
+    except KeyError as e:
+        raise DecodeDictError() from e
 
 
 def decodeList(input_string: str) -> list[object]:
     """Decodes a list of object from its formatted string"""
     object_list=[]
-    str_list=spliter(input_string,True,True)
+    try:
+        str_list=spliter(input_string,True,True)
+    except (IndexError,TypeError):
+        raise InterpreterError("The given string couldn't be parsed into an object list")
     for object_string in str_list:
-        object_list.append(decode(object_string))
+        try:
+            object_list.append(decode(object_string))
+        except InterpreterError as e:
+            if EXCEPT: print(e)
+            else: raise DecodeListError("Couldn't decode object: "+object_string) from e
     return object_list
 
 
@@ -77,7 +89,11 @@ def encodeList(object_list: list[object]) -> str:
     """Encodes a list of objects in a simili JSON format"""
     list_string=""
     for object in object_list:
-        list_string+=encode(object)+'\n'
+        try:
+            list_string+=encode(object)+'\n'
+        except InterpreterError as e:
+            if EXCEPT: print(e)
+            else: raise
     return list_string
 
 def spliter(string:str, start=False, epurate=False):
@@ -147,27 +163,36 @@ def spliter(string:str, start=False, epurate=False):
 def getClass(class_arg: str) -> object:
     """Returns the class given by a formatted string: "<class>"
     """
-    if class_arg in ['int', 'float', 'complex', 'list', 'tuple', 'str', 'bytearray', 'bytes','NoneType']:
+    if class_arg in ['int', 'float', 'complex', 'list', 'tuple', 'str', 'bytearray', 'bytes','None']:
         return eval(class_arg)
-    return getattr(sys.modules[__name__], class_arg)
+    try:
+        return getattr(sys.modules[__name__], class_arg)
+    except AttributeError as e:
+        raise DecodeClassError(class_arg) from e
 
 def getDict(str_list: list[str]) -> dict[str: str]:
     """Returns a dict from a formatted stringlist: ["<key>: <value>",...]"""
     dict={}
     for arg in str_list:
-        key,value=getKeyValue(arg)
-        dict[key]=value
+        try:
+            key,value=getKeyValue(arg)
+            dict[key]=value
+        except DecodeArgError as e:
+            if EXCEPT: print(e)
+            else: raise
     return dict
 
 def getKeyValue(string: str) -> tuple[str,str]:
     """Returns a pair (key, value) from a formatted strong "key: value"."""
-    # print(string)
-    split_index=string.index(':')
-    key=string[:split_index]
-    value=string[split_index+2:]
-    if value[0] != "{" and key!="__value__" and key!='__class__': #primitive types
-        value='{'+getType(value)+';__value__: '+value+'}'
-    return key,value
+    try:
+        split_index=string.index(':')
+        key=string[:split_index]
+        value=string[split_index+2:]
+        if value[0] != "{" and key!="__value__" and key!='__class__': #primitive types
+            value='{'+getType(value)+';__value__: '+value+'}'
+        return key,value
+    except (ValueError,IndexError,TypeError) as e:
+        raise DecodeArgError(string) from e
 
 def getType(string: str) -> str:
     """Inferes the type of a formatted string and returns "__class__: <class>"."""
@@ -184,15 +209,20 @@ def getType(string: str) -> str:
         if string.__contains__("bytearray"): return res+'bytearray'
         else: return res+'bytes'
     elif char=='N': return res+'None'
-    else: print(string)
+    else: raise DecodeTypeError(string)
 
 def listFromString(string: str) -> list:
     """Creates a list from a formatted string: "[a,b,c,d]"->[a,b,c,d]"""
     res=[]
     
     for x in listStringSpliter(string):
-        temp_str = '{__class__: temp;obj: '+x+'}'
-        res.append(decode(temp_str).obj)
+        try:
+            temp_str = '{__class__: temp;obj: '+x+'}'
+            res.append(decode(temp_str).obj)
+        except InterpreterError as e:
+            if EXCEPT: print(e)
+            else: raise DecodeListError("Couldn't decode object from string: "+x) from e
+        
     
     return res
 
@@ -207,26 +237,27 @@ def listStringSpliter(string: str) -> list[str]:
     end_index=1
     
     res=[]
-    
-    while (end_index<len(string)):
-        if string[end_index]==',' and nbrParenthesis==nbrBraket==nbrBrace==0:
-            res.append(string[start_index:end_index])
-            if string[end_index+1]==' ':
-                end_index+=1
-            start_index=end_index+1
-        elif string[end_index]=='(': nbrParenthesis+=1
-        elif string[end_index]==')': nbrParenthesis-=1
-        elif string[end_index]=='[': nbrBraket+=1
-        elif string[end_index]==']': nbrBraket-=1
-        elif string[end_index]=='{': nbrBrace+=1
-        elif string[end_index]=='}': nbrBrace-=1
-        end_index+=1
-        
-    res.append(string[start_index:-1])
-    
-    res = [x for x in res if x!='']
-    
-    return res
+    try:
+        while (end_index<len(string)):
+            if string[end_index]==',' and nbrParenthesis==nbrBraket==nbrBrace==0:
+                res.append(string[start_index:end_index])
+                if string[end_index+1]==' ':
+                    end_index+=1
+                start_index=end_index+1
+            elif string[end_index]=='(': nbrParenthesis+=1
+            elif string[end_index]==')': nbrParenthesis-=1
+            elif string[end_index]=='[': nbrBraket+=1
+            elif string[end_index]==']': nbrBraket-=1
+            elif string[end_index]=='{': nbrBrace+=1
+            elif string[end_index]=='}': nbrBrace-=1
+            end_index+=1
+            
+        res.append(string[start_index:-1])
+    except Exception as e: #Should not be useful for the append method and the indexing cannot raise errors in this conditions
+        raise DecodeListError("Could not split list string: "+string) from e
+    else:
+        res = [x for x in res if x!='']
+        return res
     
 
 class temp:
@@ -234,6 +265,28 @@ class temp:
     def init(self, object=None):
         obj=object
 
+EXCEPT=True #if set to True the functions will ignore most of raised exception if possible
+class InterpreterError(Exception):
+    """Base class for Exceptions specific to the encoding or decoding process."""
+    pass
+class DecodeListError(InterpreterError):
+    """Exceptions occuring during the decoding of a list"""
+    pass
+class DecodeTypeError(InterpreterError):
+    """Occures when a type isn't recognized"""
+    def __init__(self,string:str):
+        super().__init__("Unrecognized type: "+string)
+class DecodeArgError(InterpreterError):
+    """Occures when a key-value pair couldn't be infered from a given string"""
+    def __init__(self,string:str):
+        super().__init__("Undecoded arg: "+string)
+class DecodeClassError(InterpreterError):
+    """Occures when a non-primitve class couldn't be found in present modules"""
+    def __init__(self,string:str):
+        super().__init__("Unfound class: "+string)
+class DecodeDictError(InterpreterError):
+    """Occures when an object dict hasn't been properly initialised"""
+    pass
 
 
 if __name__ == "__main__":
