@@ -9,7 +9,7 @@ LOAD = False
 GENERATE = True
 
 if LOAD:
-    path_to_load = "./saves/completeMap_test/"
+    path_to_load = "../saves/completeMap_test/"
     
     sea_map, color_map, map_width_in_points, map_height_in_points, sea_level, map_width_in_chunks, map_height_in_chunks = mapGenerator.loadCompleteMap(path_to_load)
     
