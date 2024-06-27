@@ -6,9 +6,9 @@ from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
 import copy
-from Python.gradientGrid import GradientGrid
-from Python.layer import Layer
-from Python.chunk import Chunk
+from gradientGrid import GradientGrid
+from layer import Layer
+from chunk import Chunk
 
 
 
@@ -105,6 +105,20 @@ class Map:
         
         
         return Map(map_width=map_width, map_height=map_height, chunks=chunks, virtual_chunks=virtual_chunks)
+    
+    
+    
+    @staticmethod
+    def write(path: str, map: Map) -> None:
+        #TODO
+        pass
+    
+    
+    
+    @staticmethod
+    def read(path: str) -> Map:
+        #TODO
+        return None
     
     
     
