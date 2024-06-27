@@ -6,8 +6,8 @@ from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
 import random as rd
-from Python.gradientGrid import GradientGrid
-from Python.layer import Layer
+from gradientGrid import GradientGrid
+from layer import Layer
 
 
 
@@ -25,6 +25,16 @@ class Chunk:
     
     ALT_PRINTING_DECIMALS = 4
     ALT_PRINTING_FORMAT = " {{: .{}f}} ".format(ALT_PRINTING_DECIMALS)
+    
+    
+    
+    @staticmethod
+    def generateBaseAltitude() -> float:
+        #? Can be modified to affect every `base_altitude` values generated in chunks.
+        
+        return -1 + 2*rd.random()
+        
+        # return -0.5 + 2*rd.random()
     
     
     
@@ -247,7 +257,7 @@ class Chunk:
         virtual_chunk.width = chunk_width
         virtual_chunk.height = chunk_height
         
-        virtual_chunk.base_altitude = -0.5 + 2*rd.random()
+        virtual_chunk.base_altitude = Chunk.generateBaseAltitude()
         
         return virtual_chunk
     
@@ -416,7 +426,7 @@ class Chunk:
             self.altitude += fac * layer.altitude
         
         self.altitude /= factor_sum
-        self.base_altitude = -0.5 + 2*rd.random()
+        self.base_altitude = Chunk.generateBaseAltitude()
 
 
 
