@@ -175,8 +175,8 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
                     if ((i<map_width || pi<chunk_width*0.5) && (j<map_height || pj<chunk_height*0.5)
                             && (i!=0 || pi>=chunk_width*0.5) && (j!=0 || pj>=chunk_height*0.5)) 
                     {
-                        int ii=pi+(int)((i-0.5)*chunk_width);
-                        int jj=pj+(int)((j-0.5)*chunk_height);
+                        int ii=(int)(pi+(i-0.5)*chunk_width);
+                        int jj=(int)(pj+(j-0.5)*chunk_height);
                         double x=pi*1./chunk_width;
                         double y=pj*1./chunk_height;
                         double alt = interpolate2D(a1,a2,a3,a4,x,y);
