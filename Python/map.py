@@ -255,43 +255,47 @@ class Map:
         """Apply each chunk and virtual chunks mean altitude value on map final altitude values.
         """
         
-        mw = self.map_width
-        mh = self.map_height
+        map_width = self.map_width
+        map_height = self.map_height
         
-        mean_altitudes = np.zeros((mh + 2, mw + 2))
+        mean_altitudes = np.zeros((map_height + 2, map_width + 2))
         
-        for i in range(1, mh-1):
-            for j in range(1, mw-1):
-                mean_altitudes[i][j] = self.chunks[i][j].base_altitude
+        for i in range(0, map_height):
+            for j in range(0, map_width):
+                mean_altitudes[i+1][j+1] = self.chunks[i][j].base_altitude
         
-        for i in range(0, mh+2):
+        for i in range(0, map_height+2):
             mean_altitudes[i][0] = self.getVirtualChunk(0, i).base_altitude
-            mean_altitudes[i][-1] = self.getVirtualChunk(mw + 1, i).base_altitude
+            mean_altitudes[i][-1] = self.getVirtualChunk(map_width + 1, i).base_altitude
         
-        for j in range(0, mw+2):
+        for j in range(0, map_width+2):
             mean_altitudes[0][j] = self.getVirtualChunk(j, 0).base_altitude
-            mean_altitudes[-1][j] = self.getVirtualChunk(j, mh + 1).base_altitude
+            mean_altitudes[-1][j] = self.getVirtualChunk(j, map_height + 1).base_altitude
         
-        cw = self.chunk_width
-        ch = self.chunk_height
+        chunk_width = self.chunk_width
+        chunk_height = self.chunk_height
         
+        # print(mean_altitudes)
         
-        for i in range(mh):
-            for j in range(mw):
+        for i in range(map_height + 1):
+            for j in range(map_width + 1):
                 
-                a1 = mean_altitudes[i][j]
-                a2 = mean_altitudes[i+1][j]
-                a3 = mean_altitudes[i][j+1]
-                a4 = mean_altitudes[i+1][j+1]
+                a1 = mean_altitudes[i][j]       #? Position in width x height = (0, 0)
+                a2 = mean_altitudes[i][j+1]     #? Position in width x height = (1, 0)
+                a3 = mean_altitudes[i+1][j]     #? Position in width x height = (0, 1)
+                a4 = mean_altitudes[i+1][j+1]   #? Position in width x height = (1, 1)
                 
-                for pi in range(ch):
-                    for pj in range(cw):
+                for pi in range(chunk_height):
+                    for pj in range(chunk_width):
                         
-                        alt = Map.interpolate2D(a1, a2, a3, a4, pj/cw, pi/ch)
-                        
-                        alt_i = pi + int((i-0.5)*ch)
-                        alt_j = pj + int((j-0.5)*cw)
-                        self.altitude[alt_i][alt_j] += alt
+                        if ((j < map_width or pj < chunk_width*0.5) and (i < map_height or pi < chunk_height*0.5) and
+                            (i != 0 or pi >= map_height * 0.5) and (j != 0 or pj >= map_width*0.5)):
+                             
+                            alt = Map.interpolate2D(a1, a2, a3, a4, pj/chunk_width, pi/chunk_height)
+                            
+                            alt_i = pi + int((i-0.5)*chunk_height)
+                            alt_j = pj + int((j-0.5)*chunk_width)
+                            self.altitude[alt_i][alt_j] += alt
 
 
 
