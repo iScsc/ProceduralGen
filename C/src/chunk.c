@@ -137,7 +137,7 @@ void regenerateChunk(chunk* chunk, unsigned int display_loading)
             *value /= divisor;
         }
     }
-    chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
+    chunk->base_altitude=0;//-0.5+2*rand()*1./RAND_MAX;
 }
 
 
@@ -254,6 +254,9 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
     return new_chunk;
 }
 
+
+
+//TODO ? signature could be changed to avoid passing useless parameters -> `chunk_width` and `chunk_height` instead of `gradGrids_width`, `gradGrids_height` and `size_factors`
 chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], double layers_factors[number_of_layers])
 {
     chunk* new_chunk = calloc(1, sizeof(chunk));
@@ -278,7 +281,7 @@ chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layer
 
     new_chunk->layers = NULL;
 
-    new_chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
+    new_chunk->base_altitude=1;//-0.5+2*rand()*1./RAND_MAX;
 
     return new_chunk;
 }
