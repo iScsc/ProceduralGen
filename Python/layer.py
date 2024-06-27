@@ -5,7 +5,7 @@
 from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
-from Python.gradientGrid import GradientGrid
+from gradientGrid import GradientGrid
 
 
 
@@ -38,6 +38,11 @@ class Layer:
         Returns:
             float: the resulting smoothstep value.
         """
+        
+        if w <= 0:
+            return 0.
+        if w >= 1:
+            return 1.
         
         return 3*w**2 - 2*w**3
     
