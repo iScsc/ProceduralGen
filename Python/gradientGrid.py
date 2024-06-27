@@ -29,7 +29,8 @@ class GradientGrid:
     #? -------------------------- Static ------------------------- #
     
     
-    MAX_INT_SEED = 1000000000000 # Maximum integer for the automatic random seed generation
+    MAX_INT_SEED = 1000000000000    # Maximum integer for the automatic random seed generation
+    CURRENT_SEED = "a simple seed"  # Current seed used by the randomizer
     
     VEC_PRINTING_DECIMALS = 4
     VEC_PRINTING_FORMAT = " ({{: .{}f}}, {{: .{}f}}) ".format(VEC_PRINTING_DECIMALS, VEC_PRINTING_DECIMALS)
@@ -46,6 +47,7 @@ class GradientGrid:
         """
         
         rd.seed(seed)
+        GradientGrid.CURRENT_SEED = seed
     
     
     
