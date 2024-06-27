@@ -282,7 +282,7 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
             }
         }
 
-        new_map = addMeanAltitude(new_map,display_loading);
+        //new_map = addMeanAltitude(new_map,display_loading);
 
         return new_map;
     }

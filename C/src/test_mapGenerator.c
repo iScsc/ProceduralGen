@@ -90,16 +90,16 @@ int main()
         int nb_layers = 3;
 
         //! Remember that the memory space is square of the dimension. Be cautious!
-        int dimensions[] = {2, 5, 11};
+        int dimensions[] = {3, 5};//{2, 5, 11};
         int final_size = lcmOfArray(nb_layers, dimensions);
         printf("Final size per chunk : %d\n", final_size);
 
-        double weights[] = {1, .1, .01};
+        double weights[] = {1, .1};//{1, .1, .01};
 
-        int width = 4;   //7;
-        int height = 5;   //5;
+        int width = 2;   //7;
+        int height = 3;   //5;
 
-        double sea_level = -.15;
+        double sea_level = 0;//-.15;
 
         int display_loading = 1;      //1;
 
