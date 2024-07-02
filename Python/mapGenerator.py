@@ -177,17 +177,96 @@ class MapGenerator:
     
     @staticmethod
     def gcd(a: int, b: int) -> int:
-        pass
+        """Finds the Greatest Common Divisor of the two given integers.
+        Only process strictly positive integers.
+
+        Args:
+            `a` (int): the first integer.
+            `b` (int): the second integer.
+
+        Returns:
+            int: the gcd of the two given arguments.
+        """
+        
+        if a == 0 or b == 0:
+            print("Error : Can't find the greatest common divisor of 0.")
+            return 0
+        
+        if a < 0 or b < 0:
+            print("Error : this algorithm supports positive integers only.")
+            return
+        
+        while a != b:
+            if a > b:
+                a -= b
+            else:
+                b -= a
+        
+        return a
     
     
     @staticmethod
     def lcm(a: int, b: int) -> int:
-        pass
+        """Computes the Lowest Common Multiple from the two given integers.
+        They shall be positive.
+
+        Args:
+            `a` (int): the first integer.
+            `b` (int): the second integer.
+
+        Returns:
+            int: the computed lcm.
+        """
+        
+        if a < 0 or b < 0:
+            print("Error : this algorithm supports positive integers only.")
+            return -1
+        
+        if a == 0 or b == 0:
+            return 0
+        
+        c = MapGenerator.gcd(a, b)
+        return (a * b) / c
+        
     
     
     @staticmethod
     def lcmOfArray(array: list[int]) -> int:
-        pass
+        """Computes the Lowest Common Multiple of a list of positive integers.
+
+        Args:
+            `array` (list[int]): list of integers to compute the lcm from. Should be of length >= 2.
+
+        Returns:
+            int: final computed lcm of the list. Returns `-1` if negative integers were found.
+        """
+        
+        common = -1
+        
+        l = len(array)
+        if l >= 2:
+            
+            common = MapGenerator.lcm(array[0], array[1])
+            
+            if common == 0:
+                return 0
+            
+            elif common == -1:
+                print("Error : something went wrong in the lcm function.")
+                return -1
+            
+            for i in range(2, l):
+                
+                common = MapGenerator.lcm(common, array[i])
+                
+                if common == 0:
+                    return 0
+                
+                elif common == -1:
+                    print("Error : something went wrong in the lcm function.")
+                    return -1
+        
+        return common
     
     
     
@@ -195,13 +274,69 @@ class MapGenerator:
     
     @staticmethod
     def get2DMap(grid_sizes: list[int], layers_factors: list[float], map_width: int, map_height: int) -> Map:
-        return None
+        """Generates a map structure with square chunks and automatic size factors from the given parameters.
+
+        Args:
+            `grid_sizes` (list[int]): the array of gradientGrid dimensions to be used to generate the random gradient grids.
+            `layers_factors` (list[float]): the array of layers factors.
+            `map_width` (int): number of chunks in width.
+            `map_height` (int): number of chunks in height.
+
+        Returns:
+            Map: the final map.
+        
+        Note:
+            The real gradient grids dimensions will be the passed ones + 1 to correctly match the passed dimensions' lcm to the final maps.
+        """
+        
+        #* -------------- Verifications : Begin --------------
+        
+        #TODO
+        
+        #* -------------- Verifications : End   --------------
+        
+        lcm = MapGenerator.lcmOfArray(grid_sizes)
+        
+        size_factors = [int(lcm/gsi) for gsi in grid_sizes]
+        final_grid_sizes = [gsi+1 for gsi in grid_sizes]
+        
+        new_map = Map.generateMapFromScratch(grid_widths=final_grid_sizes, grid_heights=final_grid_sizes, size_factors=size_factors,
+                                             layers_factors=layers_factors, map_width=map_width, map_height=map_height)
+        
+        return new_map
     
     
     
     @staticmethod
     def fullGen(grid_sizes: list[int], layers_factors: list[float], map_width: int, map_height: int, sea_level: float) -> CompleteMap:
-        return None
+        """Generates a completeMap structure with square chunks, automatic size factors and the given sea altitude.
+        It consists in generating a new map with the `get2dMap` function, and then creating a new completeMap with the `newCompleteMapFromMap` function.
+
+        Args:
+            `grid_sizes` (list[int]): the array of gradientGrid dimensions to be used to generate the random gradient grids.
+            `layers_factors` (list[float]): the array of layers factors.
+            `map_width` (int): number of chunks in width.
+            `map_height` (int): number of chunks in height.
+            `sea_level` (float): sea altitude to use.
+
+        Returns:
+            CompleteMap: the final complete map.
+        
+        Note:
+            The real gradient grids dimensions will be the passed ones + 1 to correctly match the passed dimensions' lcm to the final maps.
+        """
+        
+        #* -------------- Verifications : Begin --------------
+        
+        #TODO
+        
+        #* -------------- Verifications : End   --------------
+        
+        new_map = MapGenerator.get2DMap(grid_sizes=grid_sizes, layers_factors=layers_factors, map_width=map_width, map_height=map_height)
+        
+        new_complete_map = CompleteMap(map=new_map, sea_level=sea_level)
+        
+        return new_complete_map
     
     
     
@@ -299,3 +434,28 @@ if __name__ == "__main__":
     
     
     MapGenerator.plotCompleteMap(complete_map)
+    
+    
+    
+    
+    print("------------------------")
+    print("Generating a new complete map from the `full gen` function with the given parameters :")
+    
+    grid_sizes = [2, 5, 9]
+    lay_fac = [1, .1, .01]
+    map_dim = (5, 7)        #? Width x Height
+    sea_lvl = 0.2
+    
+    print(" - grid dimensions : ", grid_sizes)
+    print("     ---> grid sizes will be used with a +1 for the layers size to be the lcm of the dimensions above : ",
+          MapGenerator.lcmOfArray(grid_sizes))
+    print(" - layer factors : ", lay_fac)
+    print(" - map dimensions : ", map_dim)
+    print(" - level of the sea : ", sea_lvl)
+    
+    other_complete_map = MapGenerator.fullGen(grid_sizes=grid_sizes, layers_factors=lay_fac,
+                                              map_width=map_dim[0], map_height=map_dim[1],
+                                              sea_level=sea_lvl)
+    
+    
+    MapGenerator.plotCompleteMap(other_complete_map)
