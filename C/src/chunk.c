@@ -137,7 +137,7 @@ void regenerateChunk(chunk* chunk, unsigned int display_loading)
             *value /= divisor;
         }
     }
-    chunk->base_altitude=0;//-0.5+2*rand()*1./RAND_MAX;
+    chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
 }
 
 
@@ -281,7 +281,7 @@ chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layer
 
     new_chunk->layers = NULL;
 
-    new_chunk->base_altitude=1;//-0.5+2*rand()*1./RAND_MAX;
+    new_chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
 
     return new_chunk;
 }

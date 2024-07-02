@@ -257,7 +257,7 @@ class Chunk:
         virtual_chunk.width = chunk_width
         virtual_chunk.height = chunk_height
         
-        virtual_chunk.base_altitude = .5 #Chunk.generateBaseAltitude()
+        virtual_chunk.base_altitude = Chunk.generateBaseAltitude()
         
         return virtual_chunk
     
@@ -426,7 +426,7 @@ class Chunk:
             self.altitude += fac * layer.altitude
         
         self.altitude /= factor_sum
-        self.base_altitude = 0 #Chunk.generateBaseAltitude()
+        self.base_altitude = Chunk.generateBaseAltitude()
 
 
 
