@@ -5,11 +5,11 @@
 from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
+import math
 import copy
 from gradientGrid import GradientGrid
 from layer import Layer
 from chunk import Chunk
-
 
 
 class Map:
@@ -41,7 +41,7 @@ class Map:
             `y` (float): the relative y coordinate from the four values. Should be in range `[0, 1]`.
 
         Returns:
-            float: _description_
+            float: the 2d interpolation of the four given points.
         """
         
         return a1 + (a2 - a1) * Layer.smoothstep(x) + (a3 - a1) * Layer.smoothstep(y) + (a1 + a4 - a2 - a3) * Layer.smoothstep(x) * Layer.smoothstep(y)
@@ -275,7 +275,8 @@ class Map:
         chunk_width = self.chunk_width
         chunk_height = self.chunk_height
         
-        # print(mean_altitudes)
+        print("Mean altitudes are :")
+        print(mean_altitudes)
         
         for i in range(map_height + 1):
             for j in range(map_width + 1):
@@ -288,13 +289,16 @@ class Map:
                 for pi in range(chunk_height):
                     for pj in range(chunk_width):
                         
-                        if ((j < map_width or pj < chunk_width*0.5) and (i < map_height or pi < chunk_height*0.5) and
-                            (i != 0 or pi >= map_height * 0.5) and (j != 0 or pj >= map_width*0.5)):
+                        if ((i < map_height or pi < chunk_height*0.5) and (j < map_width or pj < chunk_width*0.5) and 
+                            (i != 0 or pi >= chunk_height * 0.5) and (j != 0 or pj >= chunk_width*0.5)):
                              
                             alt = Map.interpolate2D(a1, a2, a3, a4, pj/chunk_width, pi/chunk_height)
                             
-                            alt_i = pi + int((i-0.5)*chunk_height)
-                            alt_j = pj + int((j-0.5)*chunk_width)
+                            alt_i = pi + math.floor((i-0.5)*chunk_height)
+                            alt_j = pj + math.floor((j-0.5)*chunk_width)
+                            if alt_i < 0 or alt_j < 0:
+                                print("Warning alt i and j are : ", alt_i, alt_j)
+                            
                             self.altitude[alt_i][alt_j] += alt
 
 
