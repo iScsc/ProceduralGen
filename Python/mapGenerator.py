@@ -4,13 +4,13 @@
 #from typing import Self                    #? Python 3.11+
 from __future__ import annotations          #? Python 3.7+
 
+import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
 from gradientGrid import GradientGrid
 from layer import Layer
 from chunk import Chunk
 from map import Map
-
 
 class CompleteMap:
     """
@@ -267,6 +267,42 @@ class MapGenerator:
                     return -1
         
         return common
+    
+    
+    
+    
+    @staticmethod
+    def getRandomSeed() -> int:
+        """Gets a random valid integer seed to be used in the generation. Can be used this way :
+        
+        >>> seed = MapGenerator.getRandomSeed()
+        
+        >>> MapGenerator.setRandomSeed(seed)
+        
+        >>> # MapGenerator generation
+
+        Returns:
+            int: a random valid integer seed to be used.
+        """
+        
+        return rd.randint(1, GradientGrid.MAX_INT_SEED)
+    
+    
+    
+    
+    @staticmethod
+    def setRandomSeed(seed: int | float | str | bytes | bytearray | None = getRandomSeed()) -> None:
+        """Set the seed for the future random generations.
+
+        Args:
+            `seed` (int | float | str | bytes | bytearray | None): the seed to be used in the future random generations.
+                                                                   Defaults to a random integer between `1` and `GradientGrid.MAX_INT_SEED`.
+        
+        Note:
+            Calls the setRandomSeed static method from the `GradientGrid` class.
+        """
+        
+        GradientGrid.setRandomSeed(seed)
     
     
     
