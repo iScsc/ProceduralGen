@@ -42,14 +42,14 @@ class CompleteMap:
         
         #? Show red dots on zero values. Could be removed.
         if value == 0:
-            return (1., 0., 0.)
+            return (255, 0, 0)
         elif value <= sea_level:
-            blue = int((value - min_value) * 200. / (sea_level - min_value)) / 255
-            o = 50 / 255
+            blue = int((value - min_value) * 200. / (sea_level - min_value))
+            o = 50
             return (o, o, blue)
         else:
-            green = int((value - min_value) * 255. / (max_value - min_value)) / 255
-            o = 50 / 255
+            green = int((value - min_value) * 255. / (max_value - min_value))
+            o = 50
             return (o, green, o)
     
     
@@ -154,11 +154,13 @@ class CompleteMap:
         max_alt = np.max(alt)
         min_alt = np.min(alt)
         
-        self.color_map = [[(0, 0, 0) for j in range(width)] for i in range(height)]
+        color_map = [[(0, 0, 0) for j in range(width)] for i in range(height)]
         
         for i in range(height):
             for j in range(width):
-                self.color_map[i][j] = CompleteMap.colorize(alt[i][j], self.sea_level, min_alt, max_alt)
+                color_map[i][j] = CompleteMap.colorize(alt[i][j], self.sea_level, min_alt, max_alt)
+        
+        self.color_map = np.array(color_map, dtype=np.uint8)
         
         
         
@@ -420,8 +422,30 @@ class MapGenerator:
         y = np.linspace(0, map_size[1], chunk_size[1] * map_size[1])
         x, y = np.meshgrid(x, y)
         
+        
+        if not type(complete_map.color_map) == np.ndarray:
+            print("Color map should be an numpy array.")
+        
+        
+        
+        
+        
+        if np.issubdtype(complete_map.color_map.dtype, np.integer):
+            cmap = complete_map.color_map.astype(np.float32)
+            cmap /= 255
+        elif not np.issubdtype(complete_map.color_map.dtype, np.floating):
+            # WHAT ARE YOU TRYING TO DO ???
+            print("Error : cmap can only be integers in [0, 255] or floating point values in [0., 1.]")
+            print("You tried to use : ", complete_map.color_map.dtype)
+            cmap = complete_map.color_map
+        else:
+            cmap = complete_map.color_map
+        
+        
+        
+        
         # print(np.shape(y), np.shape(x), np.shape(complete_map.sea_values), np.shape(complete_map.color_map))
-        surf = ax3D.plot_surface(y, x, np.array(complete_map.sea_values), facecolors=np.array(complete_map.color_map))
+        surf = ax3D.plot_surface(y, x, np.array(complete_map.sea_values), facecolors=np.array(cmap))
         
         xylim = max(map_size[0], map_size[1])
         ax3D.set_xlim(0, xylim)
