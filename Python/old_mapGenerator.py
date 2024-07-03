@@ -360,15 +360,15 @@ class mapGenerator:
     def interpolate2D(a1:float,a2:float,a3:float,a4:float,x:float,y:float):
         return a1+(a2-a1)*mapGenerator.smoothstep(x)+(a3-a1)*mapGenerator.smoothstep(y)+(a1+a4-a2-a3)*mapGenerator.smoothstep(x)*mapGenerator.smoothstep(y)
     
-    def addMeanAltitude(map_size_in_chunks : tuple[int], chunk_size_in_points : tuple[int], map : list[list[float]], max_a : float = 1, min_a : float = -0.5):
+    def addMeanAltitude(map_size_in_chunks : tuple[int], chunk_size_in_points : tuple[int], map : list[list[float]], max_a : float = 1.5, min_a : float = -0.5):
         """Add a 'mean' altitude to all chunks in a map with smoothing in order to avoid cliffs at chunks' border
 
         Args:
             map_size_in_chunks (tuple[int]): the number of chunks by row and columns in the map
             chunk_size_in_points (tuple[int]): the number of points by row and columns in a chunk
             map (list[list[float]]): the map
-            max_a (float, optional): max added altitude. Defaults to 1.
-            min_a (float, optional): min adde altitude. Defaults to -0.5
+            max_a (float, optional): max added altitude. Defaults to 1.5
+            min_a (float, optional): min added altitude. Defaults to -0.5
             
         Returns:
             the updated map

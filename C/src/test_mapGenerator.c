@@ -87,19 +87,19 @@ int main()
 
         setRandomSeed(seed); //? Comment this to make it not random, or give a constant rather than time(NULL)
 
-        int nb_layers = 3;
+        int nb_layers = 2;
 
         //! Remember that the memory space is square of the dimension. Be cautious!
-        int dimensions[] = {2, 5, 11};
+        int dimensions[] = {3, 5};//{2, 5, 11};
         int final_size = lcmOfArray(nb_layers, dimensions);
         printf("Final size per chunk : %d\n", final_size);
 
-        double weights[] = {1, .1, .01};
+        double weights[] = {1, .1};//{1, .1, .01};
 
-        int width = 4;   //7;
-        int height = 5;   //5;
+        int width = 2;   //7;
+        int height = 3;   //5;
 
-        double sea_level = -.15;
+        double sea_level = 0;//-.15;
 
         int display_loading = 1;      //1;
 
@@ -157,11 +157,11 @@ int main()
 
         //? Comment this if you don't want to save it in a file.
         //! WARNING : ../saves/ the folder must exist for it to work properly
-        // printf("File creation...\n");
-        // char folder_path[200] = "../saves/completeMap_test/";
+        printf("File creation...\n");
+        char folder_path[200] = "../saves/completeMap_test/";
 
-        // writeCompleteMapFiles(new_complete_map, folder_path);
-        // printf("File should be written now.\n");
+        writeCompleteMapFiles(new_complete_map, folder_path);
+        printf("File should be written now.\n");
 
 
 

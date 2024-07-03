@@ -254,6 +254,9 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
     return new_chunk;
 }
 
+
+
+//TODO ? signature could be changed to avoid passing useless parameters -> `chunk_width` and `chunk_height` instead of `gradGrids_width`, `gradGrids_height` and `size_factors`
 chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], double layers_factors[number_of_layers])
 {
     chunk* new_chunk = calloc(1, sizeof(chunk));
