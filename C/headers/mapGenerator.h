@@ -20,13 +20,9 @@
  */
 struct color
 {
-    int red_int; /**< the red int value in [0, 255]*/
-    int green_int; /**< the green int value in [0, 255]*/
-    int blue_int; /**< the blue int value in [0, 255]*/
-
-    float red_float; /**< the red float value in [0, 1]*/
-    float green_float; /**< the green float value in [0, 1]*/
-    float blue_float; /**< the blue float value in [0, 1]*/
+    __uint8_t red;      /**< the red integer value in [0, 255]  */
+    __uint8_t green;    /**< the green integer value in [0, 255]*/
+    __uint8_t blue;     /**< the blue integer value in [0, 255] */
 };
 
 typedef struct color color;
@@ -242,14 +238,14 @@ void printCompleteMap(completeMap* completeMap);
 void writeSeaMapFile(completeMap* completeMap, char path[]);
 
 /**
- * @brief TODO : Writes both color_map structures in two different files.
+ * @brief Writes the color_map in a file at the given path.
  * 
  * @param width (int) : the width of the color map
  * @param height (int) : the height of the color map.
  * @param color_map (color**) : the array of pointers to the color structures representing the color map.
  * @param path (char[]) : the path where the file shall be written.
  */
-void writeColorMapFiles(int width, int height, color* color_map[width * height], char path[]);
+void writeColorMapFile(int width, int height, color* color_map[width * height], char path[]);
 
 /**
  * @brief Writes every required files to save the completeMap structure.

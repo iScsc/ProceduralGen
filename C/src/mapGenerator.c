@@ -184,33 +184,21 @@ color* colorize(double value, double sea_level, double min_value, double max_val
     //? Show red dots on zero values. Could be removed.
     if (value == 0)
     {
-        new_color->red_int = 255;
-        new_color->green_int = 0;
-        new_color->blue_int = 0;
-
-        new_color->red_float = 1.;
-        new_color->green_float = 0;
-        new_color->blue_float = 0;
+        new_color->red = 255;
+        new_color->green = 0;
+        new_color->blue = 0;
     }
     else if (value <= sea_level)
     {
-        new_color->red_int = 50;
-        new_color->green_int = 50;
-        new_color->blue_int = s;
-
-        new_color->red_float = 1./255 * 50;
-        new_color->green_float = 1./255 * 50;
-        new_color->blue_float = 1./255 * s;
+        new_color->red = 50;
+        new_color->green = 50;
+        new_color->blue = s;
     }
     else
     {
-        new_color->red_int = 50;
-        new_color->green_int = i;
-        new_color->blue_int = 50;
-
-        new_color->red_float = 1./255 * 50;
-        new_color->green_float = 1./255 * i;
-        new_color->blue_float = 1./255 * 50;
+        new_color->red = 50;
+        new_color->green = i;
+        new_color->blue = 50;
     }
 
     return new_color;
@@ -565,7 +553,7 @@ void writeSeaMapFile(completeMap* completeMap, char path[])
 
 
 
-void writeColorIntMapFile(color** color_map, int width, int height, char path[])
+void writeColorMapFile(int width, int height, color* color_map[width * height], char path[])
 {
     FILE* f = NULL;
 
@@ -587,53 +575,11 @@ void writeColorIntMapFile(color** color_map, int width, int height, char path[])
 
                 if (j != width - 1)
                 {
-                    fprintf(f, "(%d,%d,%d)\t", color->red_int, color->green_int, color->blue_int);
+                    fprintf(f, "(%3d,%3d,%3d)\t", color->red, color->green, color->blue);
                 }
                 else
                 {
-                    fprintf(f, "(%d,%d,%d)\n", color->red_int, color->green_int, color->blue_int);
-                }
-            }
-        }
-
-        fclose(f);
-    }
-    else
-    {
-        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
-        return;
-    }
-}
-
-
-
-void writeColorFloatMapFile(color** color_map, int width, int height, char path[])
-{
-    FILE* f = NULL;
-
-    f = fopen(path, "w");
-
-    if (f != NULL)
-    {
-        fprintf(f, "Color Float Map\n");
-
-        // Writing the parameters
-        fprintf(f, "width=%d\nheight=%d\n", width, height);
-
-        // Writing the vectors
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                color* color = color_map[j + i * width];
-
-                if (j != width - 1)
-                {
-                    fprintf(f, "(%.4f,%.4f,%.4f)\t", color->red_float, color->green_float, color->blue_float);
-                }
-                else
-                {
-                    fprintf(f, "(%.4f,%.4f,%.4f)\n", color->red_float, color->green_float, color->blue_float);
+                    fprintf(f, "(%3d,%3d,%3d)\n", color->red, color->green, color->blue);
                 }
             }
         }
@@ -668,16 +614,10 @@ void writeCompleteMapFiles(completeMap* complete_map, char folder_path[])
     writeSeaMapFile(complete_map, sea_map_path);
 
 
-    // Generates the color int map file
-    char color_int_path[200] = "";
-    snprintf(color_int_path, sizeof(color_int_path), "%scolor_int_map.txt", folder_path);
-    writeColorIntMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_int_path);
-
-
-    // Generates the color float map file
-    char color_float_path[200] = "";
-    snprintf(color_float_path, sizeof(color_float_path), "%scolor_float_map.txt", folder_path);
-    writeColorFloatMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_float_path);
+    // Generates the color map file
+    char color_path[200] = "";
+    snprintf(color_path, sizeof(color_path), "%scolor_map.txt", folder_path);
+    writeColorMapFile(complete_map->width, complete_map->height, complete_map->color_map, color_path);
 }
 
 

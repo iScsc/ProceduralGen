@@ -196,9 +196,11 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
         }
     }
 
-    display_loading-=2;
     if (display_loading != 0)
     {
+        display_loading-=2;
+
+        
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
         char final_string[200] = "";
 
