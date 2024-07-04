@@ -561,7 +561,7 @@ void writeColorMapFile(int width, int height, color* color_map[width * height], 
 
     if (f != NULL)
     {
-        fprintf(f, "Color Int Map\n");
+        fprintf(f, "Color Map\n");
 
         // Writing the parameters
         fprintf(f, "width=%d\nheight=%d\n", width, height);
