@@ -103,7 +103,10 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx)
             return NULL;
         }
 
-        layer_value = (layer->values) + height_idx * width + width_idx;
+        if (layer->values != NULL)
+        {
+            layer_value = (layer->values) + height_idx * width + width_idx;
+        }
     }
 
     return layer_value;

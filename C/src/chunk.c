@@ -86,6 +86,13 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
 
 
 
+double generateBaseAltitude()
+{
+    return -0.5+2*rand()*1./RAND_MAX;
+}
+
+
+
 void regenerateChunk(chunk* chunk, unsigned int display_loading)
 {
     clock_t start_time = clock();
@@ -137,7 +144,16 @@ void regenerateChunk(chunk* chunk, unsigned int display_loading)
             *value /= divisor;
         }
     }
-    chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
+
+    chunk->base_altitude=generateBaseAltitude();
+
+    // Frees layer altitude arrays
+
+    for (int k = 0; k < nblayers; k++)
+    {
+        free(layers[k]->values);
+        layers[k]->values = NULL;
+    }
 }
 
 
@@ -281,7 +297,7 @@ chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layer
 
     new_chunk->layers = NULL;
 
-    new_chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
+    new_chunk->base_altitude=generateBaseAltitude();
 
     return new_chunk;
 }

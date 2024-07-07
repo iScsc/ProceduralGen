@@ -101,12 +101,21 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
 
 
 /**
+ * @brief Generates a new base altitude to be set to a chunk.
+ * 
+ * @return double : the base_altitude value.
+ */
+double generateBaseAltitude();
+
+/**
  * @brief Regenerates the given chunk final altitude values from its layers and layers factors.
  * 
  * @param chunk (chunk*) : the pointer to the initialized chunk structure to regenerate the altitude values.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
  *                                         * If `0` the loading bars won't be printed.
  *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.
+ *
+ * @note each layer will see its values free'd at this point. They can still be regenerated if needed using the dedicated function.
  */
 void regenerateChunk(chunk* chunk, unsigned int display_loading);
 
