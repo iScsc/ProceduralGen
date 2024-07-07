@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from old_mapGenerator import mapGenerator as old_MapGenerator
 from mapGenerator import MapGenerator
 
-LOAD = True
-GENERATE = False
+LOAD = False
+GENERATE = True
 
 if LOAD:
     path_to_load = "../saves/completeMap_test/"

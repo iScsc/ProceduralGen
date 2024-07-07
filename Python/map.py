@@ -17,6 +17,9 @@ class Map:
     Map :
     -------------
     The Map class used to generate large terrain by gathering chunks.
+    
+    Note :
+        A Map structure does not contain the complete map array. Use method `getFullMap()` on a map structure to get it.
     """
     
     
@@ -175,7 +178,7 @@ class Map:
         self.chunk_width = 0
         self.chunk_height = 0
         
-        self.altitude = None
+        # self.altitude = None
         self.chunks = None
         self.virtual_chunks = None
         
@@ -210,14 +213,6 @@ class Map:
         final_str = "-----------------------------------------\n"
         final_str += "Map of {} x {} chunks of dimension {} x {}\n"\
             .format(self.map_width, self.map_height, self.chunk_width, self.chunk_height)
-        # final_str += "\nAltitude values :\n"
-        # for i in range(self.height):
-            
-        #     for j in range(self.width):
-        #         alt = self.altitude[i, j]
-        #         final_str += Layer.ALT_PRINTING_FORMAT.format(alt)
-            
-        #     final_str += "\n"
         final_str += "-----------------------------------------\n"
         
         return final_str
@@ -234,17 +229,17 @@ class Map:
         
         #* -------------- Verifications : End   --------------
         
-        width = self.map_width * self.chunk_width
-        height = self.map_height * self.chunk_height
+        # width = self.map_width * self.chunk_width
+        # height = self.map_height * self.chunk_height
         
-        self.altitude = np.zeros((height, width))
+        # self.altitude = np.zeros((height, width))
         
-        # First copies altitudes from chunks
-        for i in range(height):
-            for j in range(width):
+        # # First copies altitudes from chunks
+        # for i in range(height):
+        #     for j in range(width):
                 
-                current_chunk = self.chunks[i//self.chunk_height][j//self.chunk_width]
-                self.altitude[i][j] = current_chunk.altitude[i%self.chunk_height][j%self.chunk_width]
+        #         current_chunk = self.chunks[i//self.chunk_height][j//self.chunk_width]
+        #         self.altitude[i][j] = current_chunk.altitude[i%self.chunk_height][j%self.chunk_width]
         
         
         self.applyMeanAltitude()
@@ -296,10 +291,36 @@ class Map:
                             
                             alt_i = pi + math.floor((i-0.5)*chunk_height)
                             alt_j = pj + math.floor((j-0.5)*chunk_width)
+                            
                             if alt_i < 0 or alt_j < 0:
                                 print("Warning alt i and j are : ", alt_i, alt_j)
                             
-                            self.altitude[alt_i][alt_j] += alt
+                            current_chunk = self.chunks[alt_i//chunk_height][alt_j//chunk_width]
+                            
+                            
+                            current_chunk.altitude[alt_i%chunk_height][alt_j%chunk_width] += alt
+    
+    
+    
+    def getFullMap(self) -> np.ndarray:
+        """Get the full map altitude from the contained chunks.
+
+        Returns:
+            `np.ndarray`: the complete altitude array from the map.
+        """
+        
+        width = self.map_width * self.chunk_width
+        height = self.map_height * self.chunk_height
+        
+        altitude = np.zeros((height, width))
+        
+        for i in range(height):
+            for j in range(width):
+                
+                current_chunk = self.chunks[i//self.chunk_height][j//self.chunk_width]
+                altitude[i][j] = current_chunk.altitude[i%self.chunk_height][j%self.chunk_width]
+        
+        return altitude
 
 
 

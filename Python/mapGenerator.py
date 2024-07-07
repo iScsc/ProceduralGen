@@ -129,10 +129,12 @@ class CompleteMap:
         self.map = map
         self.sea_level = sea_level
         
-        if type(map.altitude) == np.ndarray:
-            alt = map.altitude
+        alt = self.map.getFullMap()
+        
+        if type(alt) == np.ndarray:
+            pass
         else:
-            alt = np.array(map.altitude)
+            alt = np.array(alt)
         self.sea_values = np.where(alt >= sea_level, alt, sea_level)
         
         self.generateColorMap()
@@ -146,10 +148,12 @@ class CompleteMap:
         width = self.map.map_width * self.map.chunk_width
         height = self.map.map_height * self.map.chunk_height
         
-        if type(self.map.altitude) == np.ndarray:
-            alt = self.map.altitude
+        alt = self.map.getFullMap()
+        
+        if type(alt) == np.ndarray:
+            pass
         else:
-            alt = np.array(self.map.altitude)
+            alt = np.array(alt)
         
         max_alt = np.max(alt)
         min_alt = np.min(alt)
