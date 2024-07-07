@@ -17,6 +17,9 @@ class Chunk:
     Chunk :
     -------------
     The Chunk class used to generate an altitude map by superposition of multiple layers.
+    
+    Note :
+        Layers' altitude values are then free'd.
     """
     
     
@@ -427,6 +430,10 @@ class Chunk:
         
         self.altitude /= factor_sum
         self.base_altitude = Chunk.generateBaseAltitude()
+        
+        for i in range(len_fac):
+            layer = self.layers[i]
+            layer.altitude = None # Free memory now
 
 
 
