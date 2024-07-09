@@ -321,6 +321,34 @@ class DecodeDictError(InterpreterError):
 
 
 
+### ---------- Binary encoding methods  ---------- ###
+
+from numpy import uint8
+def bits(x : int | float | uint8) -> bytes:
+    if type(x)==int and int.bit_length(x)<=23:
+        temp = 0 if x>0 else 128
+        x = abs(x)
+        res = bytes([temp+x//256**2,x%256**2//256,x%256])
+        return res
+    elif type(x)==float:
+        temp = 0 if x>0 else 128
+        x = abs(x)
+        exp = 0
+        if x<2**19:
+            while exp>-16 and x<2**19:
+                exp-=1
+                x*=2
+        else:
+            while exp<15 and x>=2**19:
+                exp+=1
+                x/=2
+        exp+=16
+        x=int(x)
+        res = bytes([temp+int(bin(exp)+bin(x//2**17)[2:],2)])+bits(x%2**17)[1:]
+        return res
+
+
+
 
 
 if __name__ == "__main__":
