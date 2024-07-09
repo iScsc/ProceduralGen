@@ -325,7 +325,10 @@ class DecodeDictError(InterpreterError):
 
 from numpy import uint8
 def bits(x : int | float | uint8) -> bytes:
-    if type(x)==int and int.bit_length(x)<=23:
+    if type(x)==uint8:
+        res=bytes([x])
+        return res
+    elif type(x)==int and int.bit_length(x)<=23:
         temp = 0 if x>0 else 128
         x = abs(x)
         res = bytes([temp+x//256**2,x%256**2//256,x%256])
