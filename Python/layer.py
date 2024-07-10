@@ -6,7 +6,7 @@ from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
 from gradientGrid import GradientGrid
-
+import interpreter as interp
 
 
 
@@ -22,6 +22,7 @@ class Layer:
     
     #? -------------------------- Static ------------------------- #
     
+    LAYER_ENCODING = b'\x02'
     
     ALT_PRINTING_DECIMALS = 4
     ALT_PRINTING_FORMAT = " {{: .{}f}} ".format(ALT_PRINTING_DECIMALS)
@@ -169,16 +170,39 @@ class Layer:
     
     
     @staticmethod
-    def write(path: str, layer: Layer) -> None:
+    def write(layer: Layer, path: str=None, altitude : bool = False) -> bytes:
         #TODO
-        pass
+        bytes_str : bytes = b''
+        bytes_str += Layer.LAYER_ENCODING
+        bytes_str += interp.bytesNumber(layer.size_factor)
+        bytes_str += GradientGrid.write(layer.grid)
+        if path!=None:
+            f=open(path,"wb")
+            f.write(bytes_str)
+        return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> Layer:
+    def read(path: str = None, bytes_in : bytes=None) -> tuple[Layer, bytes]:
         #TODO
-        return None
+        bytes_str : bytes
+        if path!=None:
+            pass
+        elif bytes_in!=None and bytes_in[0:1]==Layer.LAYER_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        layer : Layer
+        
+        if bytes_str!=None:
+            size_factor, bytes_str = interp.nextInt(bytes_str)
+            grid, bytes_str = GradientGrid.read(None,bytes_str)
+            layer = Layer(grid,size_factor)
+            
+        else: layer = None
+        
+        return layer, bytes_str
     
     
     #? ------------------------ Instances ------------------------ #

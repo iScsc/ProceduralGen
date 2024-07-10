@@ -324,6 +324,10 @@ class DecodeDictError(InterpreterError):
 ### ---------- Binary encoding methods  ---------- ###
 
 from numpy import uint8, float64
+
+BYTES_TRUE = b'\x01'
+BYTES_FALSE = b'\x00'
+
 def bytesNumber(x : int | float | float64 | uint8) -> bytes:
     if type(x)==uint8:
         res=bytes([x])

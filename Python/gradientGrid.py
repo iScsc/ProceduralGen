@@ -71,7 +71,7 @@ class GradientGrid:
     
     
     @staticmethod
-    def read(path: str=None, bytes_in : bytes=None) -> GradientGrid:
+    def read(path: str=None, bytes_in : bytes=None) -> tuple[GradientGrid, bytes]:
         #TODO
         bytes_str : bytes
         if path!=None:
@@ -86,7 +86,6 @@ class GradientGrid:
             height, bytes_str = interp.nextInt(bytes_str)
             width, bytes_str = interp.nextInt(bytes_str)
             grid = GradientGrid(width,height)
-            print(grid.width, grid.height)
             for i in range(grid.height):
                 for j in range(grid.width):
                     grid.vectors[i,j,0], bytes_str = interp.nextFloat(bytes_str)
@@ -94,7 +93,7 @@ class GradientGrid:
             
         else: grid = None
         
-        return grid
+        return grid, bytes_str
     
     
     #? ------------------------ Instances ------------------------ #
