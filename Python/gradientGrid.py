@@ -223,17 +223,18 @@ if __name__ == "__main__":
     grid.regenerate()
     print(grid)
     
+    print("\nTrying to encode and decode the grid :")
     print(GradientGrid.write(grid))
     print(GradientGrid.read(None, GradientGrid.write(grid)))
     
     
-    # print("Trying to generate a grid at the north of the first one :")
-    # gridn = GradientGrid(5, 3, (None, None, grid, None))
-    # print(gridn)
+    print("Trying to generate a grid at the north of the first one :")
+    gridn = GradientGrid(5, 3, (None, None, grid, None))
+    print(gridn)
     
     
     
-    # print("Trying to manually modify the first grid and see if the other gris is also modified : (It shouldn't)")
-    # grid.vectors[0, 2, 0] = 0
-    # print(grid)
-    # print(gridn)
+    print("Trying to manually modify the first grid and see if the other gris is also modified : (It shouldn't)")
+    grid.vectors[0, 2, 0] = 0
+    print(grid)
+    print(gridn)
