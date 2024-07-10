@@ -8,6 +8,7 @@ import numpy as np
 import random as rd
 from gradientGrid import GradientGrid
 from layer import Layer
+import interpreter as interp
 
 
 
@@ -25,6 +26,7 @@ class Chunk:
     
     #? -------------------------- Static ------------------------- #
     
+    CHUNK_ENCODING = b'\x03'
     
     ALT_PRINTING_DECIMALS = 4
     ALT_PRINTING_FORMAT = " {{: .{}f}} ".format(ALT_PRINTING_DECIMALS)
@@ -268,9 +270,19 @@ class Chunk:
     
     
     @staticmethod
-    def write(path: str, chunk: Chunk) -> None:
+    def write(chunk: Chunk, path: str=None) -> bytes:
         #TODO
-        pass
+        bytes_str : bytes = b''
+        bytes_str += Chunk.CHUNK_ENCODING
+        bytes_str += interp.bytesNumber(len(chunk.layers_factors))
+        for x in chunk.layers_factors: 
+            bytes_str += interp.bytesNumber(x)
+        for x in chunk.layers: 
+            bytes_str += Layer.write(x)
+        if path!=None:
+            f=open(path,"wb")
+            f.write(bytes_str)
+        return bytes_str
     
     
     

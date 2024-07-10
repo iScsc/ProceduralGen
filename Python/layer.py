@@ -170,7 +170,7 @@ class Layer:
     
     
     @staticmethod
-    def write(layer: Layer, path: str=None, altitude : bool = False) -> bytes:
+    def write(layer: Layer, path: str=None) -> bytes:
         #TODO
         bytes_str : bytes = b''
         bytes_str += Layer.LAYER_ENCODING
