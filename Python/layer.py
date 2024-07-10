@@ -303,6 +303,10 @@ if __name__ == "__main__":
     layer.regenerate()
     print(layer)
     
+    print("\nTrying to encode and decode the layer :")
+    print(Layer.write(layer))
+    print(Layer.read(None, Layer.write(layer))[0])
+    
     
     
     print("Trying to generate a layer at the north of the first one :")

@@ -224,7 +224,7 @@ if __name__ == "__main__":
     
     print("\nTrying to encode and decode the grid :")
     print(GradientGrid.write(grid))
-    print(GradientGrid.read(None, GradientGrid.write(grid)))
+    print(GradientGrid.read(None, GradientGrid.write(grid))[0])
     
     
     print("Trying to generate a grid at the north of the first one :")
