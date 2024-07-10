@@ -323,8 +323,8 @@ class DecodeDictError(InterpreterError):
 
 ### ---------- Binary encoding methods  ---------- ###
 
-from numpy import uint8
-def bytesNumber(x : int | float | uint8) -> bytes:
+from numpy import uint8, float64
+def bytesNumber(x : int | float | float64 | uint8) -> bytes:
     if type(x)==uint8:
         res=bytes([x])
         return res
@@ -333,7 +333,7 @@ def bytesNumber(x : int | float | uint8) -> bytes:
         x = abs(x)
         res = bytes([temp+x//256**2,x%256**2//256,x%256])
         return res
-    elif type(x)==float:
+    elif type(x)==float or type(x)==float64:
         temp = 0 if x>0 else 128
         x = abs(x)
         exp = 0
@@ -347,7 +347,6 @@ def bytesNumber(x : int | float | uint8) -> bytes:
                 x/=2
         exp+=16
         x=int(x)
-        print(exp,x)
         res = bytes([temp+int(bin(exp)+bin(x//2**16)[2:],2),x%2**16//256,x%256])
         return res
 
@@ -358,12 +357,13 @@ def nextInt(bytes_str : bytes) -> tuple[int, bytes]:
 
 def nextFloat(bytes_str : bytes) -> tuple[float, bytes]:
     x = int.from_bytes(bytes_str[:3])
-    if x//2**23==1: x*=-x%2**23
-    exp=x//2**19
+    if x//(2**23)==1: s=-1
+    else: s=1
+    x=x%(2**23)
+    exp=x//(2**19)
     exp-=16
-    x=x%2**19
-    print(exp,x)
-    return x*2**exp,bytes_str[3:]
+    x=x%(2**19)
+    return s*x*2**exp,bytes_str[3:]
     
 def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
     x = int.from_bytes(bytes_str[0])
