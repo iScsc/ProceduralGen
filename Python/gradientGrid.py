@@ -6,7 +6,7 @@ from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
 import random as rd
-
+import interpreter as interp
 
 
 
@@ -28,6 +28,7 @@ class GradientGrid:
     
     #? -------------------------- Static ------------------------- #
     
+    GRID_ENCODING = b'\x01'
     
     MAX_INT_SEED = 1000000000000    # Maximum integer for the automatic random seed generation
     CURRENT_SEED = "a simple seed"  # Current seed used by the randomizer
@@ -52,16 +53,48 @@ class GradientGrid:
     
     
     @staticmethod
-    def write(path: str, grid: GradientGrid) -> None:
+    def write(grid: GradientGrid, path: str=None) -> bytes:
         #TODO
-        pass
+        bytes_str : bytes = b''
+        bytes_str += GradientGrid.GRID_ENCODING
+        bytes_str += interp.bytesNumber(grid.height)
+        bytes_str += interp.bytesNumber(grid.width)
+        for i in range(grid.height):
+            for j in range(grid.width):
+                bytes_str += interp.bytesNumber(grid.vectors[i,j,0])
+                bytes_str += interp.bytesNumber(grid.vectors[i,j,1])
+        if path!=None:
+            f=open(path,"wb")
+            f.write(bytes_str)
+        return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> GradientGrid:
+    def read(path: str=None, bytes_in : bytes=None) -> GradientGrid:
         #TODO
-        return None
+        bytes_str : bytes
+        if path!=None:
+            pass
+        elif bytes_in!=None and bytes_in[0:1]==GradientGrid.GRID_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        grid : GradientGrid
+        
+        if bytes_str!=None:
+            height, bytes_str = interp.nextInt(bytes_str)
+            width, bytes_str = interp.nextInt(bytes_str)
+            grid = GradientGrid(width,height)
+            print(grid.width, grid.height)
+            for i in range(grid.height):
+                for j in range(grid.width):
+                    grid.vectors[i,j,0], bytes_str = interp.nextFloat(bytes_str)
+                    grid.vectors[i,j,1], bytes_str = interp.nextFloat(bytes_str)
+            
+        else: grid = None
+        
+        return grid
     
     
     #? ------------------------ Instances ------------------------ #
@@ -181,7 +214,7 @@ if __name__ == "__main__":
     
     GradientGrid.setRandomSeed("seed")
     
-    grid = GradientGrid(5, 5)
+    grid = GradientGrid(5, 3)
     print(grid)
     
     
@@ -190,15 +223,17 @@ if __name__ == "__main__":
     grid.regenerate()
     print(grid)
     
+    print(GradientGrid.write(grid))
+    print(GradientGrid.read(None, GradientGrid.write(grid)))
     
     
-    print("Trying to generate a grid at the north of the first one :")
-    gridn = GradientGrid(5, 3, (None, None, grid, None))
-    print(gridn)
+    # print("Trying to generate a grid at the north of the first one :")
+    # gridn = GradientGrid(5, 3, (None, None, grid, None))
+    # print(gridn)
     
     
     
-    print("Trying to manually modify the first grid and see if the other gris is also modified : (It shouldn't)")
-    grid.vectors[0, 2, 0] = 0
-    print(grid)
-    print(gridn)
+    # print("Trying to manually modify the first grid and see if the other gris is also modified : (It shouldn't)")
+    # grid.vectors[0, 2, 0] = 0
+    # print(grid)
+    # print(gridn)
