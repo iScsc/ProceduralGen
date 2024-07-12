@@ -10,6 +10,7 @@ import copy
 from gradientGrid import GradientGrid
 from layer import Layer
 from chunk import Chunk
+import interpreter as interp
 
 
 class Map:
@@ -25,6 +26,7 @@ class Map:
     
     #? -------------------------- Static ------------------------- #
     
+    MAP_ENCODING = b'\x04'
     
     ALT_PRINTING_DECIMALS = 4
     ALT_PRINTING_FORMAT = " {{: .{}f}} ".format(ALT_PRINTING_DECIMALS)
@@ -112,16 +114,56 @@ class Map:
     
     
     @staticmethod
-    def write(path: str, map: Map) -> None:
-        #TODO
-        pass
+    def write(map: Map, path: str=None, append: bool=False) -> bytes:
+        bytes_str : bytes = b''
+        bytes_str += Map.MAP_ENCODING
+        bytes_str += interp.bytesNumber(map.map_height)
+        bytes_str += interp.bytesNumber(map.map_width)
+        for i in range(map.map_height):
+            for j in range(map.map_width):
+                bytes_str += Chunk.write(map.chunks[i][j])
+        n = 2 * (map.map_width+2) + 2 * map.map_height
+        for i in range(n):
+            bytes_str += Chunk.write(map.virtual_chunks[i],True)
+        if path!=None:
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
+            f.write(bytes_str)
+        return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> Map:
-        #TODO
-        return None
+    def read(path: str, bytes_in : bytes=None) -> tuple[Map, bytes]:
+        #TODO from file path
+        bytes_str : bytes
+        if path!=None:
+            pass
+        elif bytes_in!=None and bytes_in[0:1]==Map.MAP_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        map : Map
+        
+        if bytes_str!=None:
+            height, bytes_str = interp.nextInt(bytes_str)
+            width, bytes_str = interp.nextInt(bytes_str)
+            chunks: list[list[Chunk]] = []
+            virtual_chunks: list[Chunk] = []
+            for i in range(height):
+                chunks.append([])
+                for _ in range(width):
+                    x, bytes_str = Chunk.read(None, bytes_str)
+                    chunks[i].append(x)
+            n = 2 * (width+2) + 2 * height
+            for _ in range(n):
+                x, bytes_str = Chunk.read(None, bytes_str)
+                virtual_chunks.append(x)
+            map = Map(width,height,chunks,virtual_chunks,False)
+
+        else: chunk = None
+        
+        return chunk, bytes_str
     
     
     
@@ -159,7 +201,7 @@ class Map:
     
     
     
-    def __init__(self, map_width: int, map_height: int, chunks: list[list[Chunk]], virtual_chunks: list[Chunk]) -> None:
+    def __init__(self, map_width: int, map_height: int, chunks: list[list[Chunk]], virtual_chunks: list[Chunk], regenerate: bool = True) -> None:
         """Initializes a new Map structure from the given list of already existing chunks and virtual chunks.
         If chunks should be generated in the process, please use one of the designated static methods.
 
@@ -199,7 +241,7 @@ class Map:
         self.chunks = copy.deepcopy(chunks) #? To keep both dimensions copied. Or use an np.ndarray ?
         self.virtual_chunks = virtual_chunks.copy()
         
-        self.regenerate()
+        self.regenerate(regenerate)
     
     
     
@@ -219,7 +261,7 @@ class Map:
     
     
     
-    def regenerate(self) -> None:
+    def regenerate(self, regenerate: bool = True) -> None:
         """Regenerates the altitude values of the map based on its chunks.
         """
         
@@ -241,8 +283,8 @@ class Map:
         #         current_chunk = self.chunks[i//self.chunk_height][j//self.chunk_width]
         #         self.altitude[i][j] = current_chunk.altitude[i%self.chunk_height][j%self.chunk_width]
         
-        
-        self.applyMeanAltitude()
+        if regenerate:
+            self.applyMeanAltitude()
     
     
     
