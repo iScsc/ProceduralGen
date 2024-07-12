@@ -103,8 +103,8 @@ class CompleteMap:
         bytes_str += CompleteMap.COMPLETE_MAP_ENCODING
         bytes_str += Map.write(complete_map.map)
         bytes_str += interp.bytesNumber(complete_map.sea_level)
-        height = map.map_height * map.chunk_height
-        width = map.map_width * map.chunk_width
+        height = complete_map.map.map_height * complete_map.map.chunk_height
+        width = complete_map.map.map_width * complete_map.map.chunk_width
         for i in range(height):
             for j in range(width):
                 bytes_str += interp.bytesNumber(complete_map.sea_values[i,j])
@@ -120,14 +120,42 @@ class CompleteMap:
     
     
     @staticmethod
-    def read(path: str) -> CompleteMap:
-        #TODO
-        return None
+    def read(path: str, bytes_in : bytes=None) -> tuple[CompleteMap, bytes]:
+        #TODO from file path
+        bytes_str : bytes
+        if path!=None:
+            pass
+        elif bytes_in!=None and bytes_in[0:1]==CompleteMap.COMPLETE_MAP_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        complete_map : CompleteMap
+        
+        if bytes_str!=None:
+            map,bytes_str = Map.read(None, bytes_str)
+            height = map.map_height * map.chunk_height
+            width = map.map_width * map.chunk_width
+            sea_level, bytes_str = interp.nextFloat(bytes_str)
+            sea_values = np.zeros((height,width))
+            color_map = np.zeros((height,width,3),np.uint8)
+            for i in range(height):
+                for j in range(width):
+                    sea_values[i,j], bytes_str = interp.nextFloat(bytes_str)
+                    color_map[i,j,0], bytes_str = interp.nextUInt8(bytes_str)
+                    color_map[i,j,1], bytes_str = interp.nextUInt8(bytes_str)
+                    color_map[i,j,2], bytes_str = interp.nextUInt8(bytes_str)
+            complete_map = CompleteMap(map,sea_level,False)
+            complete_map.sea_values = sea_values
+            complete_map.color_map = color_map
+
+        else: complete_map = None
+        
+        return complete_map, bytes_str
     
     
     #? ------------------------ Instances ------------------------ #
     
-    def __init__(self, map: Map, sea_level: float) -> None:
+    def __init__(self, map: Map, sea_level: float, regenerate: bool = True) -> None:
         """Initialize a CompleteMap structure based on the given Map and sea altitude.
 
         Args:
@@ -147,15 +175,16 @@ class CompleteMap:
         self.map = map
         self.sea_level = sea_level
         
-        alt = self.map.getFullMap()
-        
-        if type(alt) == np.ndarray:
-            pass
-        else:
-            alt = np.array(alt)
-        self.sea_values = np.where(alt >= sea_level, alt, sea_level)
-        
-        self.generateColorMap()
+        if regenerate:
+            alt = self.map.getFullMap()
+            
+            if type(alt) == np.ndarray:
+                pass
+            else:
+                alt = np.array(alt)
+            self.sea_values = np.where(alt >= sea_level, alt, sea_level)
+            
+            self.generateColorMap()
     
     
     
