@@ -245,7 +245,7 @@ class Chunk:
     
     
     @staticmethod
-    def newVirtualChunk(chunk_width: int, chunk_height: int) -> Chunk:
+    def newVirtualChunk(chunk_width: int, chunk_height: int, base_altitude: int = None) -> Chunk:
         """Generates a new virtual chunk.
 
         Args:
@@ -262,7 +262,8 @@ class Chunk:
         virtual_chunk.width = chunk_width
         virtual_chunk.height = chunk_height
         
-        virtual_chunk.base_altitude = Chunk.generateBaseAltitude()
+        if base_altitude!=None:  virtual_chunk.base_altitude = base_altitude
+        else: virtual_chunk.base_altitude = Chunk.generateBaseAltitude()
         
         return virtual_chunk
     
@@ -270,18 +271,24 @@ class Chunk:
     
     
     @staticmethod
-    def write(chunk: Chunk, path: str=None, append: bool=False) -> bytes:
+    def write(chunk: Chunk, virtual: bool=False, path: str=None, append: bool=False) -> bytes:
         bytes_str : bytes = b''
         bytes_str += Chunk.CHUNK_ENCODING
         bytes_str += interp.bytesNumber(chunk.base_altitude)
-        bytes_str += interp.bytesNumber(len(chunk.layers_factors))
-        for x in chunk.layers_factors: 
-            bytes_str += interp.bytesNumber(float(x))
-        for x in chunk.layers: 
-            bytes_str += Layer.write(x)
-        for i in range(chunk.height):
-            for j in range(chunk.width):
-                bytes_str += interp.bytesNumber(chunk.altitude[i,j])
+        bytes_str += interp.bytesNumber(chunk.width)
+        bytes_str += interp.bytesNumber(chunk.height)
+        if virtual:
+            bytes_str += interp.BYTES_TRUE
+        else:
+            bytes_str += interp.BYTES_FALSE
+            bytes_str += interp.bytesNumber(len(chunk.layers_factors))
+            for x in chunk.layers_factors: 
+                bytes_str += interp.bytesNumber(float(x))
+            for x in chunk.layers: 
+                bytes_str += Layer.write(x)
+            for i in range(chunk.height):
+                for j in range(chunk.width):
+                    bytes_str += interp.bytesNumber(chunk.altitude[i,j])
         if path!=None:
             if append: f=open(path,"ab")
             else: f=open(path,"wb")
@@ -304,20 +311,27 @@ class Chunk:
         
         if bytes_str!=None:
             base_altitude, bytes_str = interp.nextFloat(bytes_str)
-            layer_number, bytes_str = interp.nextInt(bytes_str)
-            layers: list[Layer] = []
-            layer_factors: list[float] = []
-            for _ in range(layer_number):
-                x, bytes_str = interp.nextFloat(bytes_str)
-                layer_factors.append(x)
-            for _ in range(layer_number):
-                x, bytes_str = Layer.read(None,bytes_str)
-                layers.append(x)
-            chunk = Chunk(layers, layer_factors, False)
-            chunk.altitude = np.zeros((chunk.height,chunk.width))
-            for i in range(chunk.height):
-                for j in range(chunk.width):
-                    chunk.altitude[i,j], bytes_str = interp.nextFloat(bytes_str)
+            height, bytes_str = interp.nextInt(bytes_str)
+            width, bytes_str = interp.nextInt(bytes_str)
+            if bytes_str[0:1]==interp.BYTES_TRUE:
+                chunk = Chunk.newVirtualChunk(width, height, base_altitude)
+                bytes_str = bytes_str[1:]
+            else: 
+                bytes_str = bytes_str[1:]
+                layer_number, bytes_str = interp.nextInt(bytes_str)
+                layers: list[Layer] = []
+                layer_factors: list[float] = []
+                for _ in range(layer_number):
+                    x, bytes_str = interp.nextFloat(bytes_str)
+                    layer_factors.append(x)
+                for _ in range(layer_number):
+                    x, bytes_str = Layer.read(None,bytes_str)
+                    layers.append(x)
+                chunk = Chunk(layers, layer_factors, False)
+                chunk.altitude = np.zeros((chunk.height,chunk.width))
+                for i in range(chunk.height):
+                    for j in range(chunk.width):
+                        chunk.altitude[i,j], bytes_str = interp.nextFloat(bytes_str)
             
         else: chunk = None
         
