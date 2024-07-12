@@ -170,22 +170,28 @@ class Layer:
     
     
     @staticmethod
-    def write(layer: Layer, path: str=None) -> bytes:
-        #TODO
+    def write(layer: Layer, altitude: bool=False, path: str=None, append: bool=False) -> bytes:
         bytes_str : bytes = b''
         bytes_str += Layer.LAYER_ENCODING
         bytes_str += interp.bytesNumber(layer.size_factor)
         bytes_str += GradientGrid.write(layer.grid)
+        if altitude:
+            bytes_str += interp.BYTES_TRUE
+            for i in range(layer.height):
+                for j in range(layer.width):
+                    bytes_str += interp.bytesNumber(layer.altitude[i,j])
+        else: bytes_str += interp.BYTES_FALSE
         if path!=None:
-            f=open(path,"wb")
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
             f.write(bytes_str)
         return bytes_str
     
     
     
     @staticmethod
-    def read(path: str = None, bytes_in : bytes=None) -> tuple[Layer, bytes]:
-        #TODO
+    def read(path: str = None, bytes_in: bytes=None, altitude: bool=False) -> tuple[Layer, bytes]:
+        #TODO from file path
         bytes_str : bytes
         if path!=None:
             pass
@@ -198,7 +204,18 @@ class Layer:
         if bytes_str!=None:
             size_factor, bytes_str = interp.nextInt(bytes_str)
             grid, bytes_str = GradientGrid.read(None,bytes_str)
-            layer = Layer(grid,size_factor)
+            if bytes_str[0:1]==interp.BYTES_TRUE:
+                bytes_str=bytes_str[1:]
+                layer = Layer(grid,size_factor,False)
+                if altitude:
+                    layer.altitude=np.zeros((layer.height,layer.width))
+                    for i in range(layer.height):
+                        for j in range(layer.width):
+                            layer.altitude[i,j], bytes_str = interp.nextFloat(bytes_str)
+            else:
+                bytes_str=bytes_str[1:]
+                layer = Layer(grid,size_factor,altitude)
+                
             
         else: layer = None
         
@@ -208,7 +225,7 @@ class Layer:
     #? ------------------------ Instances ------------------------ #
     
     
-    def __init__(self, grid: GradientGrid, size_factor: int) -> None:
+    def __init__(self, grid: GradientGrid, size_factor: int, regenerate: bool=True) -> None:
         """Initializes a new layer instance from an already existing GradientGrid and a size factor.
         If no gradient grid are already generated, please use the designated static method `generateLayerFromScratch` to generate the
         appropriate GradientGrid and then generate the layer structure.
@@ -236,7 +253,7 @@ class Layer:
         self.grid = grid
         self.size_factor = size_factor
         
-        self.regenerate()
+        self.regenerate(regenerate)
     
     
     
@@ -262,7 +279,7 @@ class Layer:
     
     
     
-    def regenerate(self) -> None:
+    def regenerate(self, regenerate: bool=True) -> None:
         """Regenerates the altitude values of the layer based on its `grid` and `size_factor` parameters.
         """
         
@@ -273,12 +290,13 @@ class Layer:
         self.width = (self.grid.width - 1) * self.size_factor
         self.height = (self.grid.height - 1) * self.size_factor
         
-        self.altitude = np.zeros((self.height, self.width))
         
-        for i in range(self.height):
-            for j in range(self.width):
-                
-                self.altitude[i, j] = Layer.perlin(i/self.size_factor, j/self.size_factor, self.grid)
+        if regenerate:
+            self.altitude = np.zeros((self.height, self.width))
+            for i in range(self.height):
+                for j in range(self.width):
+                    
+                    self.altitude[i, j] = Layer.perlin(i/self.size_factor, j/self.size_factor, self.grid)
 
 
 

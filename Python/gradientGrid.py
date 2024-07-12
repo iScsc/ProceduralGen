@@ -53,8 +53,7 @@ class GradientGrid:
     
     
     @staticmethod
-    def write(grid: GradientGrid, path: str=None) -> bytes:
-        #TODO
+    def write(grid: GradientGrid, path: str=None, append: bool=False) -> bytes:
         bytes_str : bytes = b''
         bytes_str += GradientGrid.GRID_ENCODING
         bytes_str += interp.bytesNumber(grid.height)
@@ -64,7 +63,8 @@ class GradientGrid:
                 bytes_str += interp.bytesNumber(grid.vectors[i,j,0])
                 bytes_str += interp.bytesNumber(grid.vectors[i,j,1])
         if path!=None:
-            f=open(path,"wb")
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
             f.write(bytes_str)
         return bytes_str
     
@@ -72,7 +72,7 @@ class GradientGrid:
     
     @staticmethod
     def read(path: str=None, bytes_in : bytes=None) -> tuple[GradientGrid, bytes]:
-        #TODO
+        #TODO from file path
         bytes_str : bytes
         if path!=None:
             pass
