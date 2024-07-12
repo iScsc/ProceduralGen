@@ -11,6 +11,7 @@ from gradientGrid import GradientGrid
 from layer import Layer
 from chunk import Chunk
 from map import Map
+import interpreter as interp
 
 class CompleteMap:
     """
@@ -21,6 +22,8 @@ class CompleteMap:
     
     
     #? -------------------------- Static ------------------------- #
+    
+    COMPLETE_MAP_ENCODING = b'\x04'
     
     @staticmethod
     def colorize(value: float, sea_level: float, min_value: float, max_value: float) -> tuple[float]:
@@ -95,9 +98,24 @@ class CompleteMap:
     
     
     @staticmethod
-    def write(path: str, complete_map: CompleteMap) -> None:
-        #TODO
-        pass
+    def write(complete_map: CompleteMap, path: str=None, append: bool=False) -> bytes:
+        bytes_str : bytes = b''
+        bytes_str += CompleteMap.COMPLETE_MAP_ENCODING
+        bytes_str += Map.write(complete_map.map)
+        bytes_str += interp.bytesNumber(complete_map.sea_level)
+        height = map.map_height * map.chunk_height
+        width = map.map_width * map.chunk_width
+        for i in range(height):
+            for j in range(width):
+                bytes_str += interp.bytesNumber(complete_map.sea_values[i,j])
+                bytes_str += interp.bytesNumber(complete_map.color_map[i,j,0])
+                bytes_str += interp.bytesNumber(complete_map.color_map[i,j,1])
+                bytes_str += interp.bytesNumber(complete_map.color_map[i,j,2])
+        if path!=None:
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
+            f.write(bytes_str)
+        return bytes_str
     
     
     
