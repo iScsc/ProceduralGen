@@ -370,7 +370,7 @@ def nextFloat(bytes_str : bytes) -> tuple[float, bytes]:
     return s*x*2**exp,bytes_str[3:]
     
 def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
-    x = int.from_bytes(bytes_str[0])
+    x = int.from_bytes(bytes_str[0:1])
     x = uint8(x)
     return x,bytes_str[1:]
 
