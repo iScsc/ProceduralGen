@@ -161,9 +161,9 @@ class Map:
                 virtual_chunks.append(x)
             map = Map(width,height,chunks,virtual_chunks,False)
 
-        else: chunk = None
+        else: map = None
         
-        return chunk, bytes_str
+        return map, bytes_str
     
     
     
@@ -413,4 +413,8 @@ if __name__ == "__main__":
     map = Map.generateMapFromScratch(grid_dim, grid_dim, size_factors, layer_factors, map_dimensions[0], map_dimensions[1])
     
     print(map)
+    
+    print("\nTesting map encoding: ")
+    print(Map.write(map))
+    print(Map.read(None,Map.write(map))[0])
     
