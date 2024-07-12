@@ -270,32 +270,64 @@ class Chunk:
     
     
     @staticmethod
-    def write(chunk: Chunk, path: str=None) -> bytes:
-        #TODO
+    def write(chunk: Chunk, path: str=None, append: bool=False) -> bytes:
         bytes_str : bytes = b''
         bytes_str += Chunk.CHUNK_ENCODING
+        bytes_str += interp.bytesNumber(chunk.base_altitude)
         bytes_str += interp.bytesNumber(len(chunk.layers_factors))
         for x in chunk.layers_factors: 
-            bytes_str += interp.bytesNumber(x)
+            bytes_str += interp.bytesNumber(float(x))
         for x in chunk.layers: 
             bytes_str += Layer.write(x)
+        for i in range(chunk.height):
+            for j in range(chunk.width):
+                bytes_str += interp.bytesNumber(chunk.altitude[i,j])
         if path!=None:
-            f=open(path,"wb")
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
             f.write(bytes_str)
         return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> Chunk:
-        #TODO
-        return None
+    def read(path: str, bytes_in : bytes=None) -> tuple[Chunk, bytes]:
+        #TODO from file path
+        bytes_str : bytes
+        if path!=None:
+            pass
+        elif bytes_in!=None and bytes_in[0:1]==Chunk.CHUNK_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        chunk : Chunk
+        
+        if bytes_str!=None:
+            base_altitude, bytes_str = interp.nextFloat(bytes_str)
+            layer_number, bytes_str = interp.nextInt(bytes_str)
+            layers: list[Layer] = []
+            layer_factors: list[float] = []
+            for _ in range(layer_number):
+                x, bytes_str = interp.nextFloat(bytes_str)
+                layer_factors.append(x)
+            for _ in range(layer_number):
+                x, bytes_str = Layer.read(None,bytes_str)
+                layers.append(x)
+            chunk = Chunk(layers, layer_factors, False)
+            chunk.altitude = np.zeros((chunk.height,chunk.width))
+            for i in range(chunk.height):
+                for j in range(chunk.width):
+                    chunk.altitude[i,j], bytes_str = interp.nextFloat(bytes_str)
+            
+        else: chunk = None
+        
+        return chunk, bytes_str
     
     
     #? ------------------------ Instances ------------------------ #
     
     
-    def __init__(self, layers: list[Layer], layers_factors: list[float]) -> None:
+    def __init__(self, layers: list[Layer], layers_factors: list[float], regenerate = True) -> None:
         """Initializes a new Chunk structure from the given list of already existing layers and factors.
         If layers should be generated in the process, please use one of the designated static methods.
 
@@ -350,7 +382,7 @@ class Chunk:
         self.layers_factors = layers_factors.copy()
         
         # Compute altitude
-        self.regenerate()
+        self.regenerate(regenerate)
     
     
     
@@ -379,7 +411,7 @@ class Chunk:
     
     
     
-    def regenerate(self) -> None:
+    def regenerate(self, regenerate: bool = True) -> None:
         """Regenerates the altitude values of the chunk based on its `layers` and `layer_factors` parameters.
         """
         
@@ -431,17 +463,17 @@ class Chunk:
         #* -------------- Verifications : End --------------
         
         
-        
-        self.altitude = np.zeros((self.height, self.width))
-        
-        for i in range(len_fac):
-            fac = self.layers_factors[i]
-            layer = self.layers[i]
+        if (regenerate):
+            self.altitude = np.zeros((self.height, self.width))
             
-            self.altitude += fac * layer.altitude
-        
-        self.altitude /= factor_sum
-        self.base_altitude = Chunk.generateBaseAltitude()
+            for i in range(len_fac):
+                fac = self.layers_factors[i]
+                layer = self.layers[i]
+                
+                self.altitude += fac * layer.altitude
+            
+            self.altitude /= factor_sum
+            self.base_altitude = Chunk.generateBaseAltitude()
         
         for i in range(len_fac):
             layer = self.layers[i]
@@ -473,6 +505,9 @@ if __name__ == "__main__":
     print(chunk)
     
     
+    print("\nTesting chunk encoding: ")
+    print(Chunk.write(chunk))
+    print(Chunk.read(None,Chunk.write(chunk))[0])
     
     
     print("Generating a south chunk from gradient grids structures :")

@@ -212,6 +212,10 @@ class Layer:
                     for i in range(layer.height):
                         for j in range(layer.width):
                             layer.altitude[i,j], bytes_str = interp.nextFloat(bytes_str)
+                else:
+                    for i in range(layer.height):
+                        for j in range(layer.width):
+                            _, bytes_str = interp.nextFloat(bytes_str)
             else:
                 bytes_str=bytes_str[1:]
                 layer = Layer(grid,size_factor,altitude)
