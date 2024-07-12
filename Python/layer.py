@@ -266,13 +266,17 @@ class Layer:
         """
         final_str = "-----------------------------------------\n"
         final_str += "Layer of dimensions {} x {} :\n".format(self.width, self.height)
-        for i in range(self.height):
+        
+        if self.altitude.shape!=(0,0):
             
-            for j in range(self.width):
-                alt = self.altitude[i, j]
-                final_str += Layer.ALT_PRINTING_FORMAT.format(alt)
-            
-            final_str += "\n"
+            for i in range(self.height):
+                
+                for j in range(self.width):
+                    alt = self.altitude[i, j]
+                    final_str += Layer.ALT_PRINTING_FORMAT.format(alt)
+                
+                final_str += "\n"
+                
         final_str += "-----------------------------------------\n"
         
         return final_str
@@ -297,6 +301,8 @@ class Layer:
                 for j in range(self.width):
                     
                     self.altitude[i, j] = Layer.perlin(i/self.size_factor, j/self.size_factor, self.grid)
+        else:
+            self.altitude = np.zeros((0, 0))
 
 
 
@@ -322,8 +328,12 @@ if __name__ == "__main__":
     print(layer)
     
     print("\nTrying to encode and decode the layer :")
+    print("\tWithout altitude :")
     print(Layer.write(layer))
     print(Layer.read(None, Layer.write(layer))[0])
+    print("\n\tWith altitude :")
+    print(Layer.write(layer,True))
+    print(Layer.read(None, Layer.write(layer,True), True)[0])
     
     
     
