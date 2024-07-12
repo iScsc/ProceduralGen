@@ -267,7 +267,7 @@ class Layer:
         final_str = "-----------------------------------------\n"
         final_str += "Layer of dimensions {} x {} :\n".format(self.width, self.height)
         
-        if self.altitude.shape!=(0,0):
+        if type(self.altitude)==np.ndarray:
             
             for i in range(self.height):
                 
@@ -302,7 +302,7 @@ class Layer:
                     
                     self.altitude[i, j] = Layer.perlin(i/self.size_factor, j/self.size_factor, self.grid)
         else:
-            self.altitude = np.zeros((0, 0))
+            self.altitude = None
 
 
 
