@@ -1,0 +1,48 @@
+[gd_scene load_steps=8 format=3 uid="uid://cabf6st1dbdcb"]
+
+[ext_resource type="PackedScene" uid="uid://dfax68qtmker8" path="res://scenes/player.tscn" id="1_gybie"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_i1hgg"]
+size = Vector3(20, 0, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y6jxf"]
+albedo_color = Color(0.337801, 0.523112, 0.231151, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_3lt1l"]
+material = SubResource("StandardMaterial3D_y6jxf")
+size = Vector2(20, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7eule"]
+albedo_color = Color(0.260911, 0.378047, 0.795929, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yl1a6"]
+material = SubResource("StandardMaterial3D_7eule")
+size = Vector3(2, 0.6, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_slp6x"]
+size = Vector3(2, 0.6, 2)
+
+[node name="Main" type="Node"]
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.965926, 0.183013, -0.183013, 0, 0.707107, 0.707107, 0.258819, -0.683013, 0.683013, 0, 10, 0)
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_i1hgg")
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="Ground"]
+mesh = SubResource("PlaneMesh_3lt1l")
+
+[node name="Player" parent="." instance=ExtResource("1_gybie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="Cube" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.3, -5)
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="Cube"]
+mesh = SubResource("BoxMesh_yl1a6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Cube"]
+shape = SubResource("BoxShape3D_slp6x")
