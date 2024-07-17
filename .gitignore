@@ -6,6 +6,9 @@ __pycache__/
 # vs code and its files
 .vscode
 
+# Godot 4+ specific ignores
+.godot/
+
 # compiled and executables
 C/compiled/*.o
 C/bin/*
