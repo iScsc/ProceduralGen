@@ -6,6 +6,9 @@ const SPEED := 5.0
 const JUMP_VELOCITY := 4.5
 const ROTATION_SPEED := 5e-2
 
+const RESET_POSITION := Vector3(0, 10, 0)
+const LOWER_LIMIT := -100.
+
 const CAMERA_LIMITS := Vector2(-PI/3, PI/3)
 
 # VARIABLES
@@ -23,11 +26,11 @@ func _init():
 
 
 func _physics_process(delta):
-	# Add the gravity.
+	## Add the gravity.
 	if not is_on_floor():
 		velocity.y -= gravity * delta
-
-	# Handle jump.
+	
+	## Handle jump.
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
 	
@@ -38,9 +41,8 @@ func _physics_process(delta):
 		rotation -= rot * ROTATION_SPEED * delta
 		camera.rotation.x = clamp(camera.rotation.x - input_rot.y * ROTATION_SPEED * delta,
 								 CAMERA_LIMITS.x, CAMERA_LIMITS.y)
-
-	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
+	
+	## Get the input direction and handle the movement/deceleration.
 	var input_dir := Input.get_vector("left", "right", "forward", "backward")
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
@@ -49,8 +51,18 @@ func _physics_process(delta):
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
-
+	
+	
+	## Actually moving
 	move_and_slide()
 	
+	
+	## Keep cursor in the middle of the screen
 	if DisplayServer.window_is_focused():
 		get_viewport().warp_mouse(get_viewport().size/2)
+	
+	
+	## Avoid falling off infinetly
+	if position.y < LOWER_LIMIT:
+		position = RESET_POSITION
+		velocity = Vector3.ZERO
