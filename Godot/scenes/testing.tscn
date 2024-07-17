@@ -1,0 +1,59 @@
+[gd_scene load_steps=10 format=3 uid="uid://xmfi7bamixo0"]
+
+[ext_resource type="PackedScene" uid="uid://d3ic0m4kpv565" path="res://scenes/moving_camera.tscn" id="1_ewe2m"]
+[ext_resource type="Script" path="res://scripts/shapes/sphere.gd" id="3_no2ng"]
+[ext_resource type="Script" path="res://scripts/shapes/square.gd" id="4_26qvt"]
+[ext_resource type="Script" path="res://scripts/shapes/imesh.gd" id="4_kaoah"]
+[ext_resource type="Script" path="res://scripts/shapes/cube.gd" id="5_svkov"]
+[ext_resource type="Script" path="res://scripts/shapes/column.gd" id="6_obdb7"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6c34q"]
+size = Vector3(20, 0, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y6jxf"]
+albedo_color = Color(0.337801, 0.523112, 0.231151, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_y1xga"]
+material = SubResource("StandardMaterial3D_y6jxf")
+size = Vector2(20, 20)
+
+[node name="Testing" type="Node"]
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.889001, 0.323788, -0.323788, -2.94814e-08, 0.707107, 0.707107, 0.457905, 0.628619, -0.628619, 0, 10, 0)
+
+[node name="MovingCamera" parent="." instance=ExtResource("1_ewe2m")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0.61774, -2)
+
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_6c34q")
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="Ground"]
+mesh = SubResource("PlaneMesh_y1xga")
+
+[node name="SphereMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -6)
+script = ExtResource("3_no2ng")
+
+[node name="ImmediateMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -5, 0, 6)
+script = ExtResource("4_kaoah")
+
+[node name="SquareMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -6)
+script = ExtResource("4_26qvt")
+
+[node name="CubeMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 3)
+script = ExtResource("5_svkov")
+
+[node name="ColumnMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+skeleton = NodePath("../SphereMesh")
+script = ExtResource("6_obdb7")
+x_dim = 2.0
+y_dim = 5.0
+z_dim = 3.0
