@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from old_mapGenerator import mapGenerator as old_MapGenerator
-from mapGenerator import MapGenerator
+from mapGenerator import MapGenerator, CompleteMap
 
 LOAD = False
 GENERATE = True
@@ -31,7 +31,7 @@ if GENERATE:
     #
     #
     #
-    SEED = "seed"
+    SEED = MapGenerator.getRandomSeed() #"seed"
     print("SEED =", SEED)
 
     MapGenerator.setRandomSeed(SEED)
@@ -56,8 +56,16 @@ if GENERATE:
     
     new_map = MapGenerator.fullGen(GRID_SIZES, LAYERS_FACTORS, MAP_SIZE[0], MAP_SIZE[1], SEA_LEVEL)
     
+    gen_time = time.time()
+    print("The whole generation took {} seconds.".format(gen_time - start))
     
-    print("The whole generation took {} seconds.".format(time.time() - start))
+    
+    print("Temporary Godot map writing")
+    CompleteMap.write("../Godot/data/map.save", new_map)
+    write_time = time.time()
+    print("The whole map writing took {} seconds.".format(write_time - gen_time))
+    
+    
     print("Plotting now...")
     
     MapGenerator.plotCompleteMap(new_map)

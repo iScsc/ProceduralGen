@@ -97,6 +97,34 @@ class CompleteMap:
     @staticmethod
     def write(path: str, complete_map: CompleteMap) -> None:
         #TODO
+        
+        #? Just a temporary implementation for Godot use
+        
+        map: Map = complete_map.map
+        width = map.map_width*map.chunk_width
+        height = map.map_height*map.chunk_height
+        
+        lines = []
+        
+        lines.append(str(map.map_width) + " " + str(width)+"\n")
+        lines.append(str(map.map_height) + " " + str(height)+"\n")
+        
+        for i in range(height):
+            curr_line = ""
+            for j in range(width):
+                curr_line += "{: 1.3f} ".format(complete_map.sea_values[i][j])
+            
+            curr_line += "\n"
+            lines.append(curr_line)
+        
+        
+        
+        f = open(path, "w")
+        
+        f.writelines(lines)
+        
+        f.close()
+        
         pass
     
     
