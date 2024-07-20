@@ -1,6 +1,6 @@
 @tool
 
-extends StaticBody3D
+class_name Terrain extends StaticBody3D
 
 
 @export var coll_shape: CollisionShape3D
@@ -43,8 +43,7 @@ var width: float = 1:
 			gen_terrain_bool = value
 			if gen_terrain_bool:
 				generate_dummy_terrain()
-				generate_map_mesh()
-				generate_collision_shape()
+				generate_all()
 				
 				gen_terrain_bool = false
 
@@ -54,13 +53,13 @@ var width: float = 1:
 		if Engine.is_editor_hint():
 			reset_mesh_bool = value
 			if reset_mesh_bool:
-				reset_mesh()
-				reset_collision_shape()
+				reset_all()
 				
 				reset_mesh_bool = false
 
 
 
+## map with dimensions length x width
 var map: Array[Array] = [[0]]
 
 
@@ -77,17 +76,17 @@ func _ready() -> void:
 		self.add_child(new_coll)
 		new_coll.owner = self
 		coll_shape = new_coll
-	
-	
-	if not Engine.is_editor_hint():
-		
-		if not mesh_instance.mesh is Mesh:
-			print("Generating a new mesh and collision shape")
-			generate_dummy_terrain()
-			#print_map()
-			
-			generate_map_mesh()
-			generate_collision_shape()
+	#
+	#
+	#if not Engine.is_editor_hint():
+		#
+		#if not mesh_instance.mesh is Mesh:
+			#print("Generating a new mesh and collision shape")
+			#generate_dummy_terrain()
+			##print_map()
+			#
+			#generate_map_mesh()
+			#generate_collision_shape()
 	
 
 
@@ -293,12 +292,66 @@ func generate_collision_shape() -> void:
 
 func reset_collision_shape() -> void:
 	coll_shape.shape = null
-
-
-
-
-func save_mesh() -> void:
-	# Saves mesh to a .tres file with compression enabled.
-	ResourceSaver.save(mesh_instance.mesh, "res://custom_mesh.tres", ResourceSaver.FLAG_COMPRESS)
 	
 
+
+
+func generate_all() -> void:
+	reset_all()
+	
+	generate_map_mesh()
+	generate_collision_shape()
+	
+
+
+
+func reset_all() -> void:
+	reset_collision_shape()
+	reset_mesh()
+
+
+
+
+static func save_mesh(terrain: Terrain) -> void:
+	ResourceSaver.save(terrain.mesh_instance.mesh, "res://data/custom_mesh.tres", ResourceSaver.FLAG_COMPRESS)
+	
+
+
+
+
+static func load_terrain(path: String) -> Terrain:
+	
+	var file = FileAccess.open(path, FileAccess.READ)
+	
+	var lines: Array[String] = []
+	
+	while file.get_position() < file.get_length():
+		lines.append(file.get_line())
+	
+	file.close()
+	
+	var width_parts := lines[0].split(" ", false)
+	var length_parts :=  lines[1].split(" ", false)
+	
+	var nb_chunks_width: int = width_parts[0].to_int()
+	var nb_length_width: int = length_parts[0].to_int()
+	
+	var width: int = width_parts[1].to_int()
+	var length: int = length_parts[1].to_int()
+	
+	
+	var alt_mult: float = width / nb_chunks_width
+	
+	
+	var new_terrain: Terrain = Terrain.new()
+	
+	new_terrain.map_dimensions = Vector2(width, length)
+	
+	for i in range(length):
+		var line_parts := lines[2 + i].split(" ", false)
+		
+		for j in range(width):
+			new_terrain.map[i][j] = alt_mult * line_parts[j].to_float()
+	
+	return new_terrain
+	
