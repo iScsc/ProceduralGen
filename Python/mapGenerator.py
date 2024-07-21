@@ -549,8 +549,8 @@ if __name__ == "__main__":
     MapGenerator.plotCompleteMap(complete_map)
     
     print("\nTesting completeMap encoding: ")
-    print(CompleteMap.write(complete_map))
-    MapGenerator.plotCompleteMap(CompleteMap.read(None,CompleteMap.write(complete_map))[0])
+    print(CompleteMap.write(complete_map,"../saves/test_completeMap.data"))
+    MapGenerator.plotCompleteMap(CompleteMap.read("../saves/test_completeMap.data"))
     
     
     
