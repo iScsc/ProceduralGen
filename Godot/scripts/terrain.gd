@@ -1,20 +1,25 @@
 @tool
 
-class_name Terrain extends StaticBody3D
+class_name Terrain extends Node3D
 
 
 ## Constants
 
-const terrain_scene = preload("res://scenes/terrain.tscn")
+const TERRAIN_SCENE = preload("res://scenes/terrain.tscn")
 
+const BASE_LAND_COLOR := Color.FOREST_GREEN
 
 ## Variables
 
+# Ground
+@export var ground: StaticBody3D
+@export var ground_coll_shape: CollisionShape3D
+@export var ground_mesh_instance: MeshInstance3D
 
-@export var coll_shape: CollisionShape3D
-@export var mesh_instance: MeshInstance3D
-
-
+# Sea
+@export var sea: StaticBody3D
+@export var sea_coll_shape: CollisionShape3D
+@export var sea_mesh_instance: MeshInstance3D
 
 ## Map dimensions in points in (width, length)
 @export var map_dimensions: Vector2 = Vector2(2, 2):
@@ -53,13 +58,17 @@ var width: float = 2:
 
 
 
+@export var sea_level: float = 0.0
+
+
+
 ## Button to generate the mesh in the editor when it goes to True
 @export var gen_terrain_bool: bool = false:
 	set(value):
 		if Engine.is_editor_hint():
 			gen_terrain_bool = value
 			if gen_terrain_bool:
-				generate_dummy_terrain()
+				#generate_dummy_terrain()
 				generate_all()
 				
 				gen_terrain_bool = false
@@ -79,7 +88,10 @@ var width: float = 2:
 ## map with dimensions length x width
 var map: Array[Array] = [[0, 0], [0, 0]]
 
-@export var color_map: Image = Image.create(2, 2, false, Image.FORMAT_RGBA8)
+var color_map: Image = Image.create(2, 2, false, Image.FORMAT_RGBA8)
+
+
+
 
 
 @export var terrain_shader: Shader = preload("res://shaders/terrain.gdshader")
@@ -91,28 +103,43 @@ func _init() -> void:
 
 func _ready() -> void:
 	
-	if not mesh_instance is MeshInstance3D:
-		var new_mesh := MeshInstance3D.new()
-		self.add_child(new_mesh)
-		new_mesh.owner = self
-		mesh_instance = new_mesh
+	if not ground is StaticBody3D:
+		var new_ground := StaticBody3D.new()
+		self.add_child(new_ground)
+		new_ground.owner = self
+		ground = new_ground
 	
-	if not coll_shape is CollisionShape3D:
+	if not ground_mesh_instance is MeshInstance3D:
+		var new_mesh := MeshInstance3D.new()
+		ground_mesh_instance.add_child(new_mesh)
+		new_mesh.owner = ground_mesh_instance
+		ground_mesh_instance = new_mesh
+	
+	if not ground_coll_shape is CollisionShape3D:
 		var new_coll := CollisionShape3D.new()
-		self.add_child(new_coll)
-		new_coll.owner = self
-		coll_shape = new_coll
-	#
-	#
-	#if not Engine.is_editor_hint():
-		#
-		#if not mesh_instance.mesh is Mesh:
-			#print("Generating a new mesh and collision shape")
-			#generate_dummy_terrain()
-			##print_map()
-			#
-			#generate_map_mesh()
-			#generate_collision_shape()
+		ground_coll_shape.add_child(new_coll)
+		new_coll.owner = ground_coll_shape
+		ground_coll_shape = new_coll
+	
+	
+	
+	if not sea is StaticBody3D:
+		var new_sea := StaticBody3D.new()
+		self.add_child(new_sea)
+		new_sea.owner = self
+		sea = new_sea
+	
+	if not sea_mesh_instance is MeshInstance3D:
+		var new_mesh := MeshInstance3D.new()
+		sea_mesh_instance.add_child(new_mesh)
+		new_mesh.owner = sea_mesh_instance
+		sea_mesh_instance = new_mesh
+	
+	if not sea_coll_shape is CollisionShape3D:
+		var new_coll := CollisionShape3D.new()
+		sea_coll_shape.add_child(new_coll)
+		new_coll.owner = sea_coll_shape
+		sea_coll_shape = new_coll
 	
 
 
@@ -172,7 +199,20 @@ func print_map() -> void:
 
 
 func generate_map_mesh() -> void:
+	if ground_mesh_instance is MeshInstance3D:
+		var new_mesh := ArrayMesh.new()
+		generate_ground_surface(new_mesh)
+		ground_mesh_instance.mesh = new_mesh
 	
+	if sea_mesh_instance is MeshInstance3D:
+		var new_mesh := ArrayMesh.new()
+		generate_sea_surface(new_mesh)
+		sea_mesh_instance.mesh = new_mesh
+
+
+
+
+func generate_ground_surface(mesh: ArrayMesh) -> void:
 	## Creating the final surface array
 	var surface_array: Array = []
 	
@@ -185,22 +225,16 @@ func generate_map_mesh() -> void:
 	var normals = PackedVector3Array()
 	var indices = PackedInt32Array()
 	
-	
-	
-	########## ACTUAL SURFACE GENERATION HERE - BEGIN ###########
-	
-	
-	
 	## Terrain
 	var wd := distance_between_points.x
 	var ad := distance_between_points.y
 	var ld := distance_between_points.z
 	
 	
+	
 	for i in range(length):
 		for j in range(width):
 			var alt = map[i][j]
-			
 			# centered variables
 			var ci: float = i - (length - 1)/2.
 			var cj: float = j - (width - 1)/2.
@@ -208,8 +242,7 @@ func generate_map_mesh() -> void:
 			var vert := Vector3(wd*cj, ad*alt, ld*ci)
 			var uv := Vector2(i, j)
 			
-			## Normals are processed once every vert has been correctly created.
-			
+			# Normals are processed once every vert has been correctly created.
 			verts.append_array([vert, vert])
 			uvs.append_array([uv, uv])
 			
@@ -244,9 +277,7 @@ func generate_map_mesh() -> void:
 				#indices.append_array([own_id, up_id, right_id])
 	
 	
-	
-	
-	
+	## Normals Processing
 	var nb_points_per_triangle := 3 ## IS A CONSTANT, BUT TO EXPLAIN WHY : 3 points per triangle
 	var nb_faces_per_triangle := 2  ## IS A CONSTANT, BUT TO EXPLAIN WHY : face up and down for each
 	
@@ -271,10 +302,7 @@ func generate_map_mesh() -> void:
 		var vec1 := vert2 - vert1
 		var vec2 := vert3 - vert1
 		
-		
 		var norm_up := vec2.cross(vec1).normalized()
-																	#Vector3(randf(), randf(), randf()).normalized()
-																	#Vector3(0, 1, 0)
 		var norm_down := -norm_up
 		
 		# To be added for each vert
@@ -286,14 +314,9 @@ func generate_map_mesh() -> void:
 		normals[id5] = norm_down
 		normals[id6] = norm_down
 	
-	
 	## verifications
 	#print("Number of vert : ", len(verts), " - Number of uvs : ", len(uvs), " - Number of normals : ", len(normals))
 	#print("Number of indices : ", len(indices), " ---> divided by 3 : ", len(indices)/3, " (2 for each face)")
-	
-	##########  ACTUAL SURFACE GENERATION HERE - END  ###########
-	
-	
 	
 	## Adding the arrays to the final surface array
 	surface_array[Mesh.ARRAY_VERTEX] = verts
@@ -301,55 +324,201 @@ func generate_map_mesh() -> void:
 	surface_array[Mesh.ARRAY_NORMAL] = normals
 	surface_array[Mesh.ARRAY_INDEX] = indices
 	
-	## Resetting the current mesh
-	reset_mesh()
+	## Finally creating the surface using triangles
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
+	mesh.surface_set_name(mesh.get_surface_count() - 1, "Ground")
+	
+	## Setting up the material
+	set_ground_material(mesh)
+	
+
+
+
+func generate_sea_surface(mesh: ArrayMesh) -> void:
+	## Creating the final surface array
+	var surface_array: Array = []
+	
+	## MANDATORY since Godot except this size
+	surface_array.resize(Mesh.ARRAY_MAX)
+	
+	## Creating intermediate arrays
+	var verts = PackedVector3Array()
+	var uvs = PackedVector2Array()
+	var normals = PackedVector3Array()
+	var indices = PackedInt32Array()
+	
+	## Terrain
+	var wd := distance_between_points.x
+	var ad := distance_between_points.y
+	var ld := distance_between_points.z
+	
+	var alt = sea_level
+	
+	print(ad*alt)
+	
+	for i in range(length):
+		for j in range(width):
+			# centered variables
+			var ci: float = i - (length - 1)/2.
+			var cj: float = j - (width - 1)/2.
+			
+			var vert := Vector3(wd*cj, ad*alt, ld*ci)
+			var uv := Vector2(i, j)
+			
+			# Normals are processed once every vert has been correctly created.
+			verts.append_array([vert, vert])
+			uvs.append_array([uv, uv])
+			
+			var own_id := 2*(i*width + j)
+			var left_id := 2*(i*width + (j-1))
+			var right_id := 2*(i*width + (j+1))
+			var up_id := 2*((i-1)*width + j)
+			var down_id := 2*((i+1)*width + j)
+			
+			## avoid up left issue
+			if i > 0 and j > 0:
+				#up-wards
+				indices.append_array([own_id, left_id, up_id])
+				
+				#down-wards
+				indices.append_array([own_id + 1, up_id + 1, left_id + 1])
+			
+			## avoid down right issue
+			if i < length - 1 and j < width - 1:
+				#up-wards
+				indices.append_array([own_id, right_id, down_id])
+				
+				#down-wards
+				indices.append_array([own_id + 1, down_id + 1, right_id + 1])
+			
+			### avoid down left issue
+			#if i < length - 1 and j > 0:
+				#indices.append_array([own_id, down_id, left_id])
+			#
+			### avoid up right issue
+			#if i > 0 and j < width - 1:
+				#indices.append_array([own_id, up_id, right_id])
+	
+	
+	## Normals Processing
+	var nb_points_per_triangle := 3 ## IS A CONSTANT, BUT TO EXPLAIN WHY : 3 points per triangle
+	var nb_faces_per_triangle := 2  ## IS A CONSTANT, BUT TO EXPLAIN WHY : face up and down for each
+	
+	normals.resize(len(verts))
+	
+	# Setting up normals
+	for i in range(0, len(indices), nb_points_per_triangle * nb_faces_per_triangle):
+		# ids are in the order : point 1 up, point 2 up, point 3 up, point 1 down, point 2 down, point 3 down
+		var id1: int = indices[i]
+		var id2: int = indices[i+1]
+		var id3: int = indices[i+2]
+		
+		var id4: int = indices[i+3]
+		var id5: int = indices[i+4]
+		var id6: int = indices[i+5]
+		
+		var vert1: Vector3 = verts[id1]
+		var vert2: Vector3 = verts[id2]
+		var vert3: Vector3 = verts[id3]
+		
+		# Get two vectors from the plane
+		var vec1 := vert2 - vert1
+		var vec2 := vert3 - vert1
+		
+		var norm_up := vec2.cross(vec1).normalized() # Should be Vector3(0, 1, 0)
+		var norm_down := -norm_up
+		
+		# To be added for each vert
+		normals[id1] = norm_up
+		normals[id2] = norm_up
+		normals[id3] = norm_up
+		
+		normals[id4] = norm_down
+		normals[id5] = norm_down
+		normals[id6] = norm_down
+	
+	## verifications
+	#print("Number of vert : ", len(verts), " - Number of uvs : ", len(uvs), " - Number of normals : ", len(normals))
+	#print("Number of indices : ", len(indices), " ---> divided by 3 : ", len(indices)/3, " (2 for each face)")
+	
+	## Adding the arrays to the final surface array
+	surface_array[Mesh.ARRAY_VERTEX] = verts
+	surface_array[Mesh.ARRAY_TEX_UV] = uvs
+	surface_array[Mesh.ARRAY_NORMAL] = normals
+	surface_array[Mesh.ARRAY_INDEX] = indices
 	
 	## Finally creating the surface using triangles
-	# No blendshapes, lods, or compression used.
-	mesh_instance.mesh = ArrayMesh.new()
-	mesh_instance.mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
+	mesh.surface_set_name(mesh.get_surface_count() - 1, "Water")
 	
-	
-	## Setting up the shader
-	set_material()
+	## Setting up the material
+	set_sea_material(mesh)
 	
 
 
 
-func reset_mesh() -> void:
-	mesh_instance.mesh = null
+
+
+func reset_meshes() -> void:
+	ground_mesh_instance.mesh = null
+	sea_mesh_instance.mesh = null
 	
 
 
 
-func set_material() -> void:
-	if mesh_instance is MeshInstance3D:
-		var new_material: ShaderMaterial = ShaderMaterial.new()
-		new_material.shader = terrain_shader
-		mesh_instance.set_surface_override_material(0, new_material)
+func set_ground_material(mesh: Mesh) -> void:
+	var new_material: ShaderMaterial = ShaderMaterial.new()
+	new_material.shader = terrain_shader
+	mesh.surface_set_material(0, new_material)
+	
+
+
+
+func set_sea_material(mesh: Mesh) -> void:
+	var new_material: StandardMaterial3D = StandardMaterial3D.new()
+	new_material.albedo_color = Color.NAVY_BLUE
+	new_material.albedo_color.a = .7
+	mesh.surface_set_material(0, new_material)
+	
+	#var new_material: ShaderMaterial = ShaderMaterial.new()
+	#new_material.shader = terrain_shader
+	#mesh.surface_set_material(0, new_material)
 	
 
 
 
 func set_shader_dimensions() -> void:
-	if mesh_instance is MeshInstance3D:
-		var mat: ShaderMaterial = mesh_instance.get_surface_override_material(0)
+	if ground_mesh_instance is MeshInstance3D and ground_mesh_instance.mesh is Mesh:
+		var mat: ShaderMaterial = ground_mesh_instance.mesh.surface_get_material(0)
 		mat.set_shader_parameter("map_dist", Vector2(distance_between_points.x, distance_between_points.z))
+	
+	#if sea_mesh_instance is MeshInstance3D and sea_mesh_instance.mesh is Mesh:
+		#var mat: ShaderMaterial = sea_mesh_instance.mesh.surface_get_material(0)
+		#mat.set_shader_parameter("map_dist", Vector2(distance_between_points.x, distance_between_points.z))
 	
 
 
 func set_shader_distance() -> void:
-	if mesh_instance is MeshInstance3D:
-		var mat: ShaderMaterial = mesh_instance.get_surface_override_material(0)
+	if ground_mesh_instance is MeshInstance3D and ground_mesh_instance.mesh is Mesh:
+		var mat: ShaderMaterial = ground_mesh_instance.mesh.surface_get_material(0)
 		mat.set_shader_parameter("map_dimensions", map_dimensions)
+	
+	#if sea_mesh_instance is MeshInstance3D and sea_mesh_instance.mesh is Mesh:
+		#var mat: ShaderMaterial = sea_mesh_instance.mesh.surface_get_material(0)
+		#mat.set_shader_parameter("map_dimensions", map_dimensions)
 	
 
 
 func set_shader_cmap() -> void:
-	if mesh_instance is MeshInstance3D:
-		var mat: ShaderMaterial = mesh_instance.get_surface_override_material(0)
+	if ground_mesh_instance is MeshInstance3D and ground_mesh_instance.mesh is Mesh:
+		var mat: ShaderMaterial = ground_mesh_instance.mesh.surface_get_material(0)
 		var cmap: ImageTexture = ImageTexture.create_from_image(color_map)
 		mat.set_shader_parameter("color_map", cmap)
+	
+	#if sea_mesh_instance is MeshInstance3D and sea_mesh_instance.mesh is Mesh:
+		#var mat: ShaderMaterial = sea_mesh_instance.mesh.surface_get_material(0)
+		#var cmap: ImageTexture = ImageTexture.create_from_image(color_map)
+		#mat.set_shader_parameter("color_map", cmap)
 	
 
 
@@ -362,17 +531,39 @@ func shader_set_all() -> void:
 
 
 
-func generate_collision_shape() -> void:
-	reset_collision_shape()
+func generate_ground_collision_shape() -> void:
+	if ground_mesh_instance is MeshInstance3D:
+		var new_shape : ConcavePolygonShape3D = ground_mesh_instance.mesh.create_trimesh_shape()
+		ground_coll_shape.shape = new_shape
 	
-	var new_shape : ConcavePolygonShape3D = mesh_instance.mesh.create_trimesh_shape()
-	coll_shape.shape = new_shape
+
+
+
+func generate_sea_collision_shape() -> void:
+	return
+	
+	#if sea_mesh_instance is MeshInstance3D:
+		#var new_shape : ConcavePolygonShape3D = sea_mesh_instance.mesh.create_trimesh_shape()
+		#sea_coll_shape.shape = new_shape
 	
 
 
 
-func reset_collision_shape() -> void:
-	coll_shape.shape = null
+func generate_collision_shapes() -> void:
+	reset_collision_shapes()
+	
+	generate_ground_collision_shape()
+	generate_sea_collision_shape()
+	
+
+
+
+func reset_collision_shapes() -> void:
+	if ground_coll_shape is CollisionShape3D:
+		ground_coll_shape.shape = null
+	
+	if sea_coll_shape is CollisionShape3D:
+		sea_coll_shape.shape = null
 	
 
 
@@ -381,15 +572,16 @@ func generate_all() -> void:
 	reset_all()
 	
 	generate_map_mesh()
-	generate_collision_shape()
+	generate_collision_shapes()
+	
 	shader_set_all()
 	
 
 
 
 func reset_all() -> void:
-	reset_collision_shape()
-	reset_mesh()
+	reset_collision_shapes()
+	reset_meshes()
 
 
 
@@ -421,35 +613,59 @@ static func load_terrain(path: String) -> Terrain:
 	var width: int = width_parts[1].to_int()
 	var length: int = length_parts[1].to_int()
 	
+	var slevel: float = lines[2].to_float()
+	
 	
 	var alt_mult: float = width / nb_chunks_width
 	
 	
-	var new_terrain: Terrain = terrain_scene.instantiate()
+	var min_alt: float = INF
+	var max_alt: float = -INF
+	
+	
+	var new_terrain: Terrain = TERRAIN_SCENE.instantiate()
 	
 	new_terrain.map_dimensions = Vector2(width, length)
+	new_terrain.sea_level = alt_mult * slevel
 	
 	## Altitude
 	for i in range(length):
-		var line_parts := lines[2 + i].split("\t", false)
+		var line_parts := lines[3 + i].split("\t", false)
 		
 		for j in range(width):
-			new_terrain.map[i][j] = alt_mult * line_parts[j].to_float()
+			var alt = line_parts[j].to_float()
+			var final_alt = alt_mult * alt
+			new_terrain.map[i][j] = final_alt
+			
+			min_alt = min(final_alt, min_alt)
+			max_alt = max(final_alt, max_alt)
 	
 	
 	
-	## Colors
+	## Colors : Generate color map
 	for i in range(length):
-		var line_parts := lines[2 + length + i].split("\t", false)
-		
 		for j in range(width):
-			var color_parts := line_parts[j].split(",", false)
-			var r: float = color_parts[0].to_float()/255
-			var g: float = color_parts[1].to_float()/255
-			var b: float = color_parts[2].to_float()/255
-			var c : Color = Color(r, g, b)
+			var alt : float = new_terrain.map[i][j]
+			
+			var c: Color = BASE_LAND_COLOR
+			
+			if min_alt != max_alt:
+				c.g = (alt - min_alt) / (max_alt - min_alt)
 			
 			new_terrain.color_map.set_pixel(j, i, c)
+	
+	
+	#for i in range(length):
+		#var line_parts := lines[3 + length + i].split("\t", false)
+		#
+		#for j in range(width):
+			#var color_parts := line_parts[j].split(",", false)
+			#var r: float = color_parts[0].to_float()/255
+			#var g: float = color_parts[1].to_float()/255
+			#var b: float = color_parts[2].to_float()/255
+			#var c : Color = Color(r, g, b)
+			#
+			#new_terrain.color_map.set_pixel(j, i, c)
 	
 	new_terrain.set_shader_cmap()
 	

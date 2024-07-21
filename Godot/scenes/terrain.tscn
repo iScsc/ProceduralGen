@@ -1,61 +1,24 @@
-[gd_scene load_steps=9 format=3 uid="uid://cvxdsvncoc5e0"]
+[gd_scene load_steps=2 format=3 uid="uid://cvxdsvncoc5e0"]
 
 [ext_resource type="Script" path="res://scripts/terrain.gd" id="1_a4x1s"]
-[ext_resource type="Shader" path="res://shaders/terrain.gdshader" id="2_18nqk"]
 
-[sub_resource type="Image" id="Image_67lh8"]
-data = {
-"data": PackedByteArray(255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
-"format": "RGBA8",
-"height": 2,
-"mipmaps": false,
-"width": 2
-}
-
-[sub_resource type="ArrayMesh" id="ArrayMesh_60kxq"]
-_surfaces = [{
-"aabb": AABB(-0.5, 0, -0.5, 1, 6e-05, 1),
-"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
-"format": 34359742487,
-"index_count": 12,
-"index_data": PackedByteArray(0, 0, 2, 0, 4, 0, 1, 0, 5, 0, 3, 0, 6, 0, 4, 0, 2, 0, 7, 0, 3, 0, 5, 0),
-"primitive": 3,
-"uv_scale": Vector4(0, 0, 0, 0),
-"vertex_count": 8,
-"vertex_data": PackedByteArray(0, 0, 0, 191, 23, 183, 81, 56, 0, 0, 0, 191, 0, 0, 0, 191, 23, 183, 81, 56, 0, 0, 0, 191, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 191, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 191, 0, 0, 0, 191, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0, 0, 191, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 63, 1, 128, 251, 255, 3, 0, 0, 192, 252, 127, 1, 0, 3, 0, 0, 192, 255, 127, 255, 255, 0, 0, 255, 191, 255, 127, 0, 0, 0, 0, 255, 191, 255, 127, 255, 255, 0, 0, 255, 191, 255, 127, 0, 0, 0, 0, 255, 191, 255, 127, 255, 255, 0, 0, 255, 191, 255, 127, 0, 0, 0, 0, 255, 191)
-}]
-
-[sub_resource type="Image" id="Image_tljqw"]
-data = {
-"data": PackedByteArray(255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
-"format": "RGBA8",
-"height": 2,
-"mipmaps": false,
-"width": 2
-}
-
-[sub_resource type="ImageTexture" id="ImageTexture_r5dj0"]
-image = SubResource("Image_tljqw")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_vhp8j"]
-render_priority = 0
-shader = ExtResource("2_18nqk")
-shader_parameter/map_dimensions = Vector2(2, 2)
-shader_parameter/map_dist = Vector2(1, 1)
-shader_parameter/color_map = SubResource("ImageTexture_r5dj0")
-
-[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_1xbi0"]
-data = PackedVector3Array(-0.5, 0.0001, -0.5, 0.5, 0, -0.5, -0.5, 0, 0.5, -0.5, 0.0001, -0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0, -0.5, -0.5, 0, 0.5)
-
-[node name="Terrain" type="StaticBody3D" node_paths=PackedStringArray("coll_shape", "mesh_instance")]
+[node name="Terrain" type="Node3D" node_paths=PackedStringArray("ground", "ground_coll_shape", "ground_mesh_instance", "sea", "sea_coll_shape", "sea_mesh_instance")]
 script = ExtResource("1_a4x1s")
-coll_shape = NodePath("CollisionShape3D")
-mesh_instance = NodePath("MeshInstance3D")
-color_map = SubResource("Image_67lh8")
+ground = NodePath("Ground")
+ground_coll_shape = NodePath("Ground/CollisionShape3D")
+ground_mesh_instance = NodePath("Ground/MeshInstance3D")
+sea = NodePath("Sea")
+sea_coll_shape = NodePath("Sea/CollisionShape3D")
+sea_mesh_instance = NodePath("Sea/MeshInstance3D")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("ArrayMesh_60kxq")
-surface_material_override/0 = SubResource("ShaderMaterial_vhp8j")
+[node name="Ground" type="StaticBody3D" parent="."]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("ConcavePolygonShape3D_1xbi0")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+
+[node name="Sea" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Sea"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sea"]
