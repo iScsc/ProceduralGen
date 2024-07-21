@@ -1,13 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://cabf6st1dbdcb"]
+[gd_scene load_steps=4 format=3 uid="uid://cabf6st1dbdcb"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_e07no"]
 [ext_resource type="PackedScene" uid="uid://dfax68qtmker8" path="res://scenes/player.tscn" id="1_gybie"]
 [ext_resource type="PackedScene" uid="uid://d3ic0m4kpv565" path="res://scenes/moving_camera.tscn" id="2_exelq"]
-[ext_resource type="Script" path="res://scripts/terrain.gd" id="4_x4ga5"]
 
 [node name="Main" type="Node" node_paths=PackedStringArray("terrain")]
 script = ExtResource("1_e07no")
-terrain = NodePath("StaticBody3D2")
+terrain = NodePath("")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.965926, 0.183013, -0.183013, 0, 0.707107, 0.707107, 0.258819, -0.683013, 0.683013, 0, 10, 0)
@@ -16,9 +15,3 @@ transform = Transform3D(0.965926, 0.183013, -0.183013, 0, 0.707107, 0.707107, 0.
 
 [node name="Player" parent="." instance=ExtResource("1_gybie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
-
-[node name="StaticBody3D2" type="StaticBody3D" parent="." node_paths=PackedStringArray("coll_shape", "mesh_instance")]
-script = ExtResource("4_x4ga5")
-coll_shape = NodePath("@CollisionShape3D@18969")
-mesh_instance = NodePath("@MeshInstance3D@18968")
-map_dimensions = Vector2(135, 90)
