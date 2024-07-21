@@ -31,7 +31,7 @@ if GENERATE:
     #
     #
     #
-    SEED = MapGenerator.getRandomSeed() #"seed"
+    SEED = 521697669492 #MapGenerator.getRandomSeed() #"seed"
     print("SEED =", SEED)
 
     MapGenerator.setRandomSeed(SEED)
