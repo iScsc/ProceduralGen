@@ -1,9 +1,9 @@
 [gd_scene load_steps=2 format=3 uid="uid://cvxdsvncoc5e0"]
 
-[ext_resource type="Script" path="res://scripts/terrain.gd" id="1_a4x1s"]
+[ext_resource type="Script" path="res://scripts/terrain.gd" id="1_ann0a"]
 
 [node name="Terrain" type="Node3D" node_paths=PackedStringArray("ground", "ground_coll_shape", "ground_mesh_instance", "sea", "sea_coll_shape", "sea_mesh_instance")]
-script = ExtResource("1_a4x1s")
+script = ExtResource("1_ann0a")
 ground = NodePath("Ground")
 ground_coll_shape = NodePath("Ground/CollisionShape3D")
 ground_mesh_instance = NodePath("Ground/MeshInstance3D")
