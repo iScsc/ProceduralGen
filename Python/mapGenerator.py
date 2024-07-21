@@ -112,11 +112,23 @@ class CompleteMap:
         for i in range(height):
             curr_line = ""
             for j in range(width):
-                curr_line += "{: 1.3f} ".format(complete_map.sea_values[i][j])
+                curr_line += "{: 1.3f}\t".format(complete_map.sea_values[i][j])
             
             curr_line += "\n"
             lines.append(curr_line)
         
+        
+        for i in range(height):
+            curr_line = ""
+            for j in range(width):
+                color = complete_map.color_map[i][j]
+                r: int = int(color[0] * 255)
+                g: int = int(color[1] * 255)
+                b: int = int(color[2] * 255)
+                curr_line += "({:3d}, {:3d}, {:3d})\t".format(r, g, b)
+            
+            curr_line += "\n"
+            lines.append(curr_line)
         
         
         f = open(path, "w")
