@@ -1,116 +1,40 @@
-[gd_scene load_steps=19 format=3 uid="uid://xmfi7bamixo0"]
+[gd_scene load_steps=7 format=3 uid="uid://xmfi7bamixo0"]
 
-[ext_resource type="PackedScene" uid="uid://dfax68qtmker8" path="res://scenes/player.tscn" id="2_0rqkv"]
+[ext_resource type="PackedScene" uid="uid://d3ic0m4kpv565" path="res://scenes/moving_camera.tscn" id="1_6co22"]
 [ext_resource type="Script" path="res://scripts/shapes/sphere.gd" id="3_no2ng"]
 [ext_resource type="Script" path="res://scripts/shapes/square.gd" id="4_26qvt"]
 [ext_resource type="Script" path="res://scripts/shapes/imesh.gd" id="4_kaoah"]
 [ext_resource type="Script" path="res://scripts/shapes/cube.gd" id="5_svkov"]
 [ext_resource type="Script" path="res://scripts/shapes/column.gd" id="6_obdb7"]
-[ext_resource type="Script" path="res://scripts/terrain.gd" id="7_jv60j"]
-[ext_resource type="Shader" path="res://shaders/test_shader.gdshader" id="8_koryl"]
-
-[sub_resource type="Image" id="Image_jylad"]
-data = {
-"data": PackedByteArray(255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
-"format": "RGBA8",
-"height": 2,
-"mipmaps": false,
-"width": 2
-}
-
-[sub_resource type="ArrayMesh" id="ArrayMesh_vni56"]
-_surfaces = [{
-"aabb": AABB(-0.5, 0, -0.5, 1, 6e-05, 1),
-"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
-"format": 34359742487,
-"index_count": 12,
-"index_data": PackedByteArray(0, 0, 2, 0, 4, 0, 1, 0, 5, 0, 3, 0, 6, 0, 4, 0, 2, 0, 7, 0, 3, 0, 5, 0),
-"primitive": 3,
-"uv_scale": Vector4(0, 0, 0, 0),
-"vertex_count": 8,
-"vertex_data": PackedByteArray(0, 0, 0, 191, 23, 183, 81, 56, 0, 0, 0, 191, 0, 0, 0, 191, 23, 183, 81, 56, 0, 0, 0, 191, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 191, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 191, 0, 0, 0, 191, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0, 0, 191, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 63, 1, 128, 251, 255, 3, 0, 0, 192, 252, 127, 1, 0, 3, 0, 0, 192, 255, 127, 255, 255, 0, 0, 255, 191, 255, 127, 0, 0, 0, 0, 255, 191, 255, 127, 255, 255, 0, 0, 255, 191, 255, 127, 0, 0, 0, 0, 255, 191, 255, 127, 255, 255, 0, 0, 255, 191, 255, 127, 0, 0, 0, 0, 255, 191)
-}]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_dlj0c"]
-
-[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_ytyo2"]
-data = PackedVector3Array(-0.5, 0.0001, -0.5, 0.5, 0, -0.5, -0.5, 0, 0.5, -0.5, 0.0001, -0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0, -0.5, -0.5, 0, 0.5)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_vldii"]
-subdivide_width = 32
-subdivide_depth = 32
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_2asrp"]
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_abi0a"]
-noise = SubResource("FastNoiseLite_2asrp")
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_vgadd"]
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_h20he"]
-as_normal_map = true
-noise = SubResource("FastNoiseLite_vgadd")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_t638q"]
-render_priority = 0
-shader = ExtResource("8_koryl")
-shader_parameter/quad_size = 2.0
-shader_parameter/height_scale = 0.5
-shader_parameter/noise = SubResource("NoiseTexture2D_abi0a")
-shader_parameter/normal_map = SubResource("NoiseTexture2D_h20he")
 
 [node name="Testing" type="Node"]
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.83932, 0.337114, -0.426494, 0.252361, 0.936473, 0.243582, 0.481515, 0.0968127, -0.871075, 0, 30, 0)
 
-[node name="Player" parent="." instance=ExtResource("2_0rqkv")]
+[node name="MovingCamera" parent="." instance=ExtResource("1_6co22")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
 [node name="SphereMesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -6)
-visible = false
 script = ExtResource("3_no2ng")
 
 [node name="ImmediateMesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(-1, 0, -8.74228e-08, -8.74228e-08, -4.37114e-08, 1, -3.82137e-15, 1, 4.37114e-08, -5, 0, 6)
-visible = false
 script = ExtResource("4_kaoah")
 
 [node name="SquareMesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, -5, 0, -6)
-visible = false
 script = ExtResource("4_26qvt")
 
 [node name="CubeMesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 3)
-visible = false
 script = ExtResource("5_svkov")
 
 [node name="ColumnMesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
-visible = false
 skeleton = NodePath("../SphereMesh")
 script = ExtResource("6_obdb7")
 x_dim = 2.0
 y_dim = 5.0
 z_dim = 3.0
-
-[node name="Terrain" type="StaticBody3D" parent="." node_paths=PackedStringArray("coll_shape", "mesh_instance")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
-script = ExtResource("7_jv60j")
-coll_shape = NodePath("CollisionShape3D")
-mesh_instance = NodePath("MeshInstance3D")
-color_map = SubResource("Image_jylad")
-terrain_shader = null
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Terrain"]
-mesh = SubResource("ArrayMesh_vni56")
-surface_material_override/0 = SubResource("ShaderMaterial_dlj0c")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Terrain"]
-shape = SubResource("ConcavePolygonShape3D_ytyo2")
-
-[node name="PlaneTest" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-mesh = SubResource("PlaneMesh_vldii")
-surface_material_override/0 = SubResource("ShaderMaterial_t638q")
