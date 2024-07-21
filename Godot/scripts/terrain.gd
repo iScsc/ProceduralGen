@@ -96,6 +96,8 @@ var color_map: Image = Image.create(2, 2, false, Image.FORMAT_RGBA8)
 
 @export var terrain_shader: Shader = preload("res://shaders/terrain.gdshader")
 
+@export var sea_shader: Shader = preload("res://shaders/sea.gdshader")
+
 
 func _init() -> void:
 	color_map.fill(Color.WHITE)
@@ -354,10 +356,45 @@ func generate_sea_surface(mesh: ArrayMesh) -> void:
 	
 	var alt = sea_level
 	
-	print(ad*alt)
-	
 	for i in range(length):
 		for j in range(width):
+			var alt_cur: float = map[i][j]
+			
+			var up_left_good: bool = false
+			var down_right_good: bool = false
+			
+			if alt_cur <= alt:
+				if i > 0 and j > 0:
+					up_left_good = true
+				if i < length - 1 and j < width - 1:
+					down_right_good = true
+			
+			## avoid up left issue
+			if (not up_left_good) and i > 0 and j > 0:
+				## Checking if at least one of the points is under water
+				var alt_left: float = map[i][j-1]
+				var alt_up: float = map[i-1][j]
+				
+				if alt_left <= alt or alt_up <= alt:
+					up_left_good = true
+			
+			## avoid down right issue
+			if (not down_right_good) and i < length - 1 and j < width - 1:
+				## Checking if at least one of the points is under water
+				var alt_right: float = map[i][j+1]
+				var alt_down: float = map[i+1][j]
+				
+				if alt_right <= alt or alt_down <= alt:
+					down_right_good = true
+			
+			
+			
+			
+			
+			#if not (up_left_good or down_right_good):
+				#continue
+			
+			
 			# centered variables
 			var ci: float = i - (length - 1)/2.
 			var cj: float = j - (width - 1)/2.
@@ -376,7 +413,7 @@ func generate_sea_surface(mesh: ArrayMesh) -> void:
 			var down_id := 2*((i+1)*width + j)
 			
 			## avoid up left issue
-			if i > 0 and j > 0:
+			if up_left_good:                                                    # i > 0 and j > 0:      # up_left_good:
 				#up-wards
 				indices.append_array([own_id, left_id, up_id])
 				
@@ -384,20 +421,12 @@ func generate_sea_surface(mesh: ArrayMesh) -> void:
 				indices.append_array([own_id + 1, up_id + 1, left_id + 1])
 			
 			## avoid down right issue
-			if i < length - 1 and j < width - 1:
+			if down_right_good:                                                 # i < length - 1 and j < width - 1         # down_right_good:
 				#up-wards
 				indices.append_array([own_id, right_id, down_id])
 				
 				#down-wards
 				indices.append_array([own_id + 1, down_id + 1, right_id + 1])
-			
-			### avoid down left issue
-			#if i < length - 1 and j > 0:
-				#indices.append_array([own_id, down_id, left_id])
-			#
-			### avoid up right issue
-			#if i > 0 and j < width - 1:
-				#indices.append_array([own_id, up_id, right_id])
 	
 	
 	## Normals Processing
@@ -469,20 +498,26 @@ func reset_meshes() -> void:
 func set_ground_material(mesh: Mesh) -> void:
 	var new_material: ShaderMaterial = ShaderMaterial.new()
 	new_material.shader = terrain_shader
-	mesh.surface_set_material(0, new_material)
+	mesh.surface_set_material(mesh.get_surface_count() - 1, new_material)
 	
 
 
 
 func set_sea_material(mesh: Mesh) -> void:
-	var new_material: StandardMaterial3D = StandardMaterial3D.new()
-	new_material.albedo_color = Color.NAVY_BLUE
-	new_material.albedo_color.a = .7
-	mesh.surface_set_material(0, new_material)
-	
-	#var new_material: ShaderMaterial = ShaderMaterial.new()
-	#new_material.shader = terrain_shader
+	#var new_material: StandardMaterial3D = StandardMaterial3D.new()
+	#new_material.albedo_color = Color.NAVY_BLUE
+	#new_material.albedo_color.a = .7
+	#new_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	#mesh.surface_set_material(0, new_material)
+	
+	var new_material: ShaderMaterial = ShaderMaterial.new()
+	new_material.shader = sea_shader
+	mesh.surface_set_material(mesh.get_surface_count() - 1, new_material)
+	
+	var c: Color = Color(0.01, 0.03, 0.05) # Color.NAVY_BLUE
+	var color_vec := Vector3(c.r, c.g, c.b)
+	new_material.set_shader_parameter("base_color", color_vec)
+	new_material.set_shader_parameter("alpha", 0.7)
 	
 
 
@@ -492,9 +527,9 @@ func set_shader_dimensions() -> void:
 		var mat: ShaderMaterial = ground_mesh_instance.mesh.surface_get_material(0)
 		mat.set_shader_parameter("map_dist", Vector2(distance_between_points.x, distance_between_points.z))
 	
-	#if sea_mesh_instance is MeshInstance3D and sea_mesh_instance.mesh is Mesh:
-		#var mat: ShaderMaterial = sea_mesh_instance.mesh.surface_get_material(0)
-		#mat.set_shader_parameter("map_dist", Vector2(distance_between_points.x, distance_between_points.z))
+	if sea_mesh_instance is MeshInstance3D and sea_mesh_instance.mesh is Mesh:
+		var mat: ShaderMaterial = sea_mesh_instance.mesh.surface_get_material(0)
+		mat.set_shader_parameter("map_dist", Vector2(distance_between_points.x, distance_between_points.z))
 	
 
 
@@ -503,9 +538,9 @@ func set_shader_distance() -> void:
 		var mat: ShaderMaterial = ground_mesh_instance.mesh.surface_get_material(0)
 		mat.set_shader_parameter("map_dimensions", map_dimensions)
 	
-	#if sea_mesh_instance is MeshInstance3D and sea_mesh_instance.mesh is Mesh:
-		#var mat: ShaderMaterial = sea_mesh_instance.mesh.surface_get_material(0)
-		#mat.set_shader_parameter("map_dimensions", map_dimensions)
+	if sea_mesh_instance is MeshInstance3D and sea_mesh_instance.mesh is Mesh:
+		var mat: ShaderMaterial = sea_mesh_instance.mesh.surface_get_material(0)
+		mat.set_shader_parameter("map_dimensions", map_dimensions)
 	
 
 
