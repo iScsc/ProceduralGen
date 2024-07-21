@@ -185,16 +185,18 @@ class Layer:
             if append: f=open(path,"ab")
             else: f=open(path,"wb")
             f.write(bytes_str)
+            f.close()
         return bytes_str
     
     
     
     @staticmethod
     def read(path: str = None, bytes_in: bytes=None, altitude: bool=False) -> tuple[Layer, bytes]:
-        #TODO from file path
         bytes_str : bytes
         if path!=None:
-            pass
+            f=open(path,'rb')
+            bytes_str=f.read()
+            f.close()
         elif bytes_in!=None and bytes_in[0:1]==Layer.LAYER_ENCODING:
             bytes_str=bytes_in[1:]
         else: bytes_str=None
