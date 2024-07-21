@@ -8,25 +8,31 @@ extends Node
 @export var load_terrain_from_path: bool = false:
 	set(value):
 		if Engine.is_editor_hint():
-			load_terrain_from_path = value
-			
-			if load_terrain_from_path:
-				load_terrain()
-				terrain.generate_all()
-				load_terrain_from_path = false
+			load_terrain()
+			terrain.generate_all()
+
+@export var remove_terrain: bool = false:
+	set(value):
+		if Engine.is_editor_hint():
+			free_terrain()
 
 @export var terrain: Terrain
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	if not Engine.is_editor_hint():
+	if not Engine.is_editor_hint() and not terrain is Terrain:
 		load_terrain()
 		terrain.generate_all()
 
 
-func load_terrain() -> void:
+func free_terrain() -> void:
 	if terrain is Terrain:
 		terrain.queue_free()
+		terrain = null
+
+
+func load_terrain() -> void:
+	free_terrain()
 	
 	var new_terrain := Terrain.load_terrain(loading_path)
 	add_child(new_terrain, true)

@@ -4,12 +4,11 @@
 [ext_resource type="PackedScene" uid="uid://dfax68qtmker8" path="res://scenes/player.tscn" id="1_gybie"]
 [ext_resource type="PackedScene" uid="uid://d3ic0m4kpv565" path="res://scenes/moving_camera.tscn" id="2_exelq"]
 
-[node name="Main" type="Node" node_paths=PackedStringArray("terrain")]
+[node name="Main" type="Node"]
 script = ExtResource("1_e07no")
-terrain = NodePath("")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.965926, 0.183013, -0.183013, 0, 0.707107, 0.707107, 0.258819, -0.683013, 0.683013, 0, 10, 0)
+transform = Transform3D(0.866025, -0.353554, 0.353553, -1.336e-08, 0.707107, 0.707107, -0.5, -0.612373, 0.612372, 0, 10, 0)
 
 [node name="MovingCamera" parent="." instance=ExtResource("2_exelq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)

@@ -1,13 +1,28 @@
-[gd_scene load_steps=7 format=3 uid="uid://xmfi7bamixo0"]
+[gd_scene load_steps=9 format=3 uid="uid://xmfi7bamixo0"]
 
 [ext_resource type="PackedScene" uid="uid://d3ic0m4kpv565" path="res://scenes/moving_camera.tscn" id="1_6co22"]
+[ext_resource type="Script" path="res://scripts/testing.gd" id="1_fjd3g"]
 [ext_resource type="Script" path="res://scripts/shapes/sphere.gd" id="3_no2ng"]
 [ext_resource type="Script" path="res://scripts/shapes/square.gd" id="4_26qvt"]
 [ext_resource type="Script" path="res://scripts/shapes/imesh.gd" id="4_kaoah"]
 [ext_resource type="Script" path="res://scripts/shapes/cube.gd" id="5_svkov"]
 [ext_resource type="Script" path="res://scripts/shapes/column.gd" id="6_obdb7"]
 
-[node name="Testing" type="Node"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_7y4v8"]
+_surfaces = [{
+"aabb": AABB(0, 0, 0, 3, 1.00001, 3),
+"format": 34359742465,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 9,
+"vertex_data": PackedByteArray(0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64)
+}]
+
+[node name="Testing" type="Node" node_paths=PackedStringArray("testing_mesh")]
+script = ExtResource("1_fjd3g")
+testing_mesh = NodePath("MeshInstance3D")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.83932, 0.337114, -0.426494, 0.252361, 0.936473, 0.243582, 0.481515, 0.0968127, -0.871075, 0, 30, 0)
@@ -38,3 +53,7 @@ script = ExtResource("6_obdb7")
 x_dim = 2.0
 y_dim = 5.0
 z_dim = 3.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("ArrayMesh_7y4v8")
