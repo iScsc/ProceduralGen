@@ -327,15 +327,21 @@ from numpy import uint8, float64
 
 BYTES_TRUE = b'\x01'
 BYTES_FALSE = b'\x00'
+INT_BITS_NBR = 24 #24 should be a multiple of 8
+FLOAT_BITS_SIGN = 1
+FLOAT_BITS_EXP = 5
+FLOAT_BITS_MANTISS = 18
+FLOAT_BITS_NBR = FLOAT_BITS_SIGN + FLOAT_BITS_EXP + FLOAT_BITS_MANTISS #24 should be a multiple of 8
 
 def bytesNumber(x : int | float | float64 | uint8) -> bytes:
     if type(x)==uint8:
         res=bytes([x])
         return res
-    elif type(x)==int and int.bit_length(x)<=23:
+    elif type(x)==int and int.bit_length(x)<INT_BITS_NBR:
         temp = 0 if x>0 else 128
         x = abs(x)
-        res = bytes([temp+x//256**2,x%256**2//256,x%256])
+        l=[temp + x // (2**(INT_BITS_NBR-8))] + [x % (2**(INT_BITS_NBR-i)) // (2**(INT_BITS_NBR-i-8)) for i in range(8,INT_BITS_NBR,8)]
+        res = bytes(l)
         return res
     elif type(x)==float or type(x)==float64:
         temp = 0 if x>0 else 128
