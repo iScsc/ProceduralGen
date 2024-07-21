@@ -328,10 +328,9 @@ from numpy import uint8, float64
 BYTES_TRUE = b'\x01'
 BYTES_FALSE = b'\x00'
 INT_BITS_NBR = 24 #24 should be a multiple of 8
-FLOAT_BITS_SIGN = 1
-FLOAT_BITS_EXP = 5
-FLOAT_BITS_MANTISS = 18
-FLOAT_BITS_NBR = FLOAT_BITS_SIGN + FLOAT_BITS_EXP + FLOAT_BITS_MANTISS #24 should be a multiple of 8
+FLOAT_BITS_EXP = 5 #5 sould be < 8
+FLOAT_BITS_MANTISS = 18 
+FLOAT_BITS_NBR = 1 + FLOAT_BITS_EXP + FLOAT_BITS_MANTISS #24 should be a multiple of 8
 
 def bytesNumber(x : int | float | float64 | uint8) -> bytes:
     if type(x)==uint8:
@@ -347,33 +346,38 @@ def bytesNumber(x : int | float | float64 | uint8) -> bytes:
         temp = 0 if x>0 else 128
         x = abs(x)
         exp = 0
-        if x<2**19:
-            while exp>-16 and x<2**18:
+        if x<2**(FLOAT_BITS_MANTISS):
+            while exp>-2**(FLOAT_BITS_EXP-1) and x<2**(FLOAT_BITS_MANTISS-1):
                 exp-=1
                 x*=2
         else:
-            while exp<15 and x>=2**19:
+            while exp<2**(FLOAT_BITS_EXP-1)-1 and x>=2**(FLOAT_BITS_MANTISS):
                 exp+=1
                 x/=2
+        print(x,exp)
         exp+=16
         x=int(x)
-        res = bytes([temp+int(bin(exp)+bin(x//2**16)[2:],2),x%2**16//256,x%256])
+        print(x,exp)
+        l = [temp + exp*2**(8-(1+FLOAT_BITS_EXP)) + x//2**(FLOAT_BITS_MANTISS-(8-(1+FLOAT_BITS_EXP)))] 
+        l += [x%2**(FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP)-i) // (2**(FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP)-i-8)) for i in range(8,FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP),8)]
+        res = bytes(l)
         return res
 
 def nextInt(bytes_str : bytes) -> tuple[int, bytes]:
-    x = int.from_bytes(bytes_str[:3])
+    x = int.from_bytes(bytes_str[:INT_BITS_NBR//8])
     if x//2**23==1: x=-x%2**23
-    return x,bytes_str[3:]
+    return x,bytes_str[INT_BITS_NBR//8:]
 
 def nextFloat(bytes_str : bytes) -> tuple[float, bytes]:
-    x = int.from_bytes(bytes_str[:3])
-    if x//(2**23)==1: s=-1
+    x = int.from_bytes(bytes_str[:FLOAT_BITS_NBR//8])
+    if x//(2**(FLOAT_BITS_NBR-1))==1: s=-1
     else: s=1
-    x=x%(2**23)
-    exp=x//(2**19)
+    x=x%(2**(FLOAT_BITS_NBR-1))
+    exp=x//(2**(FLOAT_BITS_MANTISS))
     exp-=16
-    x=x%(2**19)
-    return s*x*2**exp,bytes_str[3:]
+    x=x%(2**(FLOAT_BITS_MANTISS))
+    print(s,x,exp)
+    return s*x*2**exp,bytes_str[FLOAT_BITS_NBR//8:]
     
 def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
     x = int.from_bytes(bytes_str[0:1])
