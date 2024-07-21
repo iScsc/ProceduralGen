@@ -127,6 +127,8 @@ class CompleteMap:
             f=open(path,'rb')
             bytes_str=f.read()
             f.close()
+            if bytes_str[0:1]==CompleteMap.COMPLETE_MAP_ENCODING: bytes_str=bytes_str[1:]
+            else: bytes_str=None
         elif bytes_in!=None and bytes_in[0:1]==CompleteMap.COMPLETE_MAP_ENCODING:
             bytes_str=bytes_in[1:]
         else: bytes_str=None
@@ -550,7 +552,7 @@ if __name__ == "__main__":
     
     print("\nTesting completeMap encoding: ")
     print(CompleteMap.write(complete_map,"../saves/test_completeMap.data"))
-    MapGenerator.plotCompleteMap(CompleteMap.read("../saves/test_completeMap.data"))
+    MapGenerator.plotCompleteMap(CompleteMap.read("../saves/test_completeMap.data")[0])
     
     
     

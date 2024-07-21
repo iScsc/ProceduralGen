@@ -305,6 +305,8 @@ class Chunk:
             f=open(path,'rb')
             bytes_str=f.read()
             f.close()
+            if bytes_str[0:1]==Chunk.CHUNK_ENCODING: bytes_str=bytes_str[1:]
+            else: bytes_str=None
         elif bytes_in!=None and bytes_in[0:1]==Chunk.CHUNK_ENCODING:
             bytes_str=bytes_in[1:]
         else: bytes_str=None

@@ -78,6 +78,8 @@ class GradientGrid:
             f=open(path,'rb')
             bytes_str=f.read()
             f.close()
+            if bytes_str[0:1]==GradientGrid.GRID_ENCODING: bytes_str=bytes_str[1:]
+            else: bytes_str=None
         elif bytes_in!=None and bytes_in[0:1]==GradientGrid.GRID_ENCODING:
             bytes_str=bytes_in[1:]
         else: bytes_str=None
@@ -225,8 +227,8 @@ if __name__ == "__main__":
     print(grid)
     
     print("\nTrying to encode and decode the grid :")
-    print(GradientGrid.write(grid))
-    print(GradientGrid.read(None, GradientGrid.write(grid))[0])
+    print(GradientGrid.write(grid,"../saves/test_completeMap.data"))
+    print(GradientGrid.read("../saves/test_completeMap.data")[0])
     
     
     print("Trying to generate a grid at the north of the first one :")

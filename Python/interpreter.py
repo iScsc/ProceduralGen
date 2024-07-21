@@ -354,10 +354,8 @@ def bytesNumber(x : int | float | float64 | uint8) -> bytes:
             while exp<2**(FLOAT_BITS_EXP-1)-1 and x>=2**(FLOAT_BITS_MANTISS):
                 exp+=1
                 x/=2
-        print(x,exp)
         exp+=16
         x=int(x)
-        print(x,exp)
         l = [temp + exp*2**(8-(1+FLOAT_BITS_EXP)) + x//2**(FLOAT_BITS_MANTISS-(8-(1+FLOAT_BITS_EXP)))] 
         l += [x%2**(FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP)-i) // (2**(FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP)-i-8)) for i in range(8,FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP),8)]
         res = bytes(l)
@@ -376,7 +374,6 @@ def nextFloat(bytes_str : bytes) -> tuple[float, bytes]:
     exp=x//(2**(FLOAT_BITS_MANTISS))
     exp-=16
     x=x%(2**(FLOAT_BITS_MANTISS))
-    print(s,x,exp)
     return s*x*2**exp,bytes_str[FLOAT_BITS_NBR//8:]
     
 def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
