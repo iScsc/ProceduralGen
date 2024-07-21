@@ -7,6 +7,13 @@ const ROTATION_SPEED := 5e-2
 
 const CAMERA_LIMITS := Vector2(-PI/2, PI/2)
 
+
+
+@export var speed_multiplier : float = 1
+@export var sprint_multiplier : float = 2
+
+
+
 func _init():
 	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 
@@ -21,19 +28,24 @@ func _physics_process(delta):
 			rotation.x = clamp(rotation.x, CAMERA_LIMITS.x, CAMERA_LIMITS.y)
 	
 	
+	var local_mult := speed_multiplier
+	if Input.is_action_pressed("sprint"):
+		local_mult *= sprint_multiplier
+	
+	
 	## Handle rising
 	if Input.is_action_pressed("jump"):
-		position.y += SPEED * delta
+		position.y += local_mult * SPEED * delta
 	## Handle lowering
 	if Input.is_action_pressed("crouch"):
-		position.y -= SPEED * delta
+		position.y -= local_mult * SPEED * delta
 	
 	
 	## Get the input direction and handle the movement/deceleration.
 	var input_dir := Input.get_vector("left", "right", "forward", "backward")
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
-	position += direction * SPEED * delta
+	position += direction * local_mult * SPEED * delta
 	
 	
 	## Keep cursor in the middle of the screen
