@@ -3,36 +3,53 @@
 class_name Terrain extends StaticBody3D
 
 
+## Constants
+
+const terrain_scene = preload("res://scenes/terrain.tscn")
+
+
+## Variables
+
+
 @export var coll_shape: CollisionShape3D
 @export var mesh_instance: MeshInstance3D
 
 
 
 ## Map dimensions in points in (width, length)
-@export var map_dimensions: Vector2 = Vector2(1, 1):
+@export var map_dimensions: Vector2 = Vector2(2, 2):
 	set(value):
 		#print("trying to set dimensions to ", value)
 		if value != map_dimensions:
 			map_dimensions = Vector2(max(1, value.x), max(1, value.y))
 			length = map_dimensions.y
 			width = map_dimensions.x
+			
+			set_shader_dimensions()
+			
 			reset_map()
+			reset_color_map()
 
-var length: float = 1:
+var length: float = 2:
 	set(value):
 		#print("trying to set length to ", value)
 		if value != length:
 			length = max(1, value)
 			map_dimensions = Vector2(map_dimensions.x, length)
-var width: float = 1:
+var width: float = 2:
 	set(value):
 		#print("trying to set width to ", value)
 		if value != width:
 			width = max(1, value)
 			map_dimensions = Vector2(width, map_dimensions.y)
 
-## Real distance between adjacent points in (width, length) distances
-@export var distance_between_points: Vector2 = Vector2(1., 1.)
+## Real distance between adjacent points in (width, altitude, length) distances
+@export var distance_between_points: Vector3 = Vector3(1., .5, 1.):
+	set(value):
+		if value != distance_between_points:
+			distance_between_points = value
+			
+			set_shader_distance()
 
 
 
@@ -60,7 +77,16 @@ var width: float = 1:
 
 
 ## map with dimensions length x width
-var map: Array[Array] = [[0]]
+var map: Array[Array] = [[0, 0], [0, 0]]
+
+@export var color_map: Image = Image.create(2, 2, false, Image.FORMAT_RGBA8)
+
+
+@export var terrain_shader: Shader = preload("res://shaders/terrain.gdshader")
+
+
+func _init() -> void:
+	color_map.fill(Color.WHITE)
 
 
 func _ready() -> void:
@@ -103,6 +129,15 @@ func reset_map() -> void:
 			line.append(0.)
 		
 		map.append(line)
+
+
+
+func reset_color_map() -> void:
+	color_map = Image.create(width, length, false, Image.FORMAT_RGBA8)
+	color_map.fill(Color.WHITE)
+	
+	set_shader_cmap()
+	
 
 
 
@@ -158,17 +193,19 @@ func generate_map_mesh() -> void:
 	
 	## Terrain
 	var wd := distance_between_points.x
-	var ld := distance_between_points.y
+	var ad := distance_between_points.y
+	var ld := distance_between_points.z
+	
 	
 	for i in range(length):
 		for j in range(width):
 			var alt = map[i][j]
 			
 			# centered variables
-			var ci := i - length/2
-			var cj := j - width/2
+			var ci: float = i - (length - 1)/2.
+			var cj: float = j - (width - 1)/2.
 			
-			var vert := Vector3(wd*cj, alt, ld*ci)
+			var vert := Vector3(wd*cj, ad*alt, ld*ci)
 			var uv := Vector2(i, j)
 			
 			## Normals are processed once every vert has been correctly created.
@@ -272,12 +309,56 @@ func generate_map_mesh() -> void:
 	mesh_instance.mesh = ArrayMesh.new()
 	mesh_instance.mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
 	
+	
+	## Setting up the shader
+	set_material()
+	
 
 
 
 func reset_mesh() -> void:
 	mesh_instance.mesh = null
+	
 
+
+
+func set_material() -> void:
+	if mesh_instance is MeshInstance3D:
+		var new_material: ShaderMaterial = ShaderMaterial.new()
+		new_material.shader = terrain_shader
+		mesh_instance.set_surface_override_material(0, new_material)
+	
+
+
+
+func set_shader_dimensions() -> void:
+	if mesh_instance is MeshInstance3D:
+		var mat: ShaderMaterial = mesh_instance.get_surface_override_material(0)
+		mat.set_shader_parameter("map_dist", Vector2(distance_between_points.x, distance_between_points.z))
+	
+
+
+func set_shader_distance() -> void:
+	if mesh_instance is MeshInstance3D:
+		var mat: ShaderMaterial = mesh_instance.get_surface_override_material(0)
+		mat.set_shader_parameter("map_dimensions", map_dimensions)
+	
+
+
+func set_shader_cmap() -> void:
+	if mesh_instance is MeshInstance3D:
+		var mat: ShaderMaterial = mesh_instance.get_surface_override_material(0)
+		var cmap: ImageTexture = ImageTexture.create_from_image(color_map)
+		mat.set_shader_parameter("color_map", cmap)
+	
+
+
+
+func shader_set_all() -> void:
+	set_shader_dimensions()
+	set_shader_distance()
+	set_shader_cmap()
+	
 
 
 
@@ -301,6 +382,7 @@ func generate_all() -> void:
 	
 	generate_map_mesh()
 	generate_collision_shape()
+	shader_set_all()
 	
 
 
@@ -343,15 +425,33 @@ static func load_terrain(path: String) -> Terrain:
 	var alt_mult: float = width / nb_chunks_width
 	
 	
-	var new_terrain: Terrain = Terrain.new()
+	var new_terrain: Terrain = terrain_scene.instantiate()
 	
 	new_terrain.map_dimensions = Vector2(width, length)
 	
+	## Altitude
 	for i in range(length):
-		var line_parts := lines[2 + i].split(" ", false)
+		var line_parts := lines[2 + i].split("\t", false)
 		
 		for j in range(width):
 			new_terrain.map[i][j] = alt_mult * line_parts[j].to_float()
+	
+	
+	
+	## Colors
+	for i in range(length):
+		var line_parts := lines[2 + length + i].split("\t", false)
+		
+		for j in range(width):
+			var color_parts := line_parts[j].split(",", false)
+			var r: float = color_parts[0].to_float()/255
+			var g: float = color_parts[1].to_float()/255
+			var b: float = color_parts[2].to_float()/255
+			var c : Color = Color(r, g, b)
+			
+			new_terrain.color_map.set_pixel(j, i, c)
+	
+	new_terrain.set_shader_cmap()
 	
 	return new_terrain
 	
