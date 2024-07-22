@@ -337,6 +337,10 @@ func generate_ground_surface(mesh: ArrayMesh) -> void:
 
 
 func generate_sea_surface(mesh: ArrayMesh) -> void:
+	## BOOLEAN TO DECIDE WHETHER THE SURFACE SHALL BE OPTIMIZED BY TRUNCATURE OR NOT
+	var optimize: bool = false
+	
+	
 	## Creating the final surface array
 	var surface_array: Array = []
 	
@@ -375,7 +379,7 @@ func generate_sea_surface(mesh: ArrayMesh) -> void:
 				var alt_left: float = map[i][j-1]
 				var alt_up: float = map[i-1][j]
 				
-				if alt_left <= alt or alt_up <= alt:
+				if not optimize or alt_left <= alt or alt_up <= alt:
 					up_left_good = true
 			
 			## avoid down right issue
@@ -384,7 +388,7 @@ func generate_sea_surface(mesh: ArrayMesh) -> void:
 				var alt_right: float = map[i][j+1]
 				var alt_down: float = map[i+1][j]
 				
-				if alt_right <= alt or alt_down <= alt:
+				if not optimize or alt_right <= alt or alt_down <= alt:
 					down_right_good = true
 			
 			
@@ -455,7 +459,7 @@ func generate_sea_surface(mesh: ArrayMesh) -> void:
 		var vec2 := vert3 - vert1
 		
 		var norm_up := vec2.cross(vec1).normalized() # Should be Vector3(0, 1, 0)
-		var norm_down := -norm_up
+		var norm_down := -norm_up    #norm_up
 		
 		# To be added for each vert
 		normals[id1] = norm_up
@@ -517,7 +521,7 @@ func set_sea_material(mesh: Mesh) -> void:
 	var c: Color = Color(0.01, 0.03, 0.05) # Color.NAVY_BLUE
 	var color_vec := Vector3(c.r, c.g, c.b)
 	new_material.set_shader_parameter("base_color", color_vec)
-	new_material.set_shader_parameter("alpha", 0.7)
+	new_material.set_shader_parameter("alpha", 0.92)
 	
 
 
