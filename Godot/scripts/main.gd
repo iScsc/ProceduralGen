@@ -20,7 +20,7 @@ extends Node
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	if not Engine.is_editor_hint() and not terrain is Terrain:
+	if not Engine.is_editor_hint(): # and not terrain is Terrain:
 		load_terrain()
 		terrain.generate_all()
 
