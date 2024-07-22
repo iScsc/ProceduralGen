@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode specular_toon;
+render_mode specular_toon; //, diffuse_toon;
 
 uniform vec2 map_dimensions = vec2(2.);
 uniform vec2 map_dist = vec2(1.);
@@ -8,43 +8,98 @@ uniform vec3 base_color : source_color = vec3(0.01, 0.03, 0.05); //vec3(0, 0, 0.
 uniform float alpha = 0.7;
 
 
-float custom_cos(float x){
-	//if (x <= 1e-2){
-		//return 1.0;
-	//}
-	//
-	//return 0.0;
+
+float waves1(vec2 position2d, float time){
+	float time_pulsation = 1.0;
+	float time_angle = 2.0 * PI * time_pulsation * time + PI/2.0;
 	
-	float cosx = cos(x);
-	if (cosx >= 0.0){
-		return cosx;
-	}
-	else {
-		return 0.0;
-	}
+	
+	vec2 waves_emitter_position = (vec2(0.5, 0.5) - vec2(0.5)) * map_dimensions * map_dist;
+	float r = length(position2d.xy - waves_emitter_position);
+	
+	float spatial_pulsation1 = 0.10;
+	float spatial_angle = 2.0 * PI * spatial_pulsation1 * r;
+	
+	float spatial_pulsation2 = 0.05;
+	
+	float amplitude = 0.5;
+	
+	return amplitude * exp(-spatial_pulsation2 * r) * sin(time_angle - spatial_angle);
 }
+
+
+
+
+//float random (vec2 uv) {
+	//return fract(sin(dot(uv.xy,
+		//vec2(12.9898,78.233))) * 43758.5453123);
+//}
+
+float shift(vec2 position){
+	vec2 wv = 1.0 - abs(sin(position));
+	return pow(1.0 - pow(wv.x * wv.y, 0.65), 4.0);
+}
+
+float waves2(vec2 position2d, float time){
+	float amp1 = 0.3, amp2 = 0.3, amp3 = 0.2, amp4 = 0.2;
+	float pul1 = 0.4, pul2 = 0.3, pul3 = 0.5, pul4 = 0.6;
+	
+	float d = amp1 * shift((position2d + time) * pul1);
+	d += amp2 * shift((position2d - time) * pul2);
+	d += amp3 * shift((position2d + time) * pul3);
+	d += amp4 * shift((position2d - time) * pul4);
+	
+	d /= (amp1 + amp2 + amp3 + amp4);
+	
+	float amplitude = 1.0;
+	
+	return amplitude * d;
+}
+
+
+
+float altitude(vec2 position2d, float time){
+	return waves1(position2d, time); // waves2(position2d, time); //waves2(position2d, time); //waves1(position2d, time);
+}
+
+
+
+// Function to compute the actualized normal at given position, by averaging
+// normals of the up_left plane and of the right_down one.
+vec3 get_normal(vec3 position, float time){
+	float cur_alt = position.y;
+	
+	vec2 left = vec2(-1.0, 0.0) * map_dist;
+	vec2 up = vec2(0.0, -1.0) * map_dist;
+	vec2 right = vec2(1.0, 0.0) * map_dist;
+	vec2 down = vec2(0.0, 1.0) * map_dist;
+	
+	float left_alt = altitude(position.xz + left, time);
+	float up_alt = altitude(position.xz + up, time);
+	float right_alt = altitude(position.xz + right, time);
+	float down_alt = altitude(position.xz + down, time);
+	
+	vec3 left_pos = vec3(position.x, 0, position.z) + vec3(left.x, left_alt, left.y);
+	vec3 up_pos = vec3(position.x, 0, position.z) + vec3(up.x, up_alt, up.y);
+	vec3 right_pos = vec3(position.x, 0, position.z) + vec3(right.x, right_alt, right.y);
+	vec3 down_pos = vec3(position.x, 0, position.z) + vec3(down.x, down_alt, down.y);
+	
+	// Up left supposed triangle
+	vec3 n1 = normalize(cross(up_pos - position, left_pos - position));
+	
+	// Down right supposed triangle
+	vec3 n2 = normalize(cross(down_pos - position, right_pos - position));
+	
+	return (n1 + n2)/2.0; //(n1 + n2)/2.0; vec3(0.0, 1.0, 0.0);
+}
+
 
 
 void vertex() {
 	// Called for every vertex the material is visible on.
+	VERTEX.y += altitude(VERTEX.xz, TIME);
 	
-	float time_pulsation = 1.0;
-	float time_angle = 2.0 * PI * time_pulsation * TIME + PI/2.0;
-	
-	
-	
-	vec2 waves_emitter_position = vec2(0.2, 0.2) * map_dimensions * map_dist;
-	float r = length(VERTEX.xz - waves_emitter_position);
-	
-	float spatial_pulsation = 0.10;
-	float spatial_angle = 2.0 * PI * spatial_pulsation * r;
-	
-	float amplitude = 1.0;
-	
-	VERTEX.y += amplitude * sin(time_angle - spatial_angle);//amplitude * sin(time_angle) * custom_cos(spatial_angle);
-	
-	//float k = VERTEX.y;
-	//NORMAL = normalize(vec3(k - height(pos + vec2(0.1, 0.0), TIME), 0.1, k - height(pos + vec2(0.0, 0.1), TIME)));1
+	NORMAL = get_normal(VERTEX, TIME);
 }
 
 void fragment() {
@@ -52,13 +107,8 @@ void fragment() {
 	float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
 	
 	ALBEDO = base_color + (0.1 * fresnel);
-	//ALPHA = alpha;
+	ALPHA = alpha;
 	METALLIC = 0.0;
 	ROUGHNESS = 0.01 * (1.0 - fresnel);
 	RIM = 0.2;
 }
-
-//void light() {
-	// Called for every pixel for every light affecting the material.
-	// Uncomment to replace the default light processing function with this one.
-//}
