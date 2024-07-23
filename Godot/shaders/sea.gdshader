@@ -9,12 +9,16 @@ uniform float alpha = 0.7;
 
 
 
-float waves1(vec2 position2d, float time){
+uniform sampler2D noise;
+
+
+
+float waves1(vec2 position2d, float time, vec2 center_position){
 	float time_pulsation = 1.0;
 	float time_angle = 2.0 * PI * time_pulsation * time + PI/2.0;
 	
 	
-	vec2 waves_emitter_position = (vec2(0.5, 0.5) - vec2(0.5)) * map_dimensions * map_dist;
+	vec2 waves_emitter_position = (center_position - vec2(0.5)) * map_dimensions * map_dist;
 	float r = length(position2d.xy - waves_emitter_position);
 	
 	float spatial_pulsation1 = 0.10;
@@ -29,37 +33,41 @@ float waves1(vec2 position2d, float time){
 
 
 
-
-//float random (vec2 uv) {
-	//return fract(sin(dot(uv.xy,
-		//vec2(12.9898,78.233))) * 43758.5453123);
-//}
-
-float shift(vec2 position){
-	vec2 wv = 1.0 - abs(sin(position));
+float waves2(vec2 position2d){
+	position2d += texture(noise, position2d / 10.0).x * 2.0 - 1.0;
+	vec2 wv = 1.0 - abs(sin(position2d));
 	return pow(1.0 - pow(wv.x * wv.y, 0.65), 4.0);
-}
-
-float waves2(vec2 position2d, float time){
-	float amp1 = 0.3, amp2 = 0.3, amp3 = 0.2, amp4 = 0.2;
-	float pul1 = 0.4, pul2 = 0.3, pul3 = 0.5, pul4 = 0.6;
-	
-	float d = amp1 * shift((position2d + time) * pul1);
-	d += amp2 * shift((position2d - time) * pul2);
-	d += amp3 * shift((position2d + time) * pul3);
-	d += amp4 * shift((position2d - time) * pul4);
-	
-	d /= (amp1 + amp2 + amp3 + amp4);
-	
-	float amplitude = 1.0;
-	
-	return amplitude * d;
 }
 
 
 
 float altitude(vec2 position2d, float time){
-	return waves1(position2d, time); // waves2(position2d, time); //waves2(position2d, time); //waves1(position2d, time);
+	float d = 0.0;
+	
+	
+	//// FIRST WAVES TYPE : waves1(position2d, time)
+	//d += waves1(position2d, time, vec2(0.7, -0.1));
+	//d += waves1(position2d, time, vec2(1.1, 0.5));
+	//d += waves1(position2d, time, vec2(0.5, 1.2));
+	//d += waves1(position2d, time, vec2(-0.1, 0.2));
+	
+	
+	//// SECOND WAVES TYPE : waves2(position2d)
+	float amp1 = 0.3, amp2 = 0.3, amp3 = 0.2, amp4 = 0.2;
+	float pul1 = 0.2, pul2 = 0.15, pul3 = 0.25, pul4 = 0.3;
+	
+	d += amp1 * waves2((position2d + time) * pul1);
+	d += amp2 * waves2((position2d - time) * pul2);
+	d += amp3 * waves2((position2d + time) * pul3);
+	d += amp4 * waves2((position2d - time) * pul4);
+	
+	d /= (amp1 + amp2 + amp3 + amp4);
+	
+	float amplitude = 1.0;
+	
+	d *= amplitude;
+	
+	return d;
 }
 
 

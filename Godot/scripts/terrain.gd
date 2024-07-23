@@ -338,7 +338,9 @@ func generate_ground_surface(mesh: ArrayMesh) -> void:
 
 func generate_sea_surface(mesh: ArrayMesh) -> void:
 	## BOOLEAN TO DECIDE WHETHER THE SURFACE SHALL BE OPTIMIZED BY TRUNCATURE OR NOT
-	var optimize: bool = false
+	var optimize: bool = false ## NEED TO BE ENHANCED -> Should be optimized to generate meshes untill its not necessary anymore.
+							   ## something like not generating when every vertex is like : abs(ground_alt - sea_alt) > x
+							   ## where x is something like : x = 1.1 * sea_amplitude
 	
 	
 	## Creating the final surface array
@@ -522,6 +524,11 @@ func set_sea_material(mesh: Mesh) -> void:
 	var color_vec := Vector3(c.r, c.g, c.b)
 	new_material.set_shader_parameter("base_color", color_vec)
 	new_material.set_shader_parameter("alpha", 0.92)
+	
+	## Setting up the random value map
+	var noise_texture: NoiseTexture2D = NoiseTexture2D.new()
+	noise_texture.noise = FastNoiseLite.new()
+	new_material.set_shader_parameter("noise", noise_texture)
 	
 
 
