@@ -1,31 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://cabf6st1dbdcb"]
+[gd_scene load_steps=3 format=3 uid="uid://cabf6st1dbdcb"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_e07no"]
 [ext_resource type="PackedScene" uid="uid://dfax68qtmker8" path="res://scenes/player.tscn" id="1_gybie"]
-[ext_resource type="PackedScene" uid="uid://d3ic0m4kpv565" path="res://scenes/moving_camera.tscn" id="2_exelq"]
-[ext_resource type="PackedScene" uid="uid://cvxdsvncoc5e0" path="res://scenes/terrain.tscn" id="4_6m0dn"]
-[ext_resource type="Script" path="res://scripts/terrain.gd" id="5_q8x7m"]
 
-[node name="Main" type="Node" node_paths=PackedStringArray("terrain")]
+[node name="Main" type="Node"]
 script = ExtResource("1_e07no")
-terrain = NodePath("Terrain")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.353554, 0.353553, -1.336e-08, 0.707107, 0.707107, -0.5, -0.612373, 0.612372, 0, 10, 0)
 
-[node name="MovingCamera" parent="." instance=ExtResource("2_exelq")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
-
 [node name="Player" parent="." instance=ExtResource("1_gybie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
-
-[node name="Terrain" type="Node3D" parent="." node_paths=PackedStringArray("ground", "ground_coll_shape", "ground_mesh_instance", "sea", "sea_coll_shape", "sea_mesh_instance") instance=ExtResource("4_6m0dn")]
-script = ExtResource("5_q8x7m")
-ground = NodePath("Ground")
-ground_coll_shape = NodePath("Ground/CollisionShape3D")
-ground_mesh_instance = NodePath("Ground/MeshInstance3D")
-sea = NodePath("Sea")
-sea_coll_shape = NodePath("Sea/CollisionShape3D")
-sea_mesh_instance = NodePath("Sea/MeshInstance3D")
-map_dimensions = Vector2(135, 90)
-sea_level = -13.5
