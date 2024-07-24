@@ -420,6 +420,12 @@ def write(path: str, obj: object):
                 bytes_str+=GradientGrid.write(obj)
             elif type(obj)==Layer:
                 bytes_str+=Layer.write(obj,True)
+            elif type(obj)==Chunk:
+                bytes_str+=Chunk.write(obj)
+            elif type(obj)==Chunk:
+                bytes_str+=Chunk.write(obj)
+            elif type(obj)==Map:
+                bytes_str+=Map.write(obj)
                 
             f.write(bytes_str)
             f.close()
