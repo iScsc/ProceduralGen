@@ -37,7 +37,7 @@ func _physics_process(delta):
 	
 	var input_rot: Vector2 = get_viewport().get_mouse_position() - Vector2(get_viewport().size/2)
 	var rot := Vector3(0, input_rot.x, 0)
-	if rot:
+	if rot and DisplayServer.window_is_focused():
 		rotation -= rot * ROTATION_SPEED * delta
 		camera.rotation.x = clamp(camera.rotation.x - input_rot.y * ROTATION_SPEED * delta,
 								 CAMERA_LIMITS.x, CAMERA_LIMITS.y)
