@@ -324,6 +324,11 @@ class DecodeDictError(InterpreterError):
 ### ---------- Binary encoding methods  ---------- ###
 
 from numpy import uint8, float64
+from layer import Layer
+from gradientGrid import GradientGrid
+from chunk import Chunk
+from map import Map
+from mapGenerator import CompleteMap
 
 BYTES_TRUE = b'\x01'
 BYTES_FALSE = b'\x00'
@@ -381,6 +386,43 @@ def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
     x = uint8(x)
     return x,bytes_str[1:]
 
+#TODO lists
+
+def read(path: str) -> object:
+        bytes_str : bytes
+        if path!=None:
+            f=open(path,'rb')
+            bytes_str=f.read()
+            f.close()
+        else: bytes_str=None
+        
+        if bytes_str!=None:
+            if bytes_str[0:1]==GradientGrid.GRID_ENCODING:
+                return GradientGrid.read(None,bytes_str)[0]
+            elif bytes_str[0:1]==Layer.LAYER_ENCODING:
+                return Layer.read(None,bytes_str)[0]
+            elif bytes_str[0:1]==Chunk.CHUNK_ENCODING:
+                return Chunk.read(None,bytes_str)[0]
+            elif bytes_str[0:1]==Map.MAP_ENCODING:
+                return Map.read(None,bytes_str)[0]
+            elif bytes_str[0:1]==CompleteMap.COMPLETE_MAP_ENCODING:
+                return CompleteMap.read(None,bytes_str)[0]
+            
+        else: return None
+
+def write(path: str, obj: object):
+        bytes_str : bytes
+        if path!=None:
+            f=open(path,'wb')
+            bytes_str: bytes
+            
+            if type(obj)==GradientGrid:
+                bytes_str+=GradientGrid.write(obj)
+            elif type(obj)==Layer:
+                bytes_str+=Layer.write(obj,True)
+                
+            f.write(bytes_str)
+            f.close()
 
 
 
