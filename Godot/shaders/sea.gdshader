@@ -13,22 +13,23 @@ uniform sampler2D noise;
 
 
 
-float waves1(vec2 position2d, float time, vec2 center_position){
-	float time_pulsation = 1.0;
+float waves1(vec2 position2d, float time, vec2 center_position,
+		float time_pulsation, float spatial_pulsation, float spatial_damping){
+	//float time_pulsation = 1.0;
 	float time_angle = 2.0 * PI * time_pulsation * time + PI/2.0;
 	
 	
 	vec2 waves_emitter_position = (center_position - vec2(0.5)) * map_dimensions * map_dist;
 	float r = length(position2d.xy - waves_emitter_position);
 	
-	float spatial_pulsation1 = 0.10;
-	float spatial_angle = 2.0 * PI * spatial_pulsation1 * r;
+	//float spatial_pulsation = 0.10;
+	float spatial_angle = 2.0 * PI * spatial_pulsation * r;
 	
-	float spatial_pulsation2 = 0.05;
+	//float spatial_damping = 0.01;//0.05;
 	
 	float amplitude = 0.5;
 	
-	return amplitude * exp(-spatial_pulsation2 * r) * sin(time_angle - spatial_angle);
+	return amplitude * exp(-spatial_damping * r) * sin(time_angle - spatial_angle);
 }
 
 
@@ -46,22 +47,34 @@ float altitude(vec2 position2d, float time){
 	
 	
 	//// FIRST WAVES TYPE : waves1(position2d, time)
-	//d += waves1(position2d, time, vec2(0.7, -0.1));
-	//d += waves1(position2d, time, vec2(1.1, 0.5));
-	//d += waves1(position2d, time, vec2(0.5, 1.2));
-	//d += waves1(position2d, time, vec2(-0.1, 0.2));
+	float amp1 = 0.3, amp2 = 0.2, amp3 = 0.2, amp4 = 0.2, amp5 = 0.2;
+	float tpul1 = 1.0, tpul2 = 1.1, tpul3 = 0.8, tpul4 = 1.2, tpul5 = 0.9;
+	
+	float spul1 = 0.10, spul2 = 0.09, spul3 = 0.12, spul4 = 0.08, spul5 = 0.11;
+	float sdamp1 = 0.005, sdamp2 = 0.001, sdamp3 = 0.001, sdamp4 = 0.001, sdamp5 = 0.001;
+	
+	d += amp1 * waves1(position2d, time, vec2(0.5, 0.5),
+			tpul1, spul1, sdamp1);
+	d += amp2 * waves1(position2d, time/2.0, vec2(0.7, -0.1),
+			tpul2, spul2, sdamp2);
+	d += amp3 * waves1(position2d, time/2.0, vec2(1.1, 0.5),
+			tpul3, spul3, sdamp3);
+	d += amp4 * waves1(position2d, time/2.0, vec2(0.5, 1.2),
+			tpul4, spul4, sdamp4);
+	d += amp5 * waves1(position2d, time/2.0, vec2(-0.1, 0.2),
+			tpul5, spul5, sdamp5);
 	
 	
 	//// SECOND WAVES TYPE : waves2(position2d)
-	float amp1 = 0.3, amp2 = 0.3, amp3 = 0.2, amp4 = 0.2;
+	float amp6 = 0.3, amp7 = 0.3, amp8 = 0.2, amp9 = 0.2;
 	float pul1 = 0.2, pul2 = 0.15, pul3 = 0.25, pul4 = 0.3;
 	
-	d += amp1 * waves2((position2d + time) * pul1);
-	d += amp2 * waves2((position2d - time) * pul2);
-	d += amp3 * waves2((position2d + time) * pul3);
-	d += amp4 * waves2((position2d - time) * pul4);
+	d += amp6 * waves2((position2d + time) * pul1);
+	d += amp7 * waves2((position2d - time) * pul2);
+	d += amp8 * waves2((position2d + time) * pul3);
+	d += amp9 * waves2((position2d - time) * pul4);
 	
-	d /= (amp1 + amp2 + amp3 + amp4);
+	d /= (amp1 + amp2 + amp3 + amp4 + amp5 + amp6 + amp7 + amp8 + amp9);
 	
 	float amplitude = 1.0;
 	
