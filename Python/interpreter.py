@@ -324,11 +324,6 @@ class DecodeDictError(InterpreterError):
 ### ---------- Binary encoding methods  ---------- ###
 
 from numpy import uint8, float64
-from layer import Layer
-from gradientGrid import GradientGrid
-from chunk import Chunk
-from map import Map
-from mapGenerator import CompleteMap
 
 BYTES_TRUE = b'\x01'
 BYTES_FALSE = b'\x00'
@@ -389,46 +384,59 @@ def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
 #TODO lists
 
 def read(path: str) -> object:
-        bytes_str : bytes
-        if path!=None:
-            f=open(path,'rb')
-            bytes_str=f.read()
-            f.close()
-        else: bytes_str=None
+    from layer import Layer
+    from gradientGrid import GradientGrid
+    from chunk import Chunk
+    from map import Map
+    from mapGenerator import CompleteMap
+    
+    bytes_str : bytes
+    
+    if path!=None:
+        f=open(path,'rb')
+        bytes_str=f.read()
+        f.close()
+    else: bytes_str=None
+    
+    if bytes_str!=None:
+        if bytes_str[0:1]==GradientGrid.GRID_ENCODING:
+            return GradientGrid.read(None,bytes_str)[0]
+        elif bytes_str[0:1]==Layer.LAYER_ENCODING:
+            return Layer.read(None,bytes_str)[0]
+        elif bytes_str[0:1]==Chunk.CHUNK_ENCODING:
+            return Chunk.read(None,bytes_str)[0]
+        elif bytes_str[0:1]==Map.MAP_ENCODING:
+            return Map.read(None,bytes_str)[0]
+        elif bytes_str[0:1]==CompleteMap.COMPLETE_MAP_ENCODING:
+            return CompleteMap.read(None,bytes_str)[0]
         
-        if bytes_str!=None:
-            if bytes_str[0:1]==GradientGrid.GRID_ENCODING:
-                return GradientGrid.read(None,bytes_str)[0]
-            elif bytes_str[0:1]==Layer.LAYER_ENCODING:
-                return Layer.read(None,bytes_str)[0]
-            elif bytes_str[0:1]==Chunk.CHUNK_ENCODING:
-                return Chunk.read(None,bytes_str)[0]
-            elif bytes_str[0:1]==Map.MAP_ENCODING:
-                return Map.read(None,bytes_str)[0]
-            elif bytes_str[0:1]==CompleteMap.COMPLETE_MAP_ENCODING:
-                return CompleteMap.read(None,bytes_str)[0]
-            
-        else: return None
+    else: return None
 
 def write(path: str, obj: object):
-        bytes_str : bytes
-        if path!=None:
-            f=open(path,'wb')
-            bytes_str: bytes
+    from layer import Layer
+    from gradientGrid import GradientGrid
+    from chunk import Chunk
+    from map import Map
+    from mapGenerator import CompleteMap
+    
+    bytes_str : bytes
+    if path!=None:
+        f=open(path,'wb')
+        bytes_str: bytes
+        
+        if type(obj)==GradientGrid:
+            bytes_str=GradientGrid.write(obj)
+        elif type(obj)==Layer:
+            bytes_str=Layer.write(obj,True)
+        elif type(obj)==Chunk:
+            bytes_str=Chunk.write(obj)
+        elif type(obj)==Map:
+            bytes_str=Map.write(obj)
+        elif type(obj)==CompleteMap:
+            bytes_str=CompleteMap.write(obj)
             
-            if type(obj)==GradientGrid:
-                bytes_str+=GradientGrid.write(obj)
-            elif type(obj)==Layer:
-                bytes_str+=Layer.write(obj,True)
-            elif type(obj)==Chunk:
-                bytes_str+=Chunk.write(obj)
-            elif type(obj)==Chunk:
-                bytes_str+=Chunk.write(obj)
-            elif type(obj)==Map:
-                bytes_str+=Map.write(obj)
-                
-            f.write(bytes_str)
-            f.close()
+        f.write(bytes_str)
+        f.close()
 
 
 
@@ -445,9 +453,33 @@ if __name__ == "__main__":
     # print(b.name)
     # print(b.bio.altitude_range)
     
-    t = temp()
-    t.obj=bytearray("A",'utf-8')
+    # t = temp()
+    # t.obj=bytearray("A",'utf-8')
     
-    print(encode(t))
-    print(decode(encode(t),True).obj)
+    # print(encode(t))
+    # print(decode(encode(t),True).obj)
     
+    
+    
+    grid_dim = [3, 5]
+    size_factors = [8, 4]
+    layer_factors = [1, .1]
+    map_dimensions = (2, 3)
+    
+    print("Generating a new map from scratch with parameters : ")
+    print(" - map dimensions : ", map_dimensions)
+    print(" - grids square dimensions : ", grid_dim)
+    print(" - layers size_factors : ", size_factors)
+    print(" - chunk layer factors : ", layer_factors)
+    
+    from map import Map
+    map = Map.generateMapFromScratch(grid_dim, grid_dim, size_factors, layer_factors, map_dimensions[0], map_dimensions[1])
+    
+    print(map)
+    
+    print("Writing map in file")
+    write("../saves/testing.data",map)
+    
+    print("Reading map in file")
+    map=read("../saves/testing.data")
+    print(map)
