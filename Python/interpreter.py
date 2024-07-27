@@ -335,64 +335,107 @@ FLOAT_BITS_NBR = 1 + FLOAT_BITS_EXP + FLOAT_BITS_MANTISS #24 should be a multipl
 BYTES_VERSION = b'\x00'
 
 def bytesNumber(x : int | float | float64 | uint8) -> bytes:
+    """Returns the encoding of a given number.
+
+    Args:
+        x (int | float | float64 | uint8): the given number
+
+    Returns:
+        bytes: the encoding corresponding
+    """
     if type(x)==uint8:
-        res=bytes([x])
+        res=bytes([x]) #stored on one byte
         return res
-    elif type(x)==int and int.bit_length(x)<INT_BITS_NBR:
-        temp = 0 if x>0 else 128
+    elif type(x)==int and int.bit_length(x)<INT_BITS_NBR: #can be encoded
+        temp = 0 if x>0 else 128 #sign bit
         x = abs(x)
-        l=[temp + x // (2**(INT_BITS_NBR-8))] + [x % (2**(INT_BITS_NBR-i)) // (2**(INT_BITS_NBR-i-8)) for i in range(8,INT_BITS_NBR,8)]
+        l=[temp + x // (2**(INT_BITS_NBR-8))] + [x % (2**(INT_BITS_NBR-i)) // (2**(INT_BITS_NBR-i-8)) for i in range(8,INT_BITS_NBR,8)] #[sign bit + first numeral bits to get a byte] + [remaining bytes]
         res = bytes(l)
         return res
-    elif type(x)==float or type(x)==float64:
-        temp = 0 if x>0 else 128
+    elif type(x)==float or type(x)==float64: 
+        temp = 0 if x>0 else 128 #sign bit
         x = abs(x)
         exp = 0
-        if x<2**(FLOAT_BITS_MANTISS):
+        if x<2**(FLOAT_BITS_MANTISS): #negative exponant
             while exp>-2**(FLOAT_BITS_EXP-1) and x<2**(FLOAT_BITS_MANTISS-1):
                 exp-=1
                 x*=2
-        else:
+        else: #positive exponant
             while exp<2**(FLOAT_BITS_EXP-1)-1 and x>=2**(FLOAT_BITS_MANTISS):
                 exp+=1
                 x/=2
-        exp+=16
+        exp+=16 #offsetting exponant
         x=int(x)
-        l = [temp + exp*2**(8-(1+FLOAT_BITS_EXP)) + x//2**(FLOAT_BITS_MANTISS-(8-(1+FLOAT_BITS_EXP)))] 
+        l = [temp + exp*2**(8-(1+FLOAT_BITS_EXP)) + x//2**(FLOAT_BITS_MANTISS-(8-(1+FLOAT_BITS_EXP)))] #sign bit + exponant bits + first numeral bits to get a byte
+        #remaining numeral bytes
         l += [x%2**(FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP)-i) // (2**(FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP)-i-8)) for i in range(8,FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP),8)]
         res = bytes(l)
         return res
 
 def nextInt(bytes_str : bytes) -> tuple[int, bytes]:
-    x = int.from_bytes(bytes_str[:INT_BITS_NBR//8])
-    if x//2**23==1: x=-x%2**23
+    """Returns the next int from the first bytes of a given byte string.
+
+    Args:
+        bytes_str (bytes): the given byte string
+
+    Returns:
+        tuple[int, bytes]: the int and the remaining bytes
+    """
+    x = int.from_bytes(bytes_str[:INT_BITS_NBR//8]) #easier to work with ints
+    if x//2**23==1: x=-x%2**23 #first bit is a sign bit
     return x,bytes_str[INT_BITS_NBR//8:]
 
 def nextFloat(bytes_str : bytes) -> tuple[float, bytes]:
-    x = int.from_bytes(bytes_str[:FLOAT_BITS_NBR//8])
-    if x//(2**(FLOAT_BITS_NBR-1))==1: s=-1
+    """Returns the next float from the first bytes of a given byte string.
+
+    Args:
+        bytes_str (bytes): the given byte string
+
+    Returns:
+        tuple[float, bytes]: the float and the remaining bytes
+    """
+    x = int.from_bytes(bytes_str[:FLOAT_BITS_NBR//8]) #easier to work with ints
+    if x//(2**(FLOAT_BITS_NBR-1))==1: s=-1 #first bit is a sign bit
     else: s=1
-    x=x%(2**(FLOAT_BITS_NBR-1))
-    exp=x//(2**(FLOAT_BITS_MANTISS))
-    exp-=16
-    x=x%(2**(FLOAT_BITS_MANTISS))
-    return s*x*2**exp,bytes_str[FLOAT_BITS_NBR//8:]
+    x=x%(2**(FLOAT_BITS_NBR-1)) #getting rid of first sign bit
+    exp=x//(2**(FLOAT_BITS_MANTISS)) #obtaining exponants bits
+    exp-=16 #de-offsetting exponant
+    x=x%(2**(FLOAT_BITS_MANTISS)) #getting rid of exponants bits
+    return s*x*2**exp,bytes_str[FLOAT_BITS_NBR//8:] #reconstructing float number
     
 def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
+    """Returns the next uint8 (numpy) from the first byte of a given byte string.
+
+    Args:
+        bytes_str (bytes): the byte string
+
+    Returns:
+        tuple[uint8, bytes]: the uint8 decoded and the remaining bytes
+    """
     x = int.from_bytes(bytes_str[0:1])
     x = uint8(x)
     return x,bytes_str[1:]
 
 
 def read(data_in: str|bytes) -> tuple[object, bytes]:
+    """Decodes an object from a given binary file or string
+
+    Args:
+        data_in (str | bytes): either path to file to decode, or bytes to be decoded
+
+    Returns:
+        tuple[object, bytes]: the decoded object and eventual residual bytes
+    """
+    
+    #importing objects to be matched
     from layer import Layer
     from gradientGrid import GradientGrid
     from chunk import Chunk
     from map import Map
     from mapGenerator import CompleteMap
     
+    #bytes to be decoded
     bytes_str : bytes
-    
     if type(data_in)==str:
         f=open(data_in,'rb')
         bytes_str=f.read()
@@ -407,13 +450,13 @@ def read(data_in: str|bytes) -> tuple[object, bytes]:
         else: bytes_str==None
     else: bytes_str=None
     
+    #decoding bytes
     if bytes_str!=None:
         isList=bytes_str[0:1]==BYTES_TRUE
-        
         bytes_str=bytes_str[1:]
         
         if isList:
-            nbr, bytes_str = nextInt(bytes_str)
+            nbr, bytes_str = nextInt(bytes_str) #number of elements in the list
             res = []
             for _ in range(nbr):
                 x, bytes_str = read(bytes_str)
@@ -431,9 +474,20 @@ def read(data_in: str|bytes) -> tuple[object, bytes]:
         elif bytes_str[0:1]==CompleteMap.COMPLETE_MAP_ENCODING:
             return CompleteMap.read(None,bytes_str)
         
-    else: return None
+    else: return None #failed
 
-def write(obj: object, path: str=None):
+def write(obj: object, path: str=None) -> bytes:
+    """Encodes a given object into a binary file or string.
+
+    Args:
+        obj (object): the object to be encoded
+        path (str, optional): the file path where to store encoded bytes. Defaults to None.
+
+    Returns:
+        bytes: encoded bytes
+    """
+    
+    #importing object to match
     from layer import Layer
     from gradientGrid import GradientGrid
     from chunk import Chunk
