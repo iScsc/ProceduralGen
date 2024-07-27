@@ -115,15 +115,25 @@ class Map:
     
     @staticmethod
     def write(map: Map, path: str=None, append: bool=False) -> bytes:
+        """Encodes a Map object into a binary file or string.
+
+        Args:
+            map (Map): the map object to encode
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
         bytes_str : bytes = b''
         bytes_str += Map.MAP_ENCODING
         bytes_str += interp.bytesNumber(map.map_height)
         bytes_str += interp.bytesNumber(map.map_width)
-        for i in range(map.map_height):
+        for i in range(map.map_height): #proper chunks
             for j in range(map.map_width):
                 bytes_str += Chunk.write(map.chunks[i][j])
-        n = 2 * (map.map_width+2) + 2 * map.map_height
-        for i in range(n):
+        n = 2 * (map.map_width+2) + 2 * map.map_height #nbr of virtual chunks
+        for i in range(n): #virtual chunks
             bytes_str += Chunk.write(map.virtual_chunks[i],True)
         if path!=None:
             if append: f=open(path,"ab")

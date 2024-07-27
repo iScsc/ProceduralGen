@@ -99,6 +99,16 @@ class CompleteMap:
     
     @staticmethod
     def write(complete_map: CompleteMap, path: str=None, append: bool=False) -> bytes:
+        """Encodes a CompleteMap object into a binary file or string.
+
+        Args:
+            complete_map (CompleteMap): the complete map object to encode
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
         bytes_str : bytes = b''
         bytes_str += CompleteMap.COMPLETE_MAP_ENCODING
         bytes_str += Map.write(complete_map.map)

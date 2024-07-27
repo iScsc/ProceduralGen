@@ -171,11 +171,22 @@ class Layer:
     
     @staticmethod
     def write(layer: Layer, altitude: bool=False, path: str=None, append: bool=False) -> bytes:
+        """Encodes a Layer object into a binary file or string.
+
+        Args:
+            layer (Layer): the layer object to encode
+            altitude (bool, optional): should the altitude be encoded. Defaults to False.
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
         bytes_str : bytes = b''
         bytes_str += Layer.LAYER_ENCODING
         bytes_str += interp.bytesNumber(layer.size_factor)
         bytes_str += GradientGrid.write(layer.grid)
-        if altitude:
+        if altitude: #altitude values (optional)
             bytes_str += interp.BYTES_TRUE
             for i in range(layer.height):
                 for j in range(layer.width):

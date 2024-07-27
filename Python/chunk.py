@@ -272,12 +272,23 @@ class Chunk:
     
     @staticmethod
     def write(chunk: Chunk, virtual: bool=False, path: str=None, append: bool=False) -> bytes:
+        """Encodes a Chunk object into a binary file or string.
+
+        Args:
+            chunk (Chunk): the chunk object to encode
+            virtual (bool): is it a virtual chunk. Defaults to False.
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
         bytes_str : bytes = b''
         bytes_str += Chunk.CHUNK_ENCODING
         bytes_str += interp.bytesNumber(chunk.base_altitude)
         bytes_str += interp.bytesNumber(chunk.width)
         bytes_str += interp.bytesNumber(chunk.height)
-        if virtual:
+        if virtual: #uninitialised values
             bytes_str += interp.BYTES_TRUE
         else:
             bytes_str += interp.BYTES_FALSE
