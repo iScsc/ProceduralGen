@@ -523,6 +523,33 @@ def write(obj: object, path: str=None) -> bytes:
         
     return bytes_str
 
+def readAll(data_in: str|bytes) -> list[object]:
+    """Decodes object from a given binary file or string up to bytes depletion.
+
+    Args:
+        data_in (str | bytes): path to the file or bytes
+
+    Returns:
+        list[object]: all decoded ojects
+    """
+    
+    #bytes to be decoded
+    bytes_str : bytes
+    if type(data_in)==str:
+        f=open(data_in,'rb')
+        bytes_str=f.read()
+        f.close()
+    elif type(data_in)==bytes:
+        bytes_str=data_in
+    else: return None
+    
+    #decoding
+    res = []
+    while len(bytes_str)>0:
+        x, bytes_str = read(bytes_str)
+        res.append(x)
+    return res
+
 
 
 if __name__ == "__main__":
