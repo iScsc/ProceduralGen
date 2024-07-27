@@ -39,7 +39,7 @@ typedef struct tuple_obj_bytes {
 
 // ------- Functions ------- //
 
-int pow(int nbr, int exp);
+int intpow(int nbr, int exp);
 
 byte* bytesUint8(__uint8_t nbr);
 
