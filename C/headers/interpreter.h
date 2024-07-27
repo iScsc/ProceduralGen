@@ -15,6 +15,13 @@
 // ------- Structure definition ------- //
 
 typedef char byte;
+typedef char* object; //an alias for pointers
+
+typedef struct tuple_obj_bytes {
+    object object; 
+    byte* bytes;
+    int start;
+} tuple_obj_bytes;
 
 
 // ------- Constants ------- //
@@ -39,6 +46,16 @@ byte* bytesUint8(__uint8_t nbr);
 byte* bytesInt(int nbr);
 
 byte* bytesDouble(double nbr);
+
+
+
+tuple_obj_bytes* nextUint8(int start, byte* bytes);
+
+tuple_obj_bytes* nextInt(int start, byte* bytes);
+
+tuple_obj_bytes* nextDouble(int start, byte* bytes);
+
+
 
 
 

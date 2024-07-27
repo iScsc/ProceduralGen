@@ -17,7 +17,7 @@
 // ------- General functions ------- //
 
 int pow(int nbr, int exp) {
-    if (exp==0) return 1;
+    if (exp<=0) return 1;
     else if (exp==1) return nbr;
     else if (exp%2==0) return pow(nbr*nbr,exp/2);
     else return nbr*pow(nbr,exp-1);
@@ -78,6 +78,68 @@ byte* bytesDouble(double nbr) {
     for (int i=8; i<FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP); i+=8) {
         res[i/8] = (byte) ((((int)nbr) % pow(2,FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP)-i) / pow(2,FLOAT_BITS_MANTISS+(1+FLOAT_BITS_EXP)-i-8)));
     }
+
+    return res;
+}
+
+
+
+tuple_obj_bytes* nextUint8(int start, byte* bytes) {
+    tuple_obj_bytes* res = malloc(sizeof(tuple_obj_bytes));
+
+    __uint8_t* obj = malloc(1);
+    *obj = bytes[start];
+
+    res->object = (object) obj;
+    res->bytes = bytes;
+    res->start = start+1;
+
+    return res;
+}
+
+tuple_obj_bytes* nextInt(int start, byte* bytes) {
+    tuple_obj_bytes* res = malloc(sizeof(tuple_obj_bytes));
+
+    int* obj = malloc(sizeof(int));
+    *obj = 0;
+    for (int i=0; i<INT_BITS_NBR/8; i++) {
+        *obj*=256;
+        *obj+=bytes[start+i];
+    }
+    if (*obj / pow(2,INT_BITS_NBR-1)==1) *obj=-(*obj%INT_BITS_NBR-1);
+
+    res->object = (object) obj;
+    res->bytes = bytes;
+    res->start = start+INT_BITS_NBR/8;
+
+    return res;
+}
+
+tuple_obj_bytes* nextDouble(int start, byte* bytes) {
+    tuple_obj_bytes* res = malloc(sizeof(tuple_obj_bytes));
+
+    double* obj = malloc(sizeof(double));
+    *obj = 0;
+    for (int i=0; i<FLOAT_BITS_NBR/8; i++) {
+        *obj*=256;
+        *obj+=bytes[start+i];
+    }
+
+    int sign = 1;
+    if (*obj / pow(2,FLOAT_BITS_NBR-1)==1) {
+        *obj=(long)*obj%FLOAT_BITS_NBR-1;
+        sign = -1;
+    }
+
+    int exp = (int)*obj/pow(2,FLOAT_BITS_MANTISS);
+    exp-=16;
+    *obj = (long)*obj%pow(2,FLOAT_BITS_MANTISS);
+    if (exp>=0) *obj = sign * (*obj) * pow(2,exp);
+    else *obj = sign * (*obj) / pow(2,-exp);
+
+    res->object = (object) obj;
+    res->bytes = bytes;
+    res->start = start+1;
 
     return res;
 }

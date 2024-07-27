@@ -382,7 +382,7 @@ def nextInt(bytes_str : bytes) -> tuple[int, bytes]:
         tuple[int, bytes]: the int and the remaining bytes
     """
     x = int.from_bytes(bytes_str[:INT_BITS_NBR//8]) #easier to work with ints
-    if x//2**23==1: x=-x%2**23 #first bit is a sign bit
+    if x//2**(INT_BITS_NBR-1)==1: x=-x%2**(INT_BITS_NBR-1) #first bit is a sign bit
     return x,bytes_str[INT_BITS_NBR//8:]
 
 def nextFloat(bytes_str : bytes) -> tuple[float, bytes]:
