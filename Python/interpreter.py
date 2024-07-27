@@ -328,9 +328,11 @@ from numpy import uint8, float64
 BYTES_TRUE = b'\x01'
 BYTES_FALSE = b'\x00'
 INT_BITS_NBR = 24 #24 should be a multiple of 8
-FLOAT_BITS_EXP = 5 #5 sould be < 8
+FLOAT_BITS_EXP = 5 #5 should be < 8
 FLOAT_BITS_MANTISS = 18 
 FLOAT_BITS_NBR = 1 + FLOAT_BITS_EXP + FLOAT_BITS_MANTISS #24 should be a multiple of 8
+
+BYTES_VERSION = b'\x00'
 
 def bytesNumber(x : int | float | float64 | uint8) -> bytes:
     if type(x)==uint8:
@@ -383,7 +385,7 @@ def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
 
 #TODO lists
 
-def read(path: str) -> object:
+def read(path: str) -> tuple[object, bytes]:
     from layer import Layer
     from gradientGrid import GradientGrid
     from chunk import Chunk
@@ -395,48 +397,72 @@ def read(path: str) -> object:
     if path!=None:
         f=open(path,'rb')
         bytes_str=f.read()
+        if bytes_str[0:1]==BYTES_VERSION:
+            bytes_str==bytes_str[1:]
+        else: bytes_str==None
         f.close()
     else: bytes_str=None
     
     if bytes_str!=None:
-        if bytes_str[0:1]==GradientGrid.GRID_ENCODING:
-            return GradientGrid.read(None,bytes_str)[0]
+        isList=bytes_str[0:1]==BYTES_TRUE
+        
+        bytes_str=bytes_str[1:]
+        
+        if isList:
+            nbr, bytes_str = nextInt(bytes_str)
+            res = []
+            for _ in range(nbr):
+                x, bytes_str = read(bytes_str)
+                res.append(x)
+            return res, bytes_str
+        
+        elif bytes_str[0:1]==GradientGrid.GRID_ENCODING:
+            return GradientGrid.read(None,bytes_str)
         elif bytes_str[0:1]==Layer.LAYER_ENCODING:
-            return Layer.read(None,bytes_str)[0]
+            return Layer.read(None,bytes_str)
         elif bytes_str[0:1]==Chunk.CHUNK_ENCODING:
-            return Chunk.read(None,bytes_str)[0]
+            return Chunk.read(None,bytes_str)
         elif bytes_str[0:1]==Map.MAP_ENCODING:
-            return Map.read(None,bytes_str)[0]
+            return Map.read(None,bytes_str)
         elif bytes_str[0:1]==CompleteMap.COMPLETE_MAP_ENCODING:
-            return CompleteMap.read(None,bytes_str)[0]
+            return CompleteMap.read(None,bytes_str)
         
     else: return None
 
-def write(path: str, obj: object):
+def write(obj: object, path: str):
     from layer import Layer
     from gradientGrid import GradientGrid
     from chunk import Chunk
     from map import Map
     from mapGenerator import CompleteMap
     
-    bytes_str : bytes
+    bytes_str: bytes = b''
+    bytes_str += BYTES_VERSION
+    
+    if type(obj)==list or type(obj)==tuple:
+        bytes_str += BYTES_TRUE
+        bytes_str += bytesNumber(len(obj))
+        for x in obj:
+            bytes_str += write(x)     
+    else: bytes_str += BYTES_FALSE
+    
+    if type(obj)==GradientGrid:
+        bytes_str+=GradientGrid.write(obj)
+    elif type(obj)==Layer:
+        bytes_str+=Layer.write(obj,True)
+    elif type(obj)==Chunk:
+        bytes_str+=Chunk.write(obj)
+    elif type(obj)==Map:
+        bytes_str+=Map.write(obj)
+    elif type(obj)==CompleteMap:
+        bytes_str+=CompleteMap.write(obj)
+            
     if path!=None:
         f=open(path,'wb')
-        bytes_str: bytes
-        
-        if type(obj)==GradientGrid:
-            bytes_str=GradientGrid.write(obj)
-        elif type(obj)==Layer:
-            bytes_str=Layer.write(obj,True)
-        elif type(obj)==Chunk:
-            bytes_str=Chunk.write(obj)
-        elif type(obj)==Map:
-            bytes_str=Map.write(obj)
-        elif type(obj)==CompleteMap:
-            bytes_str=CompleteMap.write(obj)
-            
         f.write(bytes_str)
         f.close()
+        
+    return bytes_str
 
 
 
