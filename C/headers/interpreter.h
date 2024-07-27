@@ -30,4 +30,17 @@ typedef char byte;
 
 
 
+// ------- Functions ------- //
+
+int pow(int nbr, int exp);
+
+byte* bytesUint8(__uint8_t nbr);
+
+byte* bytesInt(int nbr);
+
+byte* bytesDouble(double nbr);
+
+
+
+
 #endif
