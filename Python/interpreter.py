@@ -383,9 +383,8 @@ def nextUInt8(bytes_str : bytes) -> tuple[uint8, bytes]:
     x = uint8(x)
     return x,bytes_str[1:]
 
-#TODO lists
 
-def read(path: str) -> tuple[object, bytes]:
+def read(data_in: str|bytes) -> tuple[object, bytes]:
     from layer import Layer
     from gradientGrid import GradientGrid
     from chunk import Chunk
@@ -394,13 +393,18 @@ def read(path: str) -> tuple[object, bytes]:
     
     bytes_str : bytes
     
-    if path!=None:
-        f=open(path,'rb')
+    if type(data_in)==str:
+        f=open(data_in,'rb')
         bytes_str=f.read()
         if bytes_str[0:1]==BYTES_VERSION:
-            bytes_str==bytes_str[1:]
+            bytes_str=bytes_str[1:]
         else: bytes_str==None
         f.close()
+    elif type(data_in)==bytes:
+        bytes_str=data_in
+        if bytes_str[0:1]==BYTES_VERSION:
+            bytes_str=bytes_str[1:]
+        else: bytes_str==None
     else: bytes_str=None
     
     if bytes_str!=None:
@@ -429,7 +433,7 @@ def read(path: str) -> tuple[object, bytes]:
         
     else: return None
 
-def write(obj: object, path: str):
+def write(obj: object, path: str=None):
     from layer import Layer
     from gradientGrid import GradientGrid
     from chunk import Chunk
@@ -444,18 +448,19 @@ def write(obj: object, path: str):
         bytes_str += bytesNumber(len(obj))
         for x in obj:
             bytes_str += write(x)     
-    else: bytes_str += BYTES_FALSE
-    
-    if type(obj)==GradientGrid:
-        bytes_str+=GradientGrid.write(obj)
-    elif type(obj)==Layer:
-        bytes_str+=Layer.write(obj,True)
-    elif type(obj)==Chunk:
-        bytes_str+=Chunk.write(obj)
-    elif type(obj)==Map:
-        bytes_str+=Map.write(obj)
-    elif type(obj)==CompleteMap:
-        bytes_str+=CompleteMap.write(obj)
+    else: 
+        bytes_str += BYTES_FALSE
+        
+        if type(obj)==GradientGrid:
+            bytes_str+=GradientGrid.write(obj)
+        elif type(obj)==Layer:
+            bytes_str+=Layer.write(obj,True)
+        elif type(obj)==Chunk:
+            bytes_str+=Chunk.write(obj)
+        elif type(obj)==Map:
+            bytes_str+=Map.write(obj)
+        elif type(obj)==CompleteMap:
+            bytes_str+=CompleteMap.write(obj)
             
     if path!=None:
         f=open(path,'wb')
@@ -487,25 +492,14 @@ if __name__ == "__main__":
     
     
     
-    grid_dim = [3, 5]
-    size_factors = [8, 4]
-    layer_factors = [1, .1]
-    map_dimensions = (2, 3)
+    from gradientGrid import GradientGrid
+
+    grid = GradientGrid(1, 1)
+    print(grid)
     
-    print("Generating a new map from scratch with parameters : ")
-    print(" - map dimensions : ", map_dimensions)
-    print(" - grids square dimensions : ", grid_dim)
-    print(" - layers size_factors : ", size_factors)
-    print(" - chunk layer factors : ", layer_factors)
-    
-    from map import Map
-    map = Map.generateMapFromScratch(grid_dim, grid_dim, size_factors, layer_factors, map_dimensions[0], map_dimensions[1])
-    
-    print(map)
-    
-    print("Writing map in file")
-    write("../saves/testing.data",map)
+    print("Writing grid in file")
+    write(grid,"../saves/testing.data")
     
     print("Reading map in file")
-    map=read("../saves/testing.data")
-    print(map)
+    gridl=read("../saves/testing.data")[0]
+    print(gridl)
