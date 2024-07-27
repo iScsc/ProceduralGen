@@ -83,6 +83,15 @@ class GradientGrid:
     
     @staticmethod
     def read(path: str=None, bytes_in : bytes=None) -> tuple[GradientGrid, bytes]:
+        """Decodes a GradientGrid object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+
+        Returns:
+            tuple[GradientGrid, bytes]: the grid object and remaining bytes
+        """
         bytes_str : bytes
         if path!=None:
             f=open(path,'rb')

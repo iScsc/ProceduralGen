@@ -146,6 +146,15 @@ class Map:
     
     @staticmethod
     def read(path: str, bytes_in : bytes=None) -> tuple[Map, bytes]:
+        """Decodes a Map object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+
+        Returns:
+            tuple[Map, bytes]: the map object and remaining bytes
+        """
         bytes_str : bytes
         if path!=None:
             f=open(path,'rb')
@@ -169,7 +178,7 @@ class Map:
                 for _ in range(width):
                     x, bytes_str = Chunk.read(None, bytes_str)
                     chunks[i].append(x)
-            n = 2 * (width+2) + 2 * height
+            n = 2 * (width+2) + 2 * height #nbr of virtual chunks
             for _ in range(n):
                 x, bytes_str = Chunk.read(None, bytes_str)
                 virtual_chunks.append(x)
@@ -225,6 +234,7 @@ class Map:
             `chunks` (list[list[Chunk]]): two-dimension matrix-like structure of chunks. First dimension is height, second is width.
             `virtual_chunks` (list[Chunk]): list of virtual chunks to generate the map altitudes. Virtual chunks should be stored in the following order :
                                             `Column0, ColumnN, Row0, RowN` without any repetition of the corners.
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         
@@ -277,6 +287,9 @@ class Map:
     
     def regenerate(self, regenerate: bool = True) -> None:
         """Regenerates the altitude values of the map based on its chunks.
+        
+        Args:
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         #* -------------- Verifications : Begin --------------

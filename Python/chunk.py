@@ -311,6 +311,15 @@ class Chunk:
     
     @staticmethod
     def read(path: str, bytes_in : bytes=None) -> tuple[Chunk, bytes]:
+        """Decodes a Chunk object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+
+        Returns:
+            tuple[Chunk, bytes]: the chunk object and remaining bytes
+        """
         bytes_str : bytes
         if path!=None:
             f=open(path,'rb')
@@ -328,10 +337,10 @@ class Chunk:
             base_altitude, bytes_str = interp.nextFloat(bytes_str)
             height, bytes_str = interp.nextInt(bytes_str)
             width, bytes_str = interp.nextInt(bytes_str)
-            if bytes_str[0:1]==interp.BYTES_TRUE:
+            if bytes_str[0:1]==interp.BYTES_TRUE: #is virtual chunk
                 chunk = Chunk.newVirtualChunk(width, height, base_altitude)
                 bytes_str = bytes_str[1:]
-            else: 
+            else: #is proper chunk
                 bytes_str = bytes_str[1:]
                 layer_number, bytes_str = interp.nextInt(bytes_str)
                 layers: list[Layer] = []
@@ -356,13 +365,14 @@ class Chunk:
     #? ------------------------ Instances ------------------------ #
     
     
-    def __init__(self, layers: list[Layer], layers_factors: list[float], regenerate = True) -> None:
+    def __init__(self, layers: list[Layer], layers_factors: list[float], regenerate: bool = True) -> None:
         """Initializes a new Chunk structure from the given list of already existing layers and factors.
         If layers should be generated in the process, please use one of the designated static methods.
 
         Args:
-            `layers` (list[Layer], optional): the list of existing chunks to be averaged to generate the chunk.
-            `layers_factors` (list[float], optional): the list of factors to be used in the weighted average to generate the chunk.
+            `layers` (list[Layer]): the list of existing chunks to be averaged to generate the chunk.
+            `layers_factors` (list[float]): the list of factors to be used in the weighted average to generate the chunk.
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         self.layers_factors = None
@@ -442,6 +452,9 @@ class Chunk:
     
     def regenerate(self, regenerate: bool = True) -> None:
         """Regenerates the altitude values of the chunk based on its `layers` and `layer_factors` parameters.
+        
+        Args:
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         #* -------------- Verifications : Begin --------------

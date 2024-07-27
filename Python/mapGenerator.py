@@ -132,6 +132,15 @@ class CompleteMap:
     
     @staticmethod
     def read(path: str, bytes_in : bytes=None) -> tuple[CompleteMap, bytes]:
+        """Decodes a CompleteMap object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+
+        Returns:
+            tuple[CompleteMap, bytes]: the complete map object and remaining bytes
+        """
         bytes_str : bytes
         if path!=None:
             f=open(path,'rb')
@@ -175,6 +184,7 @@ class CompleteMap:
         Args:
             map (Map): the map structure to build the complete map from.
             sea_level (float): the altitude of the sea.
+            regenerate (bool, optional): should sea map and color map be (re)generated
         """
         
         self.map = None

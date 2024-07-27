@@ -203,6 +203,16 @@ class Layer:
     
     @staticmethod
     def read(path: str = None, bytes_in: bytes=None, altitude: bool=False) -> tuple[Layer, bytes]:
+        """Decodes a Layer object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+            altitude (bool, optional): should eventual altitude values be decoded or regenerated. Defaults to False.
+
+        Returns:
+            tuple[Layer, bytes]: the layer object and remaining bytes
+        """
         bytes_str : bytes
         if path!=None:
             f=open(path,'rb')
@@ -219,19 +229,19 @@ class Layer:
         if bytes_str!=None:
             size_factor, bytes_str = interp.nextInt(bytes_str)
             grid, bytes_str = GradientGrid.read(None,bytes_str)
-            if bytes_str[0:1]==interp.BYTES_TRUE:
+            if bytes_str[0:1]==interp.BYTES_TRUE: #altitude values encoded
                 bytes_str=bytes_str[1:]
                 layer = Layer(grid,size_factor,False)
-                if altitude:
+                if altitude: #decoding altitude values
                     layer.altitude=np.zeros((layer.height,layer.width))
                     for i in range(layer.height):
                         for j in range(layer.width):
                             layer.altitude[i,j], bytes_str = interp.nextFloat(bytes_str)
-                else:
+                else: #getting rid of altitude values
                     for i in range(layer.height):
                         for j in range(layer.width):
                             _, bytes_str = interp.nextFloat(bytes_str)
-            else:
+            else: #altitude values not encoded, eventually regenerated
                 bytes_str=bytes_str[1:]
                 layer = Layer(grid,size_factor,altitude)
                 
@@ -253,6 +263,7 @@ class Layer:
             `grid` (GradientGrid): the gradient grid to build the layer from.
             `size_factor` (int): the size factor to be used to generate the layer. The layer dimensions will be
                                  `(gradient_grid_dimensions - 1) * size_factor`.
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         self.grid = None
@@ -304,6 +315,9 @@ class Layer:
     
     def regenerate(self, regenerate: bool=True) -> None:
         """Regenerates the altitude values of the layer based on its `grid` and `size_factor` parameters.
+        
+        Args:
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         if not (type(self.grid) is GradientGrid and type(self.size_factor) is int and self.size_factor > 1):
