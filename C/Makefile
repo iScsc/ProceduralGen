@@ -74,8 +74,11 @@ test_map: $(COMP)test_map.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gr
 
 test_mapGenerator: $(COMP)test_mapGenerator.o $(COMP)mapGenerator.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
 	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
+	
+test_interpreter: $(COMP)test_interpreter.o $(COMP)interpeter.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_all : test_unicode test_loadingBar test_gradientGrid test_layer test_chunk test_map test_mapGenerator
+test_all : test_unicode test_loadingBar test_gradientGrid test_layer test_chunk test_map test_mapGenerator test_interpreter
 
 # Valgrind ----------------------------------
 
