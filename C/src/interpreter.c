@@ -144,12 +144,15 @@ tuple_obj_bytes nextInt(bytes bytes) {
     tuple_obj_bytes res;
 
     int* obj = malloc(sizeof(int));
-    *obj = 0;
+    *obj = 1;
+
+    unsigned int temp = 0;
     for (int i=0; i<INT_BITS_NBR/8; i++) {
-        *obj*=256;
-        *obj+=bytes.bytes[bytes.start+i];
+        temp*=256;
+        temp+=bytes.bytes[bytes.start+i];
     }
-    if (((unsigned int)*obj) / intpow(2,INT_BITS_NBR-1)==1) *obj=-(((unsigned int)*obj)%intpow(2,INT_BITS_NBR-1));
+    if (temp / intpow(2,INT_BITS_NBR-1)==1) *obj=-(temp%intpow(2,INT_BITS_NBR-1));
+    else *obj = temp%intpow(2,INT_BITS_NBR-1);
 
     res.object = (object) obj;
     res.bytes = bytes;
@@ -163,22 +166,24 @@ tuple_obj_bytes nextDouble(bytes bytes) {
 
     double* obj = malloc(sizeof(double));
     *obj = 0;
+
+    unsigned long temp = 0;
     for (int i=0; i<FLOAT_BITS_NBR/8; i++) {
-        *obj*=256;
-        *obj+=bytes.bytes[bytes.start+i];
+        temp*=256;
+        temp+=bytes.bytes[bytes.start+i];
     }
 
     int sign = 1;
-    if (*obj / intpow(2,FLOAT_BITS_NBR-1)==1) {
-        *obj=(long)*obj%FLOAT_BITS_NBR-1;
+    if (temp / intpow(2,FLOAT_BITS_NBR-1)==1) {
+        temp=temp%FLOAT_BITS_NBR-1;
         sign = -1;
     }
 
-    int exp = (int)*obj/intpow(2,FLOAT_BITS_MANTISS);
+    int exp = temp/intpow(2,FLOAT_BITS_MANTISS);
     exp-=16;
-    *obj = (long)*obj%intpow(2,FLOAT_BITS_MANTISS);
-    if (exp>=0) *obj = sign * (*obj) * intpow(2,exp);
-    else *obj = sign * (*obj) / intpow(2,-exp);
+    temp = temp%intpow(2,FLOAT_BITS_MANTISS);
+    if (exp>=0) *obj = sign * ((double)temp) * intpow(2,exp);
+    else *obj = sign * ((double)temp) / intpow(2,-exp);
 
     res.object = (object) obj;
     res.bytes = bytes;
