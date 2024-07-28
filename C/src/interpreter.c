@@ -149,7 +149,7 @@ tuple_obj_bytes nextInt(bytes bytes) {
         *obj*=256;
         *obj+=bytes.bytes[bytes.start+i];
     }
-    if (*obj / intpow(2,INT_BITS_NBR-1)==1) *obj=-(*obj%INT_BITS_NBR-1);
+    if (((unsigned int)*obj) / intpow(2,INT_BITS_NBR-1)==1) *obj=-(((unsigned int)*obj)%intpow(2,INT_BITS_NBR-1));
 
     res.object = (object) obj;
     res.bytes = bytes;
