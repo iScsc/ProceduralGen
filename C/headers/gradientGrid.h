@@ -149,6 +149,8 @@ gradientGrid* readGradientGridFile(char path[]);
 
 bytes bytesGradientGrid(gradientGrid* grid);
 
+tuple_obj_bytes nextGradientGrid(bytes bytes);
+
 
 /**
  * @brief Prints in the terminal the given gradient grid.
