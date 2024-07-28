@@ -12,6 +12,7 @@
 
 #include "interpreter.h"
 #include "gradientGrid.h"
+#include "layer.h"
 
 int main() {
 
@@ -52,6 +53,29 @@ int main() {
 
     printf("Decoding numbers : %d, %d, %d, %f, %f\n\n\n",d,a,e,b,c);
 
+
+    gradientGrid* grid = newRandomGradGrid(1,1,0);
+    printGradientGrid(grid);
+
+    bytes gridb = bytesGradientGrid(grid);
+    printBytes(gridb, "", "\n");
+
+    gradientGrid* gridd = ((gradientGrid*)nextGradientGrid(gridb).object);
+    printGradientGrid(gridd);
+
+    printf("\n\n");
+
+
+    layer* lay = newLayer(2,2,3,0);
+    printLayer(lay);
+
+    bytes laybf = bytesLayer(lay,false);
+    printBytes(laybf,"","\n");
+    bytes laybt = bytesLayer(lay,true);
+    printBytes(laybt,"","\n");
+
+
+
     free(od);
     free(oa);
     free(oe);
@@ -65,23 +89,14 @@ int main() {
     freeBytes(cb);
 
 
-    gradientGrid* grid = newRandomGradGrid(1,1,0);
-    printGradientGrid(grid);
-
-    bytes gridb = bytesGradientGrid(grid);
-    printBytes(gridb, "", "\n");
-
-    gradientGrid* gridd = ((gradientGrid*)nextGradientGrid(gridb).object);
-    printGradientGrid(gridd);
-
     freeGradGrid(grid);
     freeBytes(gridb);
     freeGradGrid(gridd);
 
-    printf("\n\n");
 
-
-
+    freeLayer(lay);
+    freeBytes(laybf);
+    freeBytes(laybt);
 
     return 0;
 }

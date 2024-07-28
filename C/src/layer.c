@@ -210,23 +210,23 @@ bytes bytesLayer(layer* layer, bool altitude) {
     bytes bytes_grid = bytesGradientGrid(layer->gradient_grid);
 
     bytes bytes_str;
-    bytes_str.bytes = malloc(2+(altitude?(layer->height*layer->width+1):(1))*FLOAT_BITS_NBR/8+bytes_grid.size);
-    bytes_str.size = 2+(altitude?(layer->height*layer->width+1):(1))*FLOAT_BITS_NBR/8+bytes_grid.size;
+    bytes_str.bytes = malloc(2+INT_BITS_NBR/8+(altitude?(layer->height*layer->width):(0))*FLOAT_BITS_NBR/8+bytes_grid.size);
+    bytes_str.size = 2+INT_BITS_NBR/8+(altitude?(layer->height*layer->width):(0))*FLOAT_BITS_NBR/8+bytes_grid.size;
     bytes_str.start = 0;
 
     bytes_str.bytes[0] = LAYER_ENCODING;
 
-    bytes a = bytesDouble(layer->size_factor);
+    bytes a = bytesInt(layer->size_factor);
     concatBytes(bytes_str, a, 1);
     freeBytes(a);
     concatBytes(bytes_str, bytes_grid, 1+FLOAT_BITS_NBR/8);
 
     if (altitude) {
-        bytes_str.bytes[1 + bytes_grid.size + FLOAT_BITS_NBR/8] = BYTE_TRUE;
+        bytes_str.bytes[1 + bytes_grid.size + INT_BITS_NBR/8] = BYTE_TRUE;
         for (int i=0; i<layer->height; i++) {
             for (int j=0; j<layer->width; j++) {
                 a = bytesDouble(*getLayerValue(layer,j,i));
-                concatBytes(bytes_str, a, 2 + bytes_grid.size + (1 + 2 * (i * layer->width + j)) * FLOAT_BITS_NBR/8);
+                concatBytes(bytes_str, a, 2 + INT_BITS_NBR/8 + bytes_grid.size + (i * layer->width + j) * FLOAT_BITS_NBR/8);
                 freeBytes(a);
             }
         }

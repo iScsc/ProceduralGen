@@ -136,7 +136,7 @@ layer* copyLayer(layer * p_layer);
 
 
 
-bytes bytesLayer(layer* grid);
+bytes bytesLayer(layer* grid, bool altitude);
 
 tuple_obj_bytes nextLayer(bytes bytes);
 
