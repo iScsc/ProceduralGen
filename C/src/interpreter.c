@@ -175,7 +175,7 @@ tuple_obj_bytes nextDouble(bytes bytes) {
 
     int sign = 1;
     if (temp / intpow(2,FLOAT_BITS_NBR-1)==1) {
-        temp=temp%FLOAT_BITS_NBR-1;
+        temp=temp%intpow(2,FLOAT_BITS_NBR-1);
         sign = -1;
     }
 

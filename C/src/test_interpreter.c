@@ -61,7 +61,7 @@ int main() {
     freeBytes(bb);
     freeBytes(cb);
 
-    printf("Decoding numbers : %d,%d,%d,%f,%f\n",d,a,e,b,c);
+    printf("Decoding numbers : %d, %d, %d, %f, %f\n",d,a,e,b,c);
 
     return 0;
 }
