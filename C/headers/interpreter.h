@@ -46,19 +46,19 @@ typedef struct tuple_obj_bytes {
 
 int intpow(int nbr, int exp);
 
-byte* bytesUint8(__uint8_t nbr);
+bytes bytesUint8(__uint8_t nbr);
 
-byte* bytesInt(int nbr);
+bytes bytesInt(int nbr);
 
-byte* bytesDouble(double nbr);
+bytes bytesDouble(double nbr);
 
 
 
-tuple_obj_bytes* nextUint8(int start, byte* bytes);
+tuple_obj_bytes nextUint8(bytes bytes);
 
-tuple_obj_bytes* nextInt(int start, byte* bytes);
+tuple_obj_bytes nextInt(bytes bytes);
 
-tuple_obj_bytes* nextDouble(int start, byte* bytes);
+tuple_obj_bytes nextDouble(bytes bytes);
 
 
 
