@@ -2,8 +2,8 @@
  * @file layer.c
  * @author Zyno and BlueNZ
  * @brief layer structure and functions implementation
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-28
  * 
  */
 
@@ -204,6 +204,78 @@ layer* copyLayer(layer * p_layer)
 }
 
 
+
+
+bytes bytesLayer(layer* layer, bool altitude) {
+    bytes bytes_grid = bytesGradientGrid(layer->gradient_grid);
+
+    bytes bytes_str;
+    bytes_str.bytes = malloc(2+(altitude?(layer->height*layer->width+1):(1))*FLOAT_BITS_NBR/8+bytes_grid.size);
+    bytes_str.size = 2+(altitude?(layer->height*layer->width+1):(1))*FLOAT_BITS_NBR/8+bytes_grid.size;
+    bytes_str.start = 0;
+
+    bytes_str.bytes[0] = LAYER_ENCODING;
+
+    bytes a = bytesDouble(layer->size_factor);
+    concatBytes(bytes_str, a, 1);
+    freeBytes(a);
+    concatBytes(bytes_str, bytes_grid, 1+FLOAT_BITS_NBR/8);
+
+    if (altitude) {
+        bytes_str.bytes[1 + bytes_grid.size + FLOAT_BITS_NBR/8] = BYTE_TRUE;
+        for (int i=0; i<layer->height; i++) {
+            for (int j=0; j<layer->width; j++) {
+                a = bytesDouble(*getLayerValue(layer,j,i));
+                concatBytes(bytes_str, a, 2 + bytes_grid.size + (1 + 2 * (i * layer->width + j)) * FLOAT_BITS_NBR/8);
+                freeBytes(a);
+            }
+        }
+    }
+    else bytes_str.bytes[1 + bytes_grid.size + FLOAT_BITS_NBR/8] = BYTE_FALSE;
+    
+    freeBytes(bytes_grid);
+
+    return bytes_str;
+
+}
+
+tuple_obj_bytes nextLayer(bytes bytes) {
+    tuple_obj_bytes res;
+
+    if (bytes.bytes[0]==GRID_ENCODING) {
+        bytes.start += 1;
+
+        tuple_obj_bytes a = nextInt(bytes);
+        int h = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
+        int w = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+
+        gradientGrid* obj = newGradGrid(w,h);
+
+        for (int i=0; i<h; i++) {
+            for (int j=0; j<w; j++) {
+                vector* vect = getVector(obj,j,i);
+                a = nextDouble(bytes);
+                vect->x = *((double*)a.object);
+                bytes = a.bytes;
+                free(a.object);
+                a = nextDouble(bytes);
+                vect->y = *((double*)a.object);
+                bytes = a.bytes;
+                free(a.object);
+            }
+        }
+
+        res.object = (object) obj;
+        res.bytes = bytes;
+    }
+
+    return res;
+}
 
 
 

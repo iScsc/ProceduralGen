@@ -303,8 +303,8 @@ vector* copyVect(vector* vect)
 
 bytes bytesGradientGrid(gradientGrid* grid) {
     bytes bytes_str;
-    bytes_str.bytes = malloc(2*(grid->height*grid->width+1)*INT_BITS_NBR/8+1);
-    bytes_str.size = 2*(grid->height*grid->width+1)*INT_BITS_NBR/8+1;
+    bytes_str.bytes = malloc(2*(grid->height*grid->width)*FLOAT_BITS_NBR/8+2*INT_BITS_NBR/8+1);
+    bytes_str.size = 2*(grid->height*grid->width)*FLOAT_BITS_NBR/8+2*INT_BITS_NBR/8+1;
     bytes_str.start = 0;
 
     bytes_str.bytes[0] = GRID_ENCODING;

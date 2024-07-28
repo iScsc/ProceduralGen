@@ -10,7 +10,10 @@
 #ifndef LAYER
 #define LAYER
 
+#include <stdbool.h>
+
 #include "gradientGrid.h"
+#include "interpreter.h"
 
 // ----- Structure definition -----
 
@@ -129,6 +132,13 @@ layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsign
  * @return layer* : the pointer to the deep copy of the initial layer.
  */
 layer* copyLayer(layer * p_layer);
+
+
+
+
+bytes bytesLayer(layer* grid);
+
+tuple_obj_bytes nextLayer(bytes bytes);
 
 
 

@@ -78,5 +78,10 @@ int main() {
     freeBytes(gridb);
     freeGradGrid(gridd);
 
+    printf("\n\n");
+
+
+
+
     return 0;
 }
