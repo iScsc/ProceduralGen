@@ -10,8 +10,6 @@
 #ifndef INTERP
 #define INTERP
 
-#include "map.h"
-
 // ------- Structure definition ------- //
 
 typedef unsigned char byte;
@@ -38,6 +36,12 @@ typedef struct tuple_obj_bytes {
 #define FLOAT_BITS_MANTISS 18 
 #define FLOAT_BITS_NBR (1 + FLOAT_BITS_EXP + FLOAT_BITS_MANTISS) //24 should be a multiple of 8
 
+#define GRID_ENCODING (byte) 1
+#define LAYER_ENCODING (byte) 2
+#define CHUNK_ENCODING (byte) 3
+#define MAP_ENCODING (byte) 4
+#define COMPLETE_MAP_ENCODING (byte) 5
+
 #define BYTES_VERSION (byte) 0
 
 
@@ -53,6 +57,8 @@ void freeBytes(bytes b);
 char* hex(unsigned char c, char* res);
 
 void printBytes(bytes bytes, char* start, char* end);
+
+void concatBytes(bytes b, bytes bb, int start);
 
 
 

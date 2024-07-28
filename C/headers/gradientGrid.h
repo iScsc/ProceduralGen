@@ -10,6 +10,8 @@
 #ifndef GRADIENT_GRID
 #define GRADIENT_GRID
 
+#include "interpreter.h"
+
 // ----- Structure definition -----
 
 /**
@@ -143,6 +145,9 @@ void writeGradientGridFile(gradientGrid* gradGrid, char path[]);
  */
 gradientGrid* readGradientGridFile(char path[]);
 
+
+
+bytes bytesGradientGrid(gradientGrid* grid);
 
 
 /**

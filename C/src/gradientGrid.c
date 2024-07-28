@@ -2,8 +2,8 @@
  * @file gradientGrid.c
  * @author Zyno and BlueNZ
  * @brief gradientGrid structure implementation
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-28
  * 
  */
 
@@ -13,6 +13,7 @@
 #include <time.h>
 
 #include "loadingBar.h"
+#include "interpreter.h"
 #include "gradientGrid.h"
 
 void setRandomSeed(unsigned int seed)
@@ -299,6 +300,37 @@ vector* copyVect(vector* vect)
 
 
 
+
+bytes bytesGradientGrid(gradientGrid* grid) {
+    bytes bytes_str;
+    bytes_str.bytes = malloc(2*(grid->height*grid->width+1)*INT_BITS_NBR/8+1);
+    bytes_str.size = 2*(grid->height*grid->width+1)*INT_BITS_NBR/8+1;
+    bytes_str.start = 0;
+
+    bytes_str.bytes[0] = GRID_ENCODING;
+
+    bytes a = bytesInt(grid->height);
+    concatBytes(bytes_str, a, 1);
+    freeBytes(a);
+    a = bytesInt(grid->width);
+    concatBytes(bytes_str, a, 1+INT_BITS_NBR/8);
+    freeBytes(a);
+
+    for (int i=0; i<grid->height; i++) {
+        for (int j=0; j<grid->width; j++) {
+            vector vect = *getVector(grid,j,i);
+            a = bytesDouble(vect.x);
+            concatBytes(bytes_str, a, 1 + 2 * INT_BITS_NBR/8 + 2 * (i * grid->width + j) * FLOAT_BITS_NBR/8);
+            freeBytes(a);
+            a = bytesDouble(vect.y);
+            concatBytes(bytes_str, a, 1 + 2 * INT_BITS_NBR/8 + (2 * (i * grid->width + j) + 1) * FLOAT_BITS_NBR/8);
+            freeBytes(a);
+        }
+    }
+
+    return bytes_str;
+
+}
 
 void writeGradientGridFile(gradientGrid* gradGrid, char path[])
 {

@@ -61,6 +61,14 @@ void printBytes(bytes bytes, char* start, char* end) {
     free(bytes_str);
 }
 
+void concatBytes(bytes b, bytes bb, int start) {
+    for (int i=0; i<bb.size; i++) {
+        b.bytes[i+start]=bb.bytes[i];
+    }
+}
+
+
+
 bytes bytesUint8(__uint8_t nbr) {
     bytes res;
     res.bytes = malloc(1);

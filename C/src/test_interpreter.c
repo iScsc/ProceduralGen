@@ -11,6 +11,7 @@
 #include <malloc.h>
 
 #include "interpreter.h"
+#include "gradientGrid.h"
 
 int main() {
 
@@ -49,6 +50,8 @@ int main() {
     b = *((double*)ob);
     c = *((double*)oc);
 
+    printf("Decoding numbers : %d, %d, %d, %f, %f\n\n\n",d,a,e,b,c);
+
     free(od);
     free(oa);
     free(oe);
@@ -61,7 +64,12 @@ int main() {
     freeBytes(bb);
     freeBytes(cb);
 
-    printf("Decoding numbers : %d, %d, %d, %f, %f\n",d,a,e,b,c);
+
+    gradientGrid* grid = newRandomGradGrid(1,1,0);
+    printGradientGrid(grid);
+
+    bytes gridb = bytesGradientGrid(grid);
+    printBytes(gridb, "", "\n");
 
     return 0;
 }
