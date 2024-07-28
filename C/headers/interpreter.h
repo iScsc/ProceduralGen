@@ -17,10 +17,15 @@
 typedef char byte;
 typedef char* object; //an alias for pointers
 
+typedef struct bytes {
+    byte* bytes;
+    int size;
+    int start;
+} bytes;
+
 typedef struct tuple_obj_bytes {
     object object; 
-    byte* bytes;
-    int start;
+    bytes bytes;
 } tuple_obj_bytes;
 
 
