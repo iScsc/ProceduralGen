@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <malloc.h>
 
 #include "interpreter.h"
 
@@ -19,24 +20,48 @@ int main() {
 
     printf("Encoding some numbers : %d, %d, %d, %f, %f\n",d,a,e,b,c);
 
-    byte* db=bytesUint8(d);
-    byte* ab=bytesInt(a);
-    byte* eb=bytesInt(e);
-    byte* bb=bytesDouble(b);
-    byte* cb=bytesDouble(c);
+    bytes db=bytesUint8(d);
+    bytes ab=bytesInt(a);
+    bytes eb=bytesInt(e);
+    bytes bb=bytesDouble(b);
+    bytes cb=bytesDouble(c);
 
-    printf("\tUint8 :  %d, %d\n",d,*db);
-    printf("\tint :    %d, %d %d %d\n",a,ab[0],ab[1],ab[2]);
-    printf("\tint :    %d, %d %d %d\n",e,eb[0],eb[1],eb[2]);
-    printf("\tdouble : %f, %d %d %d\n",b,bb[0],bb[1],bb[2]);
-    printf("\tdouble : %f, %d %d %d\n",c,cb[0],cb[1],cb[2]);
+    printf("\tUint8 :  %d, ",d);
+    printBytes(db,"","\n");
+    printf("\tint :    %d, ",a);
+    printBytes(ab,"","\n");
+    printf("\tint :    %d, ",e);
+    printBytes(eb,"","\n");
+    printf("\tdouble : %lf, ",b);
+    printBytes(bb,"","\n");
+    printf("\tdouble : %lf, ",c);
+    printBytes(cb,"","\n");
 
-    d = *((__uint8_t*)nextUint8(0,db)->object);
-    a = *((int*)nextInt(0,ab)->object);
-    e = *((int*)nextInt(0,eb)->object);
-    b = *((double*)nextDouble(0,bb)->object);
-    c = *((double*)nextDouble(0,cb)->object);
+    object od = nextUint8(db).object;
+    object oa = nextInt(ab).object;
+    object oe = nextInt(eb).object;
+    object ob = nextDouble(bb).object;
+    object oc = nextDouble(cb).object;
+
+    d = *((__uint8_t*)od);
+    a = *((int*)oa);
+    e = *((int*)oe);
+    b = *((double*)ob);
+    c = *((double*)oc);
+
+    free(od);
+    free(oa);
+    free(oe);
+    free(ob);
+    free(oc);
+
+    freeBytes(db);
+    freeBytes(ab);
+    freeBytes(eb);
+    freeBytes(bb);
+    freeBytes(cb);
 
     printf("Decoding numbers : %d,%d,%d,%f,%f\n",d,a,e,b,c);
 
+    return 0;
 }

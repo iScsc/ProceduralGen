@@ -33,6 +33,34 @@ void freeBytes(bytes b) {
     free(b.bytes);
 }
 
+char* hex(unsigned char c, char* res) {
+    int a = c/16;
+    int b = c%16;
+    sprintf(res,"%x%x",a,b);
+    return res;
+}
+
+void printBytes(bytes bytes, char* start, char* end) {
+    char* bytes_str=malloc(bytes.size * 2+4);
+    bytes_str[0] = 'b';
+    bytes_str[1] = '\'';
+    bytes_str[bytes.size * 2+2] = '\'';
+    bytes_str[bytes.size * 2+3] = '\0';
+
+    for (int i=0; i<bytes.size; i++) {
+        char* c = malloc(3);
+        hex(bytes.bytes[i],c);
+        bytes_str[2*i+2] = c[0];
+        bytes_str[2*i+3] = c[1];
+        free(c);
+    }
+    
+    printf("%s",start);
+    printf("%s",bytes_str);
+    printf("%s",end);
+    free(bytes_str);
+}
+
 bytes bytesUint8(__uint8_t nbr) {
     bytes res;
     res.bytes = malloc(1);
