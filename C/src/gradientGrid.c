@@ -335,14 +335,16 @@ bytes bytesGradientGrid(gradientGrid* grid) {
 tuple_obj_bytes nextGradientGrid(bytes bytes) {
     tuple_obj_bytes res;
 
-    if (bytes.bytes[1]==GRID_ENCODING) {
+    if (bytes.bytes[0]==GRID_ENCODING) {
         bytes.start += 1;
 
         tuple_obj_bytes a = nextInt(bytes);
         int h = *((int*)a.object);
+        bytes = a.bytes;
         free(a.object);
         a = nextInt(bytes);
         int w = *((int*)a.object);
+        bytes = a.bytes;
         free(a.object);
 
         gradientGrid* obj = newGradGrid(w,h);
@@ -351,17 +353,18 @@ tuple_obj_bytes nextGradientGrid(bytes bytes) {
             for (int j=0; j<w; j++) {
                 vector* vect = getVector(obj,j,i);
                 a = nextDouble(bytes);
-                vect->x = *((int*)a.object);
+                vect->x = *((double*)a.object);
+                bytes = a.bytes;
                 free(a.object);
                 a = nextDouble(bytes);
-                vect->y = *((int*)a.object);
+                vect->y = *((double*)a.object);
+                bytes = a.bytes;
                 free(a.object);
             }
         }
 
         res.object = (object) obj;
         res.bytes = bytes;
-        bytes.start += 1 + 2 * INT_BITS_NBR/8 + w*h*FLOAT_BITS_NBR/8;
     }
 
     return res;

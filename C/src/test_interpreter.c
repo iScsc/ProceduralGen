@@ -17,7 +17,7 @@ int main() {
 
     __uint8_t d = 1;
     int a=0,e=-5683;
-    double b=1.3,c=-99.9;
+    double b=1.3,c=-0.394383;
 
     printf("Encoding some numbers : %d, %d, %d, %f, %f\n",d,a,e,b,c);
 
@@ -70,6 +70,13 @@ int main() {
 
     bytes gridb = bytesGradientGrid(grid);
     printBytes(gridb, "", "\n");
+
+    gradientGrid* gridd = ((gradientGrid*)nextGradientGrid(gridb).object);
+    printGradientGrid(gridd);
+
+    freeGradGrid(grid);
+    freeBytes(gridb);
+    freeGradGrid(gridd);
 
     return 0;
 }

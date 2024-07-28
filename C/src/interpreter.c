@@ -164,7 +164,7 @@ tuple_obj_bytes nextInt(bytes bytes) {
 
     res.object = (object) obj;
     res.bytes = bytes;
-    bytes.start = bytes.start+INT_BITS_NBR/8;
+    res.bytes.start += INT_BITS_NBR/8;
 
     return res;
 }
@@ -195,7 +195,7 @@ tuple_obj_bytes nextDouble(bytes bytes) {
 
     res.object = (object) obj;
     res.bytes = bytes;
-    bytes.start = bytes.start+FLOAT_BITS_NBR/8;
+    res.bytes.start += FLOAT_BITS_NBR/8;
 
     return res;
 }
