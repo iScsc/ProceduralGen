@@ -74,7 +74,14 @@ int main() {
     bytes laybt = bytesLayer(lay,true);
     printBytes(laybt,"","\n");
 
-
+    layer* laydff = ((layer*)nextLayer(laybf,false).object);
+    printLayer(laydff);
+    layer* laydft = ((layer*)nextLayer(laybf,true).object);
+    printLayer(laydft);
+    layer* laydtf = ((layer*)nextLayer(laybt,false).object);
+    printLayer(laydtf);
+    layer* laydtt = ((layer*)nextLayer(laybt,true).object);
+    printLayer(laydtt);
 
     free(od);
     free(oa);
@@ -97,6 +104,10 @@ int main() {
     freeLayer(lay);
     freeBytes(laybf);
     freeBytes(laybt);
+    freeLayer(laydff);
+    freeLayer(laydft);
+    freeLayer(laydtf);
+    freeLayer(laydtt);
 
     return 0;
 }

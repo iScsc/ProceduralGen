@@ -129,7 +129,7 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, bool a
 
     // Initialization
     layer* new_layer = calloc(1, sizeof(layer));
-    double* values;
+    double* values = NULL;
     if (altitude) values = calloc(width * height, sizeof(double));
 
     new_layer->width = width;
@@ -253,7 +253,9 @@ tuple_obj_bytes nextLayer(bytes bytes, bool altitude) {
         bytes = a.bytes;
         free(a.object);
 
-        gradientGrid* grid = ((gradientGrid*)nextGradientGrid(bytes).object);
+        tuple_obj_bytes temp = nextGradientGrid(bytes);
+        gradientGrid* grid = ((gradientGrid*)temp.object);
+        bytes = temp.bytes;
 
         layer * obj;
 
@@ -349,16 +351,20 @@ void printLayer(layer* layer)
     printf("-------------------------------------------\n");
     printf("Printing layer of size = (%d, %d)\n\n", height, width);
 
-    for (int i = 0; i < height; i++)
+    if (layer->values!=NULL) 
     {
-        for (int j = 0; j < width; j++)
+        for (int i = 0; i < height; i++)
         {
-            double* value = getLayerValue(layer, j, i);
+            for (int j = 0; j < width; j++)
+            {
+                double* value = getLayerValue(layer, j, i);
 
-            printf("%lf   ", *value);
+                printf("%lf   ", *value);
+            }
+            printf("\n");
         }
-        printf("\n");
     }
+    else printf("Null values\n");
 
     printf("-------------------------------------------\n");
 }
