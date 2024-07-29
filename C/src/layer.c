@@ -280,9 +280,9 @@ tuple_obj_bytes nextLayer(bytes bytes, bool altitude) {
 
         res.object = (object) obj;
         res.bytes = bytes;
-
-        return res;
     }
+
+    return res;
 }
 
 

@@ -13,6 +13,7 @@
 #include "interpreter.h"
 #include "gradientGrid.h"
 #include "layer.h"
+#include "chunk.h"
 
 int main() {
 
@@ -83,6 +84,15 @@ int main() {
     layer* laydtt = ((layer*)nextLayer(laybt,true).object);
     printLayer(laydtt);
 
+    int grid_size[] = {2};
+    int size_factor[] = {3};
+    double layer_factor[] = {1.};
+    chunk* chk = newChunk(1,grid_size,grid_size,size_factor,layer_factor,0);
+    printChunk(chk);
+
+    bytes chkb = bytesChunk(chk);
+    printBytes(chkb,"","\n");
+
     free(od);
     free(oa);
     free(oe);
@@ -107,6 +117,9 @@ int main() {
     freeLayer(laydft);
     freeLayer(laydtf);
     freeLayer(laydtt);
+
+    freeChunk(chk);
+    freeBytes(chkb);
 
     return 0;
 }

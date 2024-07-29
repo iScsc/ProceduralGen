@@ -517,7 +517,8 @@ bytes bytesChunk(chunk* chk) {
         int layer_size=0;
         for (int i=0; i<chk->number_of_layers; i++) {
             bytes bytes_lay = (bytesLayer(chk->layers[i],false));
-            bytes_layers[i] = &bytes_lay;
+            bytes_layers[i] = malloc(sizeof(bytes_lay));
+            *bytes_layers[i] = bytes_lay;
             layer_size += bytes_lay.size;
         }
 
@@ -545,7 +546,7 @@ bytes bytesChunk(chunk* chk) {
 
         for (int i=0; i<chk->number_of_layers; i++) {
             a = bytesDouble(chk->layers_factors[i]);
-            concatBytes(bytes_str, a, 2+(i+1)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8);
+            concatBytes(bytes_str, a, 2+(i+1)*(FLOAT_BITS_NBR/8)+3*(INT_BITS_NBR/8));
             freeBytes(a);
         }
 
@@ -554,12 +555,13 @@ bytes bytesChunk(chunk* chk) {
             concatBytes(bytes_str, *(bytes_layers[i]), 2+(chk->number_of_layers+1)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8+layer_size);
             layer_size += (bytes_layers[i])->size;
             freeBytes(*(bytes_layers[i]));
+            free(bytes_layers[i]);
         }
 
         for (int i=0; i<chk->height; i++) {
             for (int j=0; j<chk->width; j++) {
                 a = bytesDouble(*getChunkValue(chk,j,i));
-                concatBytes(bytes_str, a, 2+(chk->number_of_layers+1)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8+layer_size);
+                concatBytes(bytes_str, a, 2+(chk->number_of_layers+1+i*chk->width+j)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8+layer_size);
                 freeBytes(a);
             }
         }
