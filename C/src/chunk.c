@@ -2,8 +2,8 @@
  * @file chunk.c
  * @author Zyno and BlueNZ
  * @brief chunk structure and functions implementation
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-27
  * 
  */
 
@@ -197,7 +197,7 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
         }
 
         // Size_factors should match gradient_grids dimensions - 1
-        layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], g_loading);
+        layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], true, g_loading);
 
 
         if (display_loading != 0)
@@ -487,6 +487,125 @@ chunk* copyChunk(chunk* p_chunk)
 }
 
 
+
+
+
+bytes bytesChunk(chunk* chk) {
+    bytes bytes_str;
+
+    if (chk->chunk_values==NULL) { //virtual chunk
+        bytes_str.bytes = malloc(2 + 2*INT_BITS_NBR/8 + FLOAT_BITS_NBR/8);
+        bytes_str.size = 2 + 2*INT_BITS_NBR/8 + FLOAT_BITS_NBR/8;
+        bytes_str.start = 0;
+
+        bytes_str.bytes[0] = CHUNK_ENCODING;
+
+        bytes a = bytesDouble(chk->base_altitude);
+        concatBytes(bytes_str, a, 1);
+        freeBytes(a);
+        a = bytesInt(chk->width);
+        concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8);
+        freeBytes(a);
+        a = bytesInt(chk->height);
+        concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8+INT_BITS_NBR/8);
+        freeBytes(a);
+
+        bytes_str.bytes[1+FLOAT_BITS_NBR/8+2*INT_BITS_NBR/8] = BYTE_TRUE;
+    }
+    else {
+        bytes* bytes_layers[chk->number_of_layers];
+        int layer_size=0;
+        for (int i=0; i<chk->number_of_layers; i++) {
+            bytes bytes_lay = (bytesLayer(chk->layers[i],false));
+            bytes_layers[i] = &bytes_lay;
+            layer_size += bytes_lay.size;
+        }
+
+        bytes_str.bytes = malloc(2 + 3*INT_BITS_NBR/8 + (chk->height*chk->width+1+chk->number_of_layers)*FLOAT_BITS_NBR/8 + layer_size);
+        bytes_str.size = 2 + 3*INT_BITS_NBR/8 + (chk->height*chk->width+1+chk->number_of_layers)*FLOAT_BITS_NBR/8 + layer_size;
+        bytes_str.start = 0;
+
+        bytes_str.bytes[0] = CHUNK_ENCODING;
+
+        bytes a = bytesDouble(chk->base_altitude);
+        concatBytes(bytes_str, a, 1);
+        freeBytes(a);
+        a = bytesInt(chk->width);
+        concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8);
+        freeBytes(a);
+        a = bytesInt(chk->height);
+        concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8+INT_BITS_NBR/8);
+        freeBytes(a);
+
+        bytes_str.bytes[1+FLOAT_BITS_NBR/8+2*INT_BITS_NBR/8] = BYTE_FALSE;
+
+        a = bytesInt(chk->number_of_layers);
+        concatBytes(bytes_str, a, 2+FLOAT_BITS_NBR/8+2*INT_BITS_NBR/8);
+        freeBytes(a);
+
+        for (int i=0; i<chk->number_of_layers; i++) {
+            a = bytesDouble(chk->layers_factors[i]);
+            concatBytes(bytes_str, a, 2+(i+1)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8);
+            freeBytes(a);
+        }
+
+        layer_size=0;
+        for (int i=0; i<chk->number_of_layers; i++) {
+            concatBytes(bytes_str, *(bytes_layers[i]), 2+(chk->number_of_layers+1)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8+layer_size);
+            layer_size += (bytes_layers[i])->size;
+            freeBytes(*(bytes_layers[i]));
+        }
+
+        for (int i=0; i<chk->height; i++) {
+            for (int j=0; j<chk->width; j++) {
+                a = bytesDouble(*getChunkValue(chk,j,i));
+                concatBytes(bytes_str, a, 2+(chk->number_of_layers+1)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8+layer_size);
+                freeBytes(a);
+            }
+        }
+    }
+
+    return bytes_str;
+
+}
+
+tuple_obj_bytes nextChunk(bytes bytes) {
+    tuple_obj_bytes res;
+
+    if (bytes.bytes[bytes.start]==CHUNK_ENCODING) {
+        bytes.start += 1;
+
+        tuple_obj_bytes a = nextInt(bytes);
+        int h = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
+        int w = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+
+        gradientGrid* obj = newGradGrid(w,h);
+
+        for (int i=0; i<h; i++) {
+            for (int j=0; j<w; j++) {
+                vector* vect = getVector(obj,j,i);
+                a = nextDouble(bytes);
+                vect->x = *((double*)a.object);
+                bytes = a.bytes;
+                free(a.object);
+                a = nextDouble(bytes);
+                vect->y = *((double*)a.object);
+                bytes = a.bytes;
+                free(a.object);
+            }
+        }
+
+        res.object = (object) obj;
+        res.bytes = bytes;
+    }
+
+    return res;
+}
 
 
 

@@ -2,8 +2,8 @@
  * @file chunk.h
  * @author Zyno and BlueNZ
  * @brief Header to chunk structure and functions
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-29
  * 
  */
 
@@ -230,6 +230,13 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
  * @return chunk* : the pointer to the deep copy of the initial chunk.
  */
 chunk* copyChunk(chunk* p_chunk);
+
+
+
+
+bytes bytesChunk(chunk* chk);
+
+tuple_obj_bytes nextChunk(bytes bytes);
 
 
 
