@@ -259,34 +259,30 @@ tuple_obj_bytes nextLayer(bytes bytes, bool altitude) {
 
         layer * obj;
 
-        if (altitude) {
-            if (bytes.bytes[bytes.start]==BYTE_TRUE) {
-                bytes.start += 1;
-                obj = newLayerFromGradient(grid,sf,false,0);
-                obj->values = calloc(obj->width * obj->height, sizeof(double));
-                for (int i=0; i<obj->height; i++) {
-                    for (int j=0; j<obj->width; j++) {
-                        a = nextDouble(bytes);
-                        *getLayerValue(obj,j,i) = *((double*)a.object);
-                        bytes = a.bytes;
-                        free(a.object);
-                    }
+        if (bytes.bytes[bytes.start]==BYTE_TRUE) {
+            bytes.start += 1;
+            obj = newLayerFromGradient(grid,sf,false,0);
+            if (altitude) obj->values = calloc(obj->width * obj->height, sizeof(double));
+            for (int i=0; i<obj->height; i++) {
+                for (int j=0; j<obj->width; j++) {
+                    a = nextDouble(bytes);
+                    if (altitude) *getLayerValue(obj,j,i) = *((double*)a.object);
+                    bytes = a.bytes;
+                    free(a.object);
                 }
-            }
-            else {
-                bytes.start += 1;
-                obj = newLayerFromGradient(grid,sf,true,0);
             }
         }
         else {
-            obj = newLayerFromGradient(grid,sf,false,0);
+            bytes.start += 1;
+            if (altitude) obj = newLayerFromGradient(grid,sf,true,0);
+            else obj = newLayerFromGradient(grid,sf,false,0);
         }
 
         res.object = (object) obj;
         res.bytes = bytes;
-    }
 
-    return res;
+        return res;
+    }
 }
 
 
