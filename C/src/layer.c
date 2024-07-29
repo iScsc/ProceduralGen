@@ -116,7 +116,7 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx)
 
 
 
-layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsigned int display_loading)
+layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, bool altitude, unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -129,7 +129,8 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsign
 
     // Initialization
     layer* new_layer = calloc(1, sizeof(layer));
-    double* values = calloc(width * height, sizeof(double));
+    double* values;
+    if (altitude) values = calloc(width * height, sizeof(double));
 
     new_layer->width = width;
     new_layer->height = height;
@@ -140,21 +141,23 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsign
     new_layer->values = values;
 
     // Setting correct double values
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
+    if (altitude) {
+        for (int i = 0; i < height; i++)
         {
-            double* value = getLayerValue(new_layer, j, i);
-
-            *value = perlin((double) j/size_factor, (double) i/size_factor, gradient_grid);
-
-            if (display_loading != 0)
+            for (int j = 0; j < width; j++)
             {
-                int nb_indents = display_loading - 1;
+                double* value = getLayerValue(new_layer, j, i);
 
-                char base_str[100] = "Generating layer...                ";
+                *value = perlin((double) j/size_factor, (double) i/size_factor, gradient_grid);
 
-                predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                if (display_loading != 0)
+                {
+                    int nb_indents = display_loading - 1;
+
+                    char base_str[100] = "Generating layer...                ";
+
+                    predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                }
             }
         }
     }
@@ -173,7 +176,7 @@ layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsign
     gradientGrid* gradient_grid = newRandomGradGrid(gradGrid_width, gradGrid_height, g_loading);
 
     // Generating layer from the new gradientGrid
-    return newLayerFromGradient(gradient_grid, size_factor, g_loading);
+    return newLayerFromGradient(gradient_grid, size_factor, true, g_loading);
 }
 
 
@@ -239,35 +242,42 @@ bytes bytesLayer(layer* layer, bool altitude) {
 
 }
 
-tuple_obj_bytes nextLayer(bytes bytes) {
+tuple_obj_bytes nextLayer(bytes bytes, bool altitude) {
     tuple_obj_bytes res;
 
-    if (bytes.bytes[0]==GRID_ENCODING) {
+    if (bytes.bytes[bytes.start]==LAYER_ENCODING) {
         bytes.start += 1;
 
         tuple_obj_bytes a = nextInt(bytes);
-        int h = *((int*)a.object);
-        bytes = a.bytes;
-        free(a.object);
-        a = nextInt(bytes);
-        int w = *((int*)a.object);
+        int sf = *((int*)a.object);
         bytes = a.bytes;
         free(a.object);
 
-        gradientGrid* obj = newGradGrid(w,h);
+        gradientGrid* grid = ((gradientGrid*)nextGradientGrid(bytes).object);
 
-        for (int i=0; i<h; i++) {
-            for (int j=0; j<w; j++) {
-                vector* vect = getVector(obj,j,i);
-                a = nextDouble(bytes);
-                vect->x = *((double*)a.object);
-                bytes = a.bytes;
-                free(a.object);
-                a = nextDouble(bytes);
-                vect->y = *((double*)a.object);
-                bytes = a.bytes;
-                free(a.object);
+        layer * obj;
+
+        if (altitude) {
+            if (bytes.bytes[bytes.start]==BYTE_TRUE) {
+                bytes.start += 1;
+                obj = newLayerFromGradient(grid,sf,false,0);
+                obj->values = calloc(obj->width * obj->height, sizeof(double));
+                for (int i=0; i<obj->height; i++) {
+                    for (int j=0; j<obj->width; j++) {
+                        a = nextDouble(bytes);
+                        *getLayerValue(obj,j,i) = *((double*)a.object);
+                        bytes = a.bytes;
+                        free(a.object);
+                    }
+                }
             }
+            else {
+                bytes.start += 1;
+                obj = newLayerFromGradient(grid,sf,true,0);
+            }
+        }
+        else {
+            obj = newLayerFromGradient(grid,sf,false,0);
         }
 
         res.object = (object) obj;

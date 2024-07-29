@@ -106,7 +106,7 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx);
  * 
  * @note Please be aware that the layer's dimensions are `(gradGrid_dimensions - 1) * size_factor`
  */
-layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsigned int display_loading);
+layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, bool altitude, unsigned int display_loading);
 
 /**
  * @brief Generates a new layer structure from scratch with the given parameters.
@@ -138,7 +138,7 @@ layer* copyLayer(layer * p_layer);
 
 bytes bytesLayer(layer* grid, bool altitude);
 
-tuple_obj_bytes nextLayer(bytes bytes);
+tuple_obj_bytes nextLayer(bytes bytes, bool altitude);
 
 
 

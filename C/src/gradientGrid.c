@@ -335,7 +335,7 @@ bytes bytesGradientGrid(gradientGrid* grid) {
 tuple_obj_bytes nextGradientGrid(bytes bytes) {
     tuple_obj_bytes res;
 
-    if (bytes.bytes[0]==GRID_ENCODING) {
+    if (bytes.bytes[bytes.start]==GRID_ENCODING) {
         bytes.start += 1;
 
         tuple_obj_bytes a = nextInt(bytes);
