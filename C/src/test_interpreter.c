@@ -84,6 +84,8 @@ int main() {
     layer* laydtt = ((layer*)nextLayer(laybt,true).object);
     printLayer(laydtt);
 
+
+
     int grid_size[] = {2};
     int size_factor[] = {3};
     double layer_factor[] = {1.};
@@ -92,6 +94,11 @@ int main() {
 
     bytes chkb = bytesChunk(chk);
     printBytes(chkb,"","\n");
+
+    chunk* chkd = ((chunk*)nextChunk(chkb).object);
+    printChunk(chkd);
+
+
 
     free(od);
     free(oa);
@@ -120,6 +127,7 @@ int main() {
 
     freeChunk(chk);
     freeBytes(chkb);
+    freeChunk(chkd);
 
     return 0;
 }

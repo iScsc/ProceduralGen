@@ -201,8 +201,7 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
  * 
  * @note The arrays does not need to be dynamically allocated and their content will be copied in the structure.
  */
-chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers],
-                                double layers_factors[number_of_layers]);
+chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenereate);
 
 
 /**

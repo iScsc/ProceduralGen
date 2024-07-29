@@ -286,8 +286,8 @@ class Chunk:
         bytes_str : bytes = b''
         bytes_str += Chunk.CHUNK_ENCODING
         bytes_str += interp.bytesNumber(chunk.base_altitude)
-        bytes_str += interp.bytesNumber(chunk.width)
         bytes_str += interp.bytesNumber(chunk.height)
+        bytes_str += interp.bytesNumber(chunk.width)
         if virtual: #uninitialised values
             bytes_str += interp.BYTES_TRUE
         else:

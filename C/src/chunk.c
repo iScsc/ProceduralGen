@@ -272,32 +272,25 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
 
 
 
-//TODO ? signature could be changed to avoid passing useless parameters -> `chunk_width` and `chunk_height` instead of `gradGrids_width`, `gradGrids_height` and `size_factors`
-chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], double layers_factors[number_of_layers])
+chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenereate)
 {
     chunk* new_chunk = calloc(1, sizeof(chunk));
 
-    new_chunk->number_of_layers = number_of_layers;
+    new_chunk->number_of_layers = 0;
 
     // size_factors should match gradient_grids dimensions - 1
-    int width = (gradGrids_width[0] - 1) * size_factors[0];
-    int height = (gradGrids_height[0] - 1) * size_factors[0];
+    int width = chunk_width;
+    int height = chunk_height;
     new_chunk->width = width;
     new_chunk->height = height;
 
-    // copy layer factors to ensure dynamic allocation
-    double* factors = calloc(number_of_layers, sizeof(double));
-    for (int i = 0; i < number_of_layers; i++)
-    {
-        factors[i] = layers_factors[i];
-    }
-    new_chunk->layers_factors = factors;
+    new_chunk->layers_factors = NULL;
 
     new_chunk->chunk_values = NULL;
 
     new_chunk->layers = NULL;
 
-    new_chunk->base_altitude=generateBaseAltitude();
+    if (regenereate) new_chunk->base_altitude=generateBaseAltitude();
 
     return new_chunk;
 }
@@ -531,10 +524,10 @@ bytes bytesChunk(chunk* chk) {
         bytes a = bytesDouble(chk->base_altitude);
         concatBytes(bytes_str, a, 1);
         freeBytes(a);
-        a = bytesInt(chk->width);
+        a = bytesInt(chk->height);
         concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8);
         freeBytes(a);
-        a = bytesInt(chk->height);
+        a = bytesInt(chk->width);
         concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8+INT_BITS_NBR/8);
         freeBytes(a);
 
@@ -577,7 +570,11 @@ tuple_obj_bytes nextChunk(bytes bytes) {
     if (bytes.bytes[bytes.start]==CHUNK_ENCODING) {
         bytes.start += 1;
 
-        tuple_obj_bytes a = nextInt(bytes);
+        tuple_obj_bytes a = nextDouble(bytes);
+        double base_altitude = *((double*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
         int h = *((int*)a.object);
         bytes = a.bytes;
         free(a.object);
@@ -586,20 +583,50 @@ tuple_obj_bytes nextChunk(bytes bytes) {
         bytes = a.bytes;
         free(a.object);
 
-        gradientGrid* obj = newGradGrid(w,h);
+        chunk* obj;
 
-        for (int i=0; i<h; i++) {
-            for (int j=0; j<w; j++) {
-                vector* vect = getVector(obj,j,i);
+        if (bytes.bytes[bytes.start]==BYTE_TRUE) {
+            bytes.start+=1;
+            obj = newVirtualChunk(w,h,false);
+            obj->base_altitude=base_altitude;
+        }
+        else {
+            bytes.start+=1;
+            obj = newVirtualChunk(w,h,false);
+            obj->base_altitude=base_altitude;
+
+            a = nextInt(bytes);
+            int nbr = *((int*)a.object);
+            bytes = a.bytes;
+            free(a.object);
+
+            double* layer_factors = calloc(nbr, sizeof(double));
+            for (int i=0; i<nbr; i++) {
                 a = nextDouble(bytes);
-                vect->x = *((double*)a.object);
-                bytes = a.bytes;
-                free(a.object);
-                a = nextDouble(bytes);
-                vect->y = *((double*)a.object);
+                layer_factors[i]=*((double*)a.object);
                 bytes = a.bytes;
                 free(a.object);
             }
+            obj->layers_factors = layer_factors;
+
+            layer** layers = calloc(nbr, sizeof(layer*));
+            for (int i=0; i<nbr; i++) {
+                a = nextLayer(bytes,false);
+                layers[i]=((layer*)a.object);
+                bytes = a.bytes;
+            }
+            obj->layers = layers;
+
+            double* chunk_values = calloc(w * h, sizeof(double));
+            for (int i=0; i<h; i++) {
+                for (int j=0; j<w; j++) {
+                    a = nextDouble(bytes);
+                    *getChunkValue(obj,j,i)=*((double*)a.object);
+                    bytes = a.bytes;
+                    free(a.object);
+                }
+            }
+
         }
 
         res.object = (object) obj;
