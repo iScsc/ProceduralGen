@@ -422,7 +422,10 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
             predefined_loading_bar(j+1,(map_height+2+map_width+2)*2-4, NUMBER_OF_SEGMENTS, base_str, nb_indents, v_start_time);
         }
 
-        current_chunk = newVirtualChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors);
+        int width = (gradGrids_width[0] - 1) * size_factors[0];
+        int height = (gradGrids_height[0] - 1) * size_factors[0];
+
+        current_chunk = newVirtualChunk(width, height, true);
 
         virtual_chunks[j] = current_chunk;
     }
@@ -484,6 +487,143 @@ map* copyMap(map* p_map)
 }
 
 
+
+
+
+bytes bytesMap(map* map) {
+    bytes bytes_str;
+
+    bytes* bytes_chunks[map->map_width * map->map_height];
+    int chunk_size=0;
+    for (int i=0; i<map->map_height; i++) {
+        for (int j=0; j<map->map_width; j++) {
+            bytes bytes_chunk = (bytesChunk(getChunk(map,j,i)));
+            bytes_chunks[i*map->map_width+j] = calloc(1,sizeof(bytes_chunk));
+            *bytes_chunks[i*map->map_width+j] = bytes_chunk;
+            chunk_size += bytes_chunk.size;
+        }
+    }
+    
+    int nbr = (map->map_height+2+map->map_width+2)*2-4;
+    bytes* bytes_vchunks[nbr];
+    int vchunk_size=0;
+    chunk** virtual_chunks = map->virtual_chunks; //! map->vitual_chunks changes value during execution (???)
+    for (int i=0; i<nbr; i++) {
+        // printf("%d - %d - %p - %p\n",nbr,i,map->virtual_chunks,virtual_chunks);
+        bytes bytes_vchunk = (bytesChunk(virtual_chunks[i]));
+        bytes_vchunks[i] = calloc(1,sizeof(bytes_vchunk));
+        *bytes_vchunks[i] = bytes_vchunk;
+        vchunk_size += bytes_vchunk.size;
+    }
+
+    bytes_str.bytes = calloc(1 + 2*INT_BITS_NBR/8 + chunk_size + vchunk_size, sizeof(byte));
+    bytes_str.size = 1 + 2*INT_BITS_NBR/8 + chunk_size + vchunk_size;
+    bytes_str.start = 0;
+
+    bytes_str.bytes[0] = MAP_ENCODING;
+
+    bytes a = bytesInt(map->map_height);
+    concatBytes(bytes_str, a, 1);
+    freeBytes(a);
+    a = bytesInt(map->map_width);
+    concatBytes(bytes_str, a, 1+INT_BITS_NBR/8);
+    freeBytes(a);
+
+    chunk_size=0;
+    for (int i=0; i<map->map_height; i++) {
+        for (int j=0; j<map->map_width; j++) {
+            concatBytes(bytes_str, *(bytes_chunks[i*map->map_width+j]), 1+2*INT_BITS_NBR/8+chunk_size);
+            chunk_size += (bytes_chunks[i*map->map_width+j])->size;
+            freeBytes(*(bytes_chunks[i*map->map_width+j]));
+            free(bytes_chunks[i*map->map_width+j]);
+        }
+    }
+
+    vchunk_size=0;
+    for (int i=0; i<nbr; i++) {
+        concatBytes(bytes_str, *(bytes_vchunks[i]), 1+2*INT_BITS_NBR/8+chunk_size+vchunk_size);
+        vchunk_size += (bytes_vchunks[i])->size;
+        freeBytes(*(bytes_vchunks[i]));
+        free(bytes_vchunks[i]);
+    }
+
+    return bytes_str;
+
+}
+
+tuple_obj_bytes nextMap(bytes bytes) {
+    tuple_obj_bytes res;
+
+    if (bytes.bytes[bytes.start]==CHUNK_ENCODING) {
+        bytes.start += 1;
+
+        tuple_obj_bytes a = nextDouble(bytes);
+        double base_altitude = *((double*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
+        int h = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
+        int w = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+
+        chunk* obj;
+
+        if (bytes.bytes[bytes.start]==BYTE_TRUE) {
+            bytes.start+=1;
+            obj = newVirtualChunk(w,h,false);
+            obj->base_altitude=base_altitude;
+        }
+        else {
+            bytes.start+=1;
+            obj = newVirtualChunk(w,h,false);
+            obj->base_altitude=base_altitude;
+
+            a = nextInt(bytes);
+            int nbr = *((int*)a.object);
+            bytes = a.bytes;
+            free(a.object);
+            obj->number_of_layers = nbr;
+
+            double* layer_factors = calloc(nbr, sizeof(double));
+            for (int i=0; i<nbr; i++) {
+                a = nextDouble(bytes);
+                layer_factors[i]=*((double*)a.object);
+                bytes = a.bytes;
+                free(a.object);
+            }
+            obj->layers_factors = layer_factors;
+
+            layer** layers = calloc(nbr, sizeof(layer*));
+            for (int i=0; i<nbr; i++) {
+                a = nextLayer(bytes,false);
+                layers[i]=((layer*)a.object);
+                bytes = a.bytes;
+            }
+            obj->layers = layers;
+
+            double* chunk_values = calloc(w * h, sizeof(double));
+            obj->chunk_values = chunk_values;
+            for (int i=0; i<h; i++) {
+                for (int j=0; j<w; j++) {
+                    a = nextDouble(bytes);
+                    *getChunkValue(obj,j,i)=*((double*)a.object);
+                    bytes = a.bytes;
+                    free(a.object);
+                }
+            }
+
+        }
+
+        res.object = (object) obj;
+        res.bytes = bytes;
+    }
+
+    return res;
+}
 
 
 

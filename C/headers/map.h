@@ -11,6 +11,7 @@
 #define MAP
 
 #include "chunk.h"
+#include "interpreter.h"
 
 // ----- Structure definition -----
 
@@ -159,6 +160,13 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
  * @return map* : the pointer to the deep copy of the initial map.
  */
 map* copyMap(map* p_map) ;
+
+
+
+
+bytes bytesMap(map* map);
+
+tuple_obj_bytes nextMap(bytes bytes);
 
 
 

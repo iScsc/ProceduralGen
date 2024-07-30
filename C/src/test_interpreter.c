@@ -14,6 +14,7 @@
 #include "gradientGrid.h"
 #include "layer.h"
 #include "chunk.h"
+#include "map.h"
 
 int main() {
 
@@ -100,6 +101,13 @@ int main() {
 
 
 
+    map* m = newMap(1,grid_size,grid_size,size_factor,layer_factor,1,1,0);
+    printMap(m);
+    bytes mb = bytesMap(m);
+    printBytes(mb,"","\n");
+
+
+
     free(od);
     free(oa);
     free(oe);
@@ -128,6 +136,9 @@ int main() {
     freeChunk(chk);
     freeBytes(chkb);
     freeChunk(chkd);
+
+    freeMap(m);
+    freeBytes(mb);
 
     return 0;
 }

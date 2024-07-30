@@ -708,31 +708,35 @@ void printChunk(chunk* chunk)
     printf("-------------------------------------------\n");
     printf("Printing chunk of size = (%d, %d)\n", height, width);
 
-    printf("It has %d layers with factors : {", nb_layer);
+    if (nb_layer>0) {
 
-    for (int k = 0; k < nb_layer; k++)
-    {
-        if (k < nb_layer - 1)
-        {
-            printf("%lf, ", factors[k]);
-        }
-        else
-        {
-            printf("%lf}\n", factors[k]);
-        }
-    }
-    printf("\n");
+        printf("It has %d layers with factors : {", nb_layer);
 
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
+        for (int k = 0; k < nb_layer; k++)
         {
-            double* value = getChunkValue(chunk, j, i);
-
-            printf("%lf   ", *value);
+            if (k < nb_layer - 1)
+            {
+                printf("%lf, ", factors[k]);
+            }
+            else
+            {
+                printf("%lf}\n", factors[k]);
+            }
         }
         printf("\n");
+
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                double* value = getChunkValue(chunk, j, i);
+
+                printf("%lf   ", *value);
+            }
+            printf("\n");
+        }
     }
+    else printf("virtual chunk\n");
 
     printf("-------------------------------------------\n");
 }
