@@ -599,6 +599,7 @@ tuple_obj_bytes nextChunk(bytes bytes) {
             int nbr = *((int*)a.object);
             bytes = a.bytes;
             free(a.object);
+            obj->number_of_layers = nbr;
 
             double* layer_factors = calloc(nbr, sizeof(double));
             for (int i=0; i<nbr; i++) {
@@ -618,6 +619,7 @@ tuple_obj_bytes nextChunk(bytes bytes) {
             obj->layers = layers;
 
             double* chunk_values = calloc(w * h, sizeof(double));
+            obj->chunk_values = chunk_values;
             for (int i=0; i<h; i++) {
                 for (int j=0; j<w; j++) {
                     a = nextDouble(bytes);
