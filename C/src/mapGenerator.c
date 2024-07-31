@@ -584,41 +584,39 @@ bytes bytesCompleteMap(completeMap* cmap) {
 tuple_obj_bytes nextCompleteMap(bytes bytes) {
     tuple_obj_bytes res;
 
-    if (bytes.bytes[bytes.start]==MAP_ENCODING) {
+    if (bytes.bytes[bytes.start]==COMPLETE_MAP_ENCODING) {
         bytes.start += 1;
 
-        tuple_obj_bytes a = nextInt(bytes);
-        int map_height = *((int*)a.object);
+        completeMap* cmap = calloc(1,sizeof(completeMap));
+
+        tuple_obj_bytes a = nextMap(bytes);
+        cmap->map = ((map*)a.object);
+        bytes = a.bytes;
+
+        cmap->height = cmap->map->chunk_height * cmap->map->map_height;
+        cmap->width = cmap->map->chunk_width * cmap->map->map_width;
+
+        a = nextDouble(bytes);
+        cmap->sea_level = *((double*)a.object);
         bytes = a.bytes;
         free(a.object);
-        a = nextInt(bytes);
-        int map_width = *((int*)a.object);
-        bytes = a.bytes;
-        free(a.object);
 
-        int nbr = (map_height+2+map_width+2)*2-4;
+        cmap->color_map = calloc(cmap->height*cmap->width,sizeof(color*));
+        cmap->sea_values = calloc(cmap->height*cmap->width,sizeof(double));
 
-        chunk* chunks [map_height*map_width];
-
-        chunk* vchunks [nbr];
-
-        for (int i=0; i<map_height; i++) {
-            for (int j=0; j<map_width; j++) {
-                a = nextChunk(bytes);
-                chunks[i*map_width+j] = ((chunk*)a.object);
+        for (int i=0; i<cmap->height; i++) {
+            for (int j=0; j<cmap->width; j++) {
+                a = nextDouble(bytes);
+                *getCompleteMapSeaValue(cmap,j,i) = *((double*)a.object);
+                bytes = a.bytes;
+                free(a.object);
+                a = nextColor(bytes);
+                cmap->color_map[i*cmap->width+j] = ((color*)a.object);
                 bytes = a.bytes;
             }
         }
 
-        for (int i=0; i<nbr; i++) {
-            a = nextChunk(bytes);
-            vchunks[i] = ((chunk*)a.object);
-            bytes = a.bytes;
-        }
-
-        map* obj = newMapFromChunks(map_width,map_height,chunks,vchunks,false,0);
-
-        res.object = (object) obj;
+        res.object = (object) cmap;
         res.bytes = bytes;
     }
 

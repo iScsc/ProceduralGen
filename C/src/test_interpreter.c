@@ -124,6 +124,8 @@ int main() {
     printMap(cmap->map);
     bytes cmapb = bytesCompleteMap(cmap);
     printBytes(cmapb,"","\n");
+    completeMap* cmapd = ((completeMap*)nextCompleteMap(cmapb).object);
+    printMap(cmapd->map);
 
 
 
@@ -165,6 +167,7 @@ int main() {
 
     freeCompleteMap(cmap);
     freeBytes(cmapb);
+    freeCompleteMap(cmapd);
 
     return 0;
 }
