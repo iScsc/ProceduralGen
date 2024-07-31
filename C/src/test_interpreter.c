@@ -103,8 +103,12 @@ int main() {
 
     map* m = newMap(1,grid_size,grid_size,size_factor,layer_factor,1,1,0);
     printMap(m);
+
     bytes mb = bytesMap(m);
     printBytes(mb,"","\n");
+
+    map* md = ((map*)nextMap(mb).object);
+    printMap(md);
 
 
 
@@ -139,6 +143,7 @@ int main() {
 
     freeMap(m);
     freeBytes(mb);
+    freeMap(md);
 
     return 0;
 }

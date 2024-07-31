@@ -252,7 +252,7 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
 
 
 
-map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], unsigned int display_loading)
+map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], bool regenerate, unsigned int display_loading)
 {
     // clock_t start_time = clock();
 
@@ -321,7 +321,7 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
         // }
 
 
-        new_map = addMeanAltitude(new_map,display_loading);
+        if (regenerate) new_map = addMeanAltitude(new_map,display_loading);
 
         return new_map;
     }
@@ -431,7 +431,7 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
     }
 
     // Generating the map from the new chunks
-    map* new_map = newMapFromChunks(map_width, map_height, chunks, virtual_chunks, display_loading);
+    map* new_map = newMapFromChunks(map_width, map_height, chunks, virtual_chunks, true, display_loading);
 
     if (display_loading == 1)
     {
@@ -554,69 +554,39 @@ bytes bytesMap(map* map) {
 tuple_obj_bytes nextMap(bytes bytes) {
     tuple_obj_bytes res;
 
-    if (bytes.bytes[bytes.start]==CHUNK_ENCODING) {
+    if (bytes.bytes[bytes.start]==MAP_ENCODING) {
         bytes.start += 1;
 
-        tuple_obj_bytes a = nextDouble(bytes);
-        double base_altitude = *((double*)a.object);
+        tuple_obj_bytes a = nextInt(bytes);
+        int map_height = *((int*)a.object);
         bytes = a.bytes;
         free(a.object);
         a = nextInt(bytes);
-        int h = *((int*)a.object);
-        bytes = a.bytes;
-        free(a.object);
-        a = nextInt(bytes);
-        int w = *((int*)a.object);
+        int map_width = *((int*)a.object);
         bytes = a.bytes;
         free(a.object);
 
-        chunk* obj;
+        int nbr = (map_height+2+map_width+2)*2-4;
 
-        if (bytes.bytes[bytes.start]==BYTE_TRUE) {
-            bytes.start+=1;
-            obj = newVirtualChunk(w,h,false);
-            obj->base_altitude=base_altitude;
+        chunk* chunks [map_height*map_width];
+
+        chunk* vchunks [nbr];
+
+        for (int i=0; i<map_height; i++) {
+            for (int j=0; j<map_width; j++) {
+                a = nextChunk(bytes);
+                chunks[i*map_width+j] = ((chunk*)a.object);
+                bytes = a.bytes;
+            }
         }
-        else {
-            bytes.start+=1;
-            obj = newVirtualChunk(w,h,false);
-            obj->base_altitude=base_altitude;
 
-            a = nextInt(bytes);
-            int nbr = *((int*)a.object);
+        for (int i=0; i<nbr; i++) {
+            a = nextChunk(bytes);
+            vchunks[i] = ((chunk*)a.object);
             bytes = a.bytes;
-            free(a.object);
-            obj->number_of_layers = nbr;
-
-            double* layer_factors = calloc(nbr, sizeof(double));
-            for (int i=0; i<nbr; i++) {
-                a = nextDouble(bytes);
-                layer_factors[i]=*((double*)a.object);
-                bytes = a.bytes;
-                free(a.object);
-            }
-            obj->layers_factors = layer_factors;
-
-            layer** layers = calloc(nbr, sizeof(layer*));
-            for (int i=0; i<nbr; i++) {
-                a = nextLayer(bytes,false);
-                layers[i]=((layer*)a.object);
-                bytes = a.bytes;
-            }
-            obj->layers = layers;
-
-            double* chunk_values = calloc(w * h, sizeof(double));
-            obj->chunk_values = chunk_values;
-            for (int i=0; i<h; i++) {
-                for (int j=0; j<w; j++) {
-                    a = nextDouble(bytes);
-                    *getChunkValue(obj,j,i)=*((double*)a.object);
-                    bytes = a.bytes;
-                    free(a.object);
-                }
-            }
-
         }
+
+        map* obj = newMapFromChunks(map_width,map_height,chunks,vchunks,false,0);
 
         res.object = (object) obj;
         res.bytes = bytes;

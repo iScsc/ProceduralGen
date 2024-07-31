@@ -125,7 +125,7 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading);
  * 
  * @note The chunks array does not need to be dynamically allocated and its content will be copied in the structure.
  */
-map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], unsigned int display_loading);
+map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], bool regenerate, unsigned int display_loading);
 
 /**
  * @brief Creates a new map from scratch with the given parameters.
