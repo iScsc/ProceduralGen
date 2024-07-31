@@ -551,59 +551,31 @@ tuple_obj_bytes nextColor(bytes bytes) {
 bytes bytesCompleteMap(completeMap* cmap) {
     bytes bytes_str;
 
-    // bytes* bytes_chunks[map->map_width * map->map_height];
-    // int chunk_size=0;
-    // for (int i=0; i<map->map_height; i++) {
-    //     for (int j=0; j<map->map_width; j++) {
-    //         bytes bytes_chunk = (bytesChunk(getChunk(map,j,i)));
-    //         bytes_chunks[i*map->map_width+j] = calloc(1,sizeof(bytes_chunk));
-    //         *bytes_chunks[i*map->map_width+j] = bytes_chunk;
-    //         chunk_size += bytes_chunk.size;
-    //     }
-    // }
-    
-    // int nbr = (map->map_height+2+map->map_width+2)*2-4;
-    // bytes* bytes_vchunks[nbr];
-    // int vchunk_size=0;
-    // chunk** virtual_chunks = map->virtual_chunks; //! map->vitual_chunks changes value during execution (???)
-    // for (int i=0; i<nbr; i++) {
-    //     // printf("%d - %d - %p - %p\n",nbr,i,map->virtual_chunks,virtual_chunks);
-    //     bytes bytes_vchunk = (bytesChunk(virtual_chunks[i]));
-    //     bytes_vchunks[i] = calloc(1,sizeof(bytes_vchunk));
-    //     *bytes_vchunks[i] = bytes_vchunk;
-    //     vchunk_size += bytes_vchunk.size;
-    // }
+    bytes bytes_map = bytesMap(cmap->map);
 
-    // bytes_str.bytes = calloc(1 + 2*INT_BITS_NBR/8 + chunk_size + vchunk_size, sizeof(byte));
-    // bytes_str.size = 1 + 2*INT_BITS_NBR/8 + chunk_size + vchunk_size;
-    // bytes_str.start = 0;
+    bytes_str.bytes = calloc(1 + bytes_map.size + FLOAT_BITS_NBR/8 + cmap->height*cmap->width * (FLOAT_BITS_NBR/8 + 3), sizeof(byte));
+    bytes_str.size = 1 + bytes_map.size + FLOAT_BITS_NBR/8 + cmap->height*cmap->width * (FLOAT_BITS_NBR/8 + 3);
+    bytes_str.start = 0;
 
-    // bytes_str.bytes[0] = MAP_ENCODING;
+    bytes_str.bytes[0] = COMPLETE_MAP_ENCODING;
 
-    // bytes a = bytesInt(map->map_height);
-    // concatBytes(bytes_str, a, 1);
-    // freeBytes(a);
-    // a = bytesInt(map->map_width);
-    // concatBytes(bytes_str, a, 1+INT_BITS_NBR/8);
-    // freeBytes(a);
+    concatBytes(bytes_str,bytes_map,1);
+    freeBytes(bytes_map);
 
-    // chunk_size=0;
-    // for (int i=0; i<map->map_height; i++) {
-    //     for (int j=0; j<map->map_width; j++) {
-    //         concatBytes(bytes_str, *(bytes_chunks[i*map->map_width+j]), 1+2*INT_BITS_NBR/8+chunk_size);
-    //         chunk_size += (bytes_chunks[i*map->map_width+j])->size;
-    //         freeBytes(*(bytes_chunks[i*map->map_width+j]));
-    //         free(bytes_chunks[i*map->map_width+j]);
-    //     }
-    // }
+    bytes a = bytesDouble(cmap->sea_level);
+    concatBytes(bytes_str, a, 1+bytes_map.size);
+    freeBytes(a);
 
-    // vchunk_size=0;
-    // for (int i=0; i<nbr; i++) {
-    //     concatBytes(bytes_str, *(bytes_vchunks[i]), 1+2*INT_BITS_NBR/8+chunk_size+vchunk_size);
-    //     vchunk_size += (bytes_vchunks[i])->size;
-    //     freeBytes(*(bytes_vchunks[i]));
-    //     free(bytes_vchunks[i]);
-    // }
+    for (int i=0; i<cmap->height; i++) {
+        for (int j=0; j<cmap->width; j++) {
+            a = bytesDouble(*getCompleteMapSeaValue(cmap,j,i));
+            concatBytes(bytes_str, a, 1+bytes_map.size+FLOAT_BITS_NBR/8 + (FLOAT_BITS_NBR/8+3)*(i*cmap->width+j));
+            freeBytes(a);
+            a = bytesColor(*getCompleteMapColor(cmap,j,i));
+            concatBytes(bytes_str, a, 1+bytes_map.size+2*FLOAT_BITS_NBR/8 + (FLOAT_BITS_NBR/8+3)*(i*cmap->width+j));
+            freeBytes(a);
+        }
+    }
 
     return bytes_str;
 

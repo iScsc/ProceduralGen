@@ -120,6 +120,12 @@ int main() {
     color* cold = ((color*)nextColor(colb).object);
     printf("color: %u - %u - %u\n", cold->red, cold->green, cold->blue);
 
+    completeMap* cmap = newCompleteMap(1,grid_size,grid_size,size_factor,layer_factor,1,1,0,0);
+    printMap(cmap->map);
+    bytes cmapb = bytesCompleteMap(cmap);
+    printBytes(cmapb,"","\n");
+
+
 
     free(od);
     free(oa);
@@ -155,6 +161,10 @@ int main() {
     freeMap(md);
 
     freeBytes(colb);
+    free(cold);
+
+    freeCompleteMap(cmap);
+    freeBytes(cmapb);
 
     return 0;
 }
