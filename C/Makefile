@@ -60,19 +60,19 @@ test_unicode: $(COMP)test_unicode.o
 test_loadingBar: $(COMP)test_loadingBar.o $(COMP)loadingBar.o
 	$(CC) $^ -o $(BIN)$@
 
-test_gradientGrid: $(COMP)test_gradientGrid.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+test_gradientGrid: $(COMP)test_gradientGrid.o $(COMP)gradientGrid.o $(COMP)loadingBar.o $(COMP)interpreter.o
 	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_layer: $(COMP)test_layer.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+test_layer: $(COMP)test_layer.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o $(COMP)interpreter.o
 	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_chunk: $(COMP)test_chunk.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+test_chunk: $(COMP)test_chunk.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o $(COMP)interpreter.o
 	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_map: $(COMP)test_map.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+test_map: $(COMP)test_map.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o $(COMP)interpreter.o
 	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
-test_mapGenerator: $(COMP)test_mapGenerator.o $(COMP)mapGenerator.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+test_mapGenerator: $(COMP)test_mapGenerator.o $(COMP)mapGenerator.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o $(COMP)interpreter.o
 	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 	
 test_interpreter: $(COMP)test_interpreter.o $(COMP)interpreter.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o

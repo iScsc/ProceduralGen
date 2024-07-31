@@ -34,7 +34,7 @@ int main()
 
     printf("Creating a layer of size (height x width) = (%d x %d)\n", sizeFactor*(height-1), sizeFactor*(width-1));
 
-    layer* layer1 = newLayerFromGradient(gradGrid, sizeFactor, display_loading);
+    layer* layer1 = newLayerFromGradient(gradGrid, sizeFactor, true, display_loading);
 
     printLayer(layer1);
 
