@@ -18,12 +18,13 @@
 #include "mapGenerator.h"
 
 int main() {
+    printf("Testing binary encoding and decoding: \n\n\n");
 
     __uint8_t d = 1;
     int a=0,e=-5683;
     double b=1.3,c=-0.394383;
 
-    printf("Encoding some numbers : %d, %d, %d, %f, %f\n",d,a,e,b,c);
+    printf("\tEncoding some numbers : %d, %d, %d, %f, %f\n",d,a,e,b,c);
 
     bytes db=bytesUint8(d);
     bytes ab=bytesInt(a);
@@ -31,15 +32,15 @@ int main() {
     bytes bb=bytesDouble(b);
     bytes cb=bytesDouble(c);
 
-    printf("\tUint8 :  %d, ",d);
+    printf("\t\tUint8 :  %d, ",d);
     printBytes(db,"","\n");
-    printf("\tint :    %d, ",a);
+    printf("\t\tint :    %d, ",a);
     printBytes(ab,"","\n");
-    printf("\tint :    %d, ",e);
+    printf("\t\tint :    %d, ",e);
     printBytes(eb,"","\n");
-    printf("\tdouble : %lf, ",b);
+    printf("\t\tdouble : %lf, ",b);
     printBytes(bb,"","\n");
-    printf("\tdouble : %lf, ",c);
+    printf("\t\tdouble : %lf, ",c);
     printBytes(cb,"","\n");
 
     object od = nextUint8(db).object;
@@ -54,9 +55,11 @@ int main() {
     b = *((double*)ob);
     c = *((double*)oc);
 
-    printf("Decoding numbers : %d, %d, %d, %f, %f\n\n\n",d,a,e,b,c);
+    printf("\tDecoding numbers : %d, %d, %d, %f, %f\n\n\n",d,a,e,b,c);
 
 
+
+    printf("\tTesting for gradients:\n");
     gradientGrid* grid = newRandomGradGrid(1,1,0);
     printGradientGrid(grid);
 
@@ -69,6 +72,7 @@ int main() {
     printf("\n\n");
 
 
+    printf("\tTesting for layers:\n");
     layer* lay = newLayer(2,2,3,0);
     printLayer(lay);
 
@@ -88,6 +92,7 @@ int main() {
 
 
 
+    printf("\n\n\tTesting for chunks:\n");
     int grid_size[] = {2};
     int size_factor[] = {3};
     double layer_factor[] = {1.};
@@ -102,6 +107,7 @@ int main() {
 
 
 
+    printf("\n\n\tTesting for maps:\n");
     map* m = newMap(1,grid_size,grid_size,size_factor,layer_factor,1,1,0);
     printMap(m);
 
@@ -113,6 +119,7 @@ int main() {
 
 
 
+    printf("\n\n\tTesting for colors:\n");
     color col = {255,0,0};
     printf("color: %u - %u - %u\n", col.red, col.green, col.blue);
     bytes colb = bytesColor(col);
@@ -120,6 +127,7 @@ int main() {
     color* cold = ((color*)nextColor(colb).object);
     printf("color: %u - %u - %u\n", cold->red, cold->green, cold->blue);
 
+    printf("\n\n\tTesting for completeMaps:\n");
     completeMap* cmap = newCompleteMap(1,grid_size,grid_size,size_factor,layer_factor,1,1,0,0);
     printMap(cmap->map);
     bytes cmapb = bytesCompleteMap(cmap);
@@ -129,6 +137,7 @@ int main() {
 
 
 
+    printf("\n\nDeallocating...\n");
     free(od);
     free(oa);
     free(oe);
