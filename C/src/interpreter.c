@@ -140,10 +140,10 @@ tuple_obj_bytes nextUint8(bytes bytes) {
 
     __uint8_t* obj = malloc(1);
     *obj = bytes.bytes[bytes.start];
+    bytes.start += 1;
 
     res.object = (object) obj;
     res.bytes = bytes;
-    bytes.start += 1;
 
     return res;
 }

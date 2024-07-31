@@ -15,6 +15,7 @@
 #include "layer.h"
 #include "chunk.h"
 #include "map.h"
+#include "mapGenerator.h"
 
 int main() {
 
@@ -112,6 +113,14 @@ int main() {
 
 
 
+    color col = {255,0,0};
+    printf("color: %u - %u - %u\n", col.red, col.green, col.blue);
+    bytes colb = bytesColor(col);
+    printBytes(colb,"","\n");
+    color* cold = ((color*)nextColor(colb).object);
+    printf("color: %u - %u - %u\n", cold->red, cold->green, cold->blue);
+
+
     free(od);
     free(oa);
     free(oe);
@@ -144,6 +153,8 @@ int main() {
     freeMap(m);
     freeBytes(mb);
     freeMap(md);
+
+    freeBytes(colb);
 
     return 0;
 }

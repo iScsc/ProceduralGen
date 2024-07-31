@@ -2,8 +2,8 @@
  * @file mapGenerator.h
  * @author Zyno and BlueNZ
  * @brief Header to mapGenerator structure and functions
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-31
  * 
  */
 
@@ -11,6 +11,7 @@
 #define MAP_GENERATOR
 
 #include "map.h"
+#include "interpreter.h"
 
 // ----- Structure definition -----
 
@@ -226,6 +227,17 @@ completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_lay
  */
 void printCompleteMap(completeMap* completeMap);
 
+
+
+
+
+bytes bytesColor(color c);
+
+tuple_obj_bytes nextColor(bytes bytes);
+
+bytes bytesCompleteMap(completeMap* cmap);
+
+tuple_obj_bytes nextCompleteMap(bytes bytes);
 
 
 

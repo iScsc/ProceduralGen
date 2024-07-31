@@ -2,8 +2,8 @@
  * @file mapGenerator.c
  * @author Zyno and BlueNZ
  * @brief mapGenerator structure and functions implementations
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-31
  * 
  */
 
@@ -497,6 +497,161 @@ completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_lay
 }
 
 
+
+
+
+
+bytes bytesColor(color c) {
+    bytes res;
+    res.bytes = malloc(3);
+    res.size = 3;
+    res.start = 0;
+
+    bytes a = bytesUint8(c.red);
+    concatBytes(res,a,0);
+    freeBytes(a);
+    
+    a = bytesUint8(c.green);
+    concatBytes(res,a,1);
+    freeBytes(a);
+    
+    a = bytesUint8(c.blue);
+    concatBytes(res,a,2);
+    freeBytes(a);
+
+    return res;
+}
+
+tuple_obj_bytes nextColor(bytes bytes) {
+    tuple_obj_bytes res;
+
+    color* c = malloc(sizeof(color));
+
+    tuple_obj_bytes a = nextUint8(bytes);
+    c->red = *((__uint8_t*)a.object);
+    bytes = a.bytes;
+    free(a.object);
+
+    a = nextUint8(bytes);
+    c->green = *((__uint8_t*)a.object);
+    bytes = a.bytes;
+    free(a.object);
+
+    a = nextUint8(bytes);
+    c->blue = *((__uint8_t*)a.object);
+    bytes = a.bytes;
+    free(a.object);
+
+    res.object = (object)c;
+    res.bytes = bytes;
+
+    return res;
+}
+
+bytes bytesCompleteMap(completeMap* cmap) {
+    bytes bytes_str;
+
+    // bytes* bytes_chunks[map->map_width * map->map_height];
+    // int chunk_size=0;
+    // for (int i=0; i<map->map_height; i++) {
+    //     for (int j=0; j<map->map_width; j++) {
+    //         bytes bytes_chunk = (bytesChunk(getChunk(map,j,i)));
+    //         bytes_chunks[i*map->map_width+j] = calloc(1,sizeof(bytes_chunk));
+    //         *bytes_chunks[i*map->map_width+j] = bytes_chunk;
+    //         chunk_size += bytes_chunk.size;
+    //     }
+    // }
+    
+    // int nbr = (map->map_height+2+map->map_width+2)*2-4;
+    // bytes* bytes_vchunks[nbr];
+    // int vchunk_size=0;
+    // chunk** virtual_chunks = map->virtual_chunks; //! map->vitual_chunks changes value during execution (???)
+    // for (int i=0; i<nbr; i++) {
+    //     // printf("%d - %d - %p - %p\n",nbr,i,map->virtual_chunks,virtual_chunks);
+    //     bytes bytes_vchunk = (bytesChunk(virtual_chunks[i]));
+    //     bytes_vchunks[i] = calloc(1,sizeof(bytes_vchunk));
+    //     *bytes_vchunks[i] = bytes_vchunk;
+    //     vchunk_size += bytes_vchunk.size;
+    // }
+
+    // bytes_str.bytes = calloc(1 + 2*INT_BITS_NBR/8 + chunk_size + vchunk_size, sizeof(byte));
+    // bytes_str.size = 1 + 2*INT_BITS_NBR/8 + chunk_size + vchunk_size;
+    // bytes_str.start = 0;
+
+    // bytes_str.bytes[0] = MAP_ENCODING;
+
+    // bytes a = bytesInt(map->map_height);
+    // concatBytes(bytes_str, a, 1);
+    // freeBytes(a);
+    // a = bytesInt(map->map_width);
+    // concatBytes(bytes_str, a, 1+INT_BITS_NBR/8);
+    // freeBytes(a);
+
+    // chunk_size=0;
+    // for (int i=0; i<map->map_height; i++) {
+    //     for (int j=0; j<map->map_width; j++) {
+    //         concatBytes(bytes_str, *(bytes_chunks[i*map->map_width+j]), 1+2*INT_BITS_NBR/8+chunk_size);
+    //         chunk_size += (bytes_chunks[i*map->map_width+j])->size;
+    //         freeBytes(*(bytes_chunks[i*map->map_width+j]));
+    //         free(bytes_chunks[i*map->map_width+j]);
+    //     }
+    // }
+
+    // vchunk_size=0;
+    // for (int i=0; i<nbr; i++) {
+    //     concatBytes(bytes_str, *(bytes_vchunks[i]), 1+2*INT_BITS_NBR/8+chunk_size+vchunk_size);
+    //     vchunk_size += (bytes_vchunks[i])->size;
+    //     freeBytes(*(bytes_vchunks[i]));
+    //     free(bytes_vchunks[i]);
+    // }
+
+    return bytes_str;
+
+}
+
+tuple_obj_bytes nextCompleteMap(bytes bytes) {
+    tuple_obj_bytes res;
+
+    if (bytes.bytes[bytes.start]==MAP_ENCODING) {
+        bytes.start += 1;
+
+        tuple_obj_bytes a = nextInt(bytes);
+        int map_height = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
+        int map_width = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+
+        int nbr = (map_height+2+map_width+2)*2-4;
+
+        chunk* chunks [map_height*map_width];
+
+        chunk* vchunks [nbr];
+
+        for (int i=0; i<map_height; i++) {
+            for (int j=0; j<map_width; j++) {
+                a = nextChunk(bytes);
+                chunks[i*map_width+j] = ((chunk*)a.object);
+                bytes = a.bytes;
+            }
+        }
+
+        for (int i=0; i<nbr; i++) {
+            a = nextChunk(bytes);
+            vchunks[i] = ((chunk*)a.object);
+            bytes = a.bytes;
+        }
+
+        map* obj = newMapFromChunks(map_width,map_height,chunks,vchunks,false,0);
+
+        res.object = (object) obj;
+        res.bytes = bytes;
+    }
+
+    return res;
+}
 
 
 
