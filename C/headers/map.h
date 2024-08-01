@@ -118,6 +118,7 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading);
  * @param map_height (int) : number of chunks in height.
  * @param chunks (chunk**) : array of size `map_width * map_height` of pointers to the chunk structures.
  * @param virtual_chunks (chunk**) : array of size `(map_height+2 + map_width+2)*2 - 4` of pointers to the virtual chunk structures.
+ * @param regenerate (bool) : should altitude values be initialised and regenerated (adds base altitude to its chunks' altitude values).
  * @param display_loading (unsigned int) : the given value defines the behaviour.
  *                                         * If `0` the loading bars won't be printed.
  *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.

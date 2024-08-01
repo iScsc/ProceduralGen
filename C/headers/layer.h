@@ -98,6 +98,7 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx);
  * 
  * @param gradient_grid (gradientGrid*) : the pointer to the gradientGrid structure to build the layer from.
  * @param size_factor (int) : the size_factor to rescale the layer's dimensions.
+ * @param altitude (bool) : should altitude values be initialised and generated.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
  *                                         * If `0` the loading bars won't be printed.
  *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.

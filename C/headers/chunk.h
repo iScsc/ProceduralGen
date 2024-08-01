@@ -183,25 +183,17 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
 chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], 
                         double layers_factors[number_of_layers], unsigned int display_loading);
 
-//TODO ? signature could be changed to avoid passing useless parameters -> `chunk_width` and `chunk_height` instead of `gradGrids_width`, `gradGrids_height` and `size_factors`
 /**
  * @brief Generates a new virtual chunk structure with the given parameters. It does not possess any altitude values and is used as a way to store
  * the data of boundary conditions with its `base_altitude` parameter.
  * 
- * @param number_of_layers (int) : the number of layers passed.
- * @param gradGrids_width (int[number_of_layers]) : the array of gradientGrid width to compute the final width this virtual chunk should have.
- * @param gradGrids_height (int[number_of_layers]) : the array of gradientGrid height to compute the final height this virtual chunk should have.
- * @param size_factors (int[number_of_layers]) : the array of size factors to compute the final dimensions of this virtual chunk.
- * @param layers_factors (double[number_of_layers]) : the array of layers factors to be stored in the virtual chunk.
+ * @param chunk_width (int) : the width size of the virtuak chunk if it had altitude values.
+ * @param chunk_height (int) : the height size of the virtuak chunk if it had altitude values.
+ * @param regenerate (bool) : should the base altitude value be generated.
+ * 
  * @return chunk* : the pointer to the newly generated virtual chunk structure.
- * 
- * @warning The `size_factors` array should match the `gradGrids_width` and `gradGrids_height` arrays such that
- *          `(gradGrid_dimensions - 1) * size_factor = constant`. In case it would not be the case, the chunk structure will still 
- *          be generated but its dimensions will be wrong : it will simply use the first value. 
- * 
- * @note The arrays does not need to be dynamically allocated and their content will be copied in the structure.
  */
-chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenereate);
+chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenerate);
 
 
 /**

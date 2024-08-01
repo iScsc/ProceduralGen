@@ -272,7 +272,7 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
 
 
 
-chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenereate)
+chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenerate)
 {
     chunk* new_chunk = calloc(1, sizeof(chunk));
 
@@ -290,7 +290,7 @@ chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenereate)
 
     new_chunk->layers = NULL;
 
-    if (regenereate) new_chunk->base_altitude=generateBaseAltitude();
+    if (regenerate) new_chunk->base_altitude=generateBaseAltitude();
 
     return new_chunk;
 }
