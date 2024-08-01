@@ -12,18 +12,24 @@
 
 // ------- Structure definition ------- //
 
-typedef unsigned char byte;
+typedef unsigned char byte; //type used as bytes
 typedef char* object; //an alias for pointers
 
+/**
+ * @brief a simple implementation of byte strings
+ */
 typedef struct bytes {
-    byte* bytes;
-    int size;
-    int start;
+    byte* bytes; // the byte array
+    int size; // to keep track of the size of the byte array
+    int start; // where to look for the current byte in the array
 } bytes;
 
+/**
+ * @brief a placeholder to return both an object (a number or a struct) and a byte string (bytes)
+ */
 typedef struct tuple_obj_bytes {
-    object object; 
-    bytes bytes;
+    object object; // a pointer to the object
+    bytes bytes; // the byte string
 } tuple_obj_bytes;
 
 
@@ -48,32 +54,101 @@ typedef struct tuple_obj_bytes {
 
 // ------- Functions ------- //
 
+/**
+ * @brief 'Fast' int powers.
+ * 
+ * @param nbr (int) : the nbr to be exponantiated
+ * @param exp (int) : the exponant
+ * @return int : the result of nbr^exp.
+ */
 int intpow(int nbr, int exp);
 
 
 
+/**
+ * @brief Deallocates the byte array of a bytes struct
+ * 
+ * @param b (bytes) : the bytes struct
+ */
 void freeBytes(bytes b);
 
+/**
+ * @brief Auxiliary function to print bytes (update a string with the hexadecimal representation of a byte).
+ * 
+ * @param c (unsigned char) : the byte to print
+ * @param res (char*) : the string to update
+ * @return char* : the updated string
+ */
 char* hex(unsigned char c, char* res);
 
+/**
+ * @brief Prints a bytes struct
+ * 
+ * @param bytes (bytes) : the bytes to print
+ * @param start (char*) : a string to print beforehand
+ * @param end (char*) : a string to print after ("\n" for instance)
+ */
 void printBytes(bytes bytes, char* start, char* end);
 
+/**
+ * @brief Updates a byte string starting from a given index with the values of another byte string
+ * 
+ * @param b (bytes) : the bytes to update
+ * @param bb (bytes) : the bytes to use for updating
+ * @param start (int) : the starting index in b
+ */
 void concatBytes(bytes b, bytes bb, int start);
 
 
 
+/**
+ * @brief Encodes an unsigned 8bits int.
+ * 
+ * @param nbr (__uint8_t) : the unsigned int.
+ * @return bytes : the byte string representing the encoded number.
+ */
 bytes bytesUint8(__uint8_t nbr);
 
+/**
+ * @brief Encodes an int.
+ * 
+ * @param nbr (int) : the int.
+ * @return bytes : the byte string representing the encoded number.
+ */
 bytes bytesInt(int nbr);
 
+/**
+ * @brief Encodes a double.
+ * 
+ * @param nbr (double) : the double.
+ * @return bytes : the byte string representing the encoded number.
+ */
 bytes bytesDouble(double nbr);
 
 
 
+/**
+ * @brief Decodes an encoded unsigned 8bits int.
+ * 
+ * @param bytes (bytes) : the encoded byte string.
+ * @return tuple_obj_bytes : the byte string with updated start index and a pointer to the number decoded.
+ */
 tuple_obj_bytes nextUint8(bytes bytes);
 
+/**
+ * @brief Decodes an encoded int.
+ * 
+ * @param bytes (bytes) : the encoded byte string.
+ * @return tuple_obj_bytes : the byte string with updated start index and a pointer to the number decoded.
+ */
 tuple_obj_bytes nextInt(bytes bytes);
 
+/**
+ * @brief Decodes an encoded double.
+ * 
+ * @param bytes (bytes) : the encoded byte string.
+ * @return tuple_obj_bytes : the byte string with updated start index and a pointer to the number decoded.
+ */
 tuple_obj_bytes nextDouble(bytes bytes);
 
 
