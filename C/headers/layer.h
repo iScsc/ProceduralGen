@@ -135,8 +135,14 @@ layer* copyLayer(layer * p_layer);
 
 
 
-
-bytes bytesLayer(layer* grid, bool altitude);
+/**
+ * @brief Encodes a layer struct in a binary format.
+ * 
+ * @param layer (layer*) : a pointer to the layer struct.
+ * @param altitude (bool) : should altitude values be encoded.
+ * @return bytes : the byte string representing the encoded struct.
+ */
+bytes bytesLayer(layer* layer, bool altitude);
 
 tuple_obj_bytes nextLayer(bytes bytes, bool altitude);
 

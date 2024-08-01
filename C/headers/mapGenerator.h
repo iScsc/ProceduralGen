@@ -230,11 +230,22 @@ void printCompleteMap(completeMap* completeMap);
 
 
 
-
+/**
+ * @brief Encodes a color struct in a binary format.
+ * 
+ * @param c (color) : a color struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
 bytes bytesColor(color c);
 
 tuple_obj_bytes nextColor(bytes bytes);
 
+/**
+ * @brief Encodes a compltet map struct in a binary format.
+ * 
+ * @param cmap (completeMap*) : a pointer to the complete map struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
 bytes bytesCompleteMap(completeMap* cmap);
 
 tuple_obj_bytes nextCompleteMap(bytes bytes);

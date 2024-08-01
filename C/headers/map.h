@@ -163,7 +163,12 @@ map* copyMap(map* p_map) ;
 
 
 
-
+/**
+ * @brief Encodes a map struct in a binary format.
+ * 
+ * @param map (map*) : a pointer to the map struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
 bytes bytesMap(map* map);
 
 tuple_obj_bytes nextMap(bytes bytes);

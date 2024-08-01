@@ -231,8 +231,12 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
 chunk* copyChunk(chunk* p_chunk);
 
 
-
-
+/**
+ * @brief Encodes a chunk struct in a binary format.
+ * 
+ * @param chk (chunk*) : a pointer to the chunk struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
 bytes bytesChunk(chunk* chk);
 
 tuple_obj_bytes nextChunk(bytes bytes);
