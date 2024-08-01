@@ -248,6 +248,12 @@ tuple_obj_bytes nextColor(bytes bytes);
  */
 bytes bytesCompleteMap(completeMap* cmap);
 
+/**
+ * @brief Decodes a complete map struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @return tuple_obj_bytes : the decoded complete map and the byte string (with the start index updated).
+ */
 tuple_obj_bytes nextCompleteMap(bytes bytes);
 
 

@@ -155,6 +155,12 @@ gradientGrid* readGradientGridFile(char path[]);
  */
 bytes bytesGradientGrid(gradientGrid* grid);
 
+/**
+ * @brief Decodes a gradient grid struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @return tuple_obj_bytes : the decoded gradient grid and the byte string (with the start index updated).
+ */
 tuple_obj_bytes nextGradientGrid(bytes bytes);
 
 

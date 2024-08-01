@@ -171,6 +171,12 @@ map* copyMap(map* p_map) ;
  */
 bytes bytesMap(map* map);
 
+/**
+ * @brief Decodes a map struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @return tuple_obj_bytes : the decoded map and the byte string (with the start index updated).
+ */
 tuple_obj_bytes nextMap(bytes bytes);
 
 

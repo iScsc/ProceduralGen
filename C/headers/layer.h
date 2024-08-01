@@ -144,6 +144,13 @@ layer* copyLayer(layer * p_layer);
  */
 bytes bytesLayer(layer* layer, bool altitude);
 
+/**
+ * @brief Decodes a layer struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @param altitude (bool) : should altitude values be initialised and decoded (or regenerated) or not.
+ * @return tuple_obj_bytes : the decoded layer and the byte string (with the start index updated).
+ */
 tuple_obj_bytes nextLayer(bytes bytes, bool altitude);
 
 

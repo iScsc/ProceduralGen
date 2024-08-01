@@ -239,6 +239,12 @@ chunk* copyChunk(chunk* p_chunk);
  */
 bytes bytesChunk(chunk* chk);
 
+/**
+ * @brief Decodes a chunk struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @return tuple_obj_bytes : the decoded chunk and the byte string (with the start index updated).
+ */
 tuple_obj_bytes nextChunk(bytes bytes);
 
 
