@@ -153,6 +153,17 @@ tuple_obj_bytes nextDouble(bytes bytes);
 
 
 
+/**
+ * @brief Writes a bytes string in a specified file
+ * 
+ * @param bytes (bytes) : the byte string.
+ * @param path (char*) : the folder path.
+ * @param name (char*) : the file name (should end with '.data').
+ */
+void writeBytesFile(bytes bytes, char* path, char* name);
+
+
+
 
 
 
