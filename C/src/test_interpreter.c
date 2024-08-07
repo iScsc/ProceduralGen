@@ -137,8 +137,11 @@ int main() {
 
 
 
-    printf("\n\n\tTesting file writing...\n");
+    printf("\n\n\tTesting file writing and reading...\n");
     writeBytesFile(cmapb, "../saves","test.data");
+    bytes cmapbr = readBytesFile("../saves/test.data");
+    printBytes(cmapb,"","\n");
+    printBytes(cmapbr,"","\n");
 
 
 
