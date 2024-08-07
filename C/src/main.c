@@ -9,9 +9,11 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <malloc.h>
 
 #include "loadingBar.h"
 #include "mapGenerator.h"
+#include "interpreter.h"
 
 
 #define INPUT_MAX_SIZE 100
@@ -481,7 +483,7 @@ int main(int argc, char* argv[argc])
 
         printf("Folder name (defaults to %s)   ->   ", folder_path);
         fgets(line, INPUT_MAX_SIZE, stdin);
-        nb_associated = sscanf(line, " %s", &folder_path);
+        nb_associated = sscanf(line, " %s", folder_path);
         if (nb_associated == 0)
         {
             printf("%s/!\\ Input Error : could not convert line '%s' as a path name. /!\\%s\n", RED_COLOR, line, DEFAULT_COLOR);
@@ -497,7 +499,7 @@ int main(int argc, char* argv[argc])
         printf("File name (defaults to %s)   ->   ", name);
         fgets(line, INPUT_MAX_SIZE, stdin);
 
-        nb_associated = sscanf(line, " %s", &name);
+        nb_associated = sscanf(line, " %s", name);
         if (nb_associated == 0)
         {
             printf("%s/!\\ Input Error : could not convert line '%s' as a file name. /!\\%s\n", RED_COLOR, line, DEFAULT_COLOR);

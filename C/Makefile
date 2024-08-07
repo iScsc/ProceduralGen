@@ -49,7 +49,7 @@ $(COMP)%.o : $(SRC)%.c
 
 # Main --------------------------------------
 
-main: $(COMP)main.o $(COMP)mapGenerator.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o
+main: $(COMP)main.o $(COMP)mapGenerator.o $(COMP)map.o $(COMP)chunk.o $(COMP)layer.o $(COMP)gradientGrid.o $(COMP)loadingBar.o $(COMP)interpreter.o
 	$(CC) $^ -o $(BIN)$@ $(LFLAGS)
 
 # Tests -------------------------------------
