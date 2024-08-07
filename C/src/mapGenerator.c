@@ -2,8 +2,8 @@
  * @file mapGenerator.c
  * @author Zyno and BlueNZ
  * @brief mapGenerator structure and functions implementations
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-31
  * 
  */
 
@@ -184,33 +184,21 @@ color* colorize(double value, double sea_level, double min_value, double max_val
     //? Show red dots on zero values. Could be removed.
     if (value == 0)
     {
-        new_color->red_int = 255;
-        new_color->green_int = 0;
-        new_color->blue_int = 0;
-
-        new_color->red_float = 1.;
-        new_color->green_float = 0;
-        new_color->blue_float = 0;
+        new_color->red = 255;
+        new_color->green = 0;
+        new_color->blue = 0;
     }
     else if (value <= sea_level)
     {
-        new_color->red_int = 50;
-        new_color->green_int = 50;
-        new_color->blue_int = s;
-
-        new_color->red_float = 1./255 * 50;
-        new_color->green_float = 1./255 * 50;
-        new_color->blue_float = 1./255 * s;
+        new_color->red = 50;
+        new_color->green = 50;
+        new_color->blue = s;
     }
     else
     {
-        new_color->red_int = 50;
-        new_color->green_int = i;
-        new_color->blue_int = 50;
-
-        new_color->red_float = 1./255 * 50;
-        new_color->green_float = 1./255 * i;
-        new_color->blue_float = 1./255 * 50;
+        new_color->red = 50;
+        new_color->green = i;
+        new_color->blue = 50;
     }
 
     return new_color;
@@ -512,6 +500,131 @@ completeMap* fullGen(int number_of_layers, int gradGrids_dimension[number_of_lay
 
 
 
+
+bytes bytesColor(color c) {
+    bytes res;
+    res.bytes = malloc(3);
+    res.size = 3;
+    res.start = 0;
+
+    bytes a = bytesUint8(c.red);
+    concatBytes(res,a,0);
+    freeBytes(a);
+    
+    a = bytesUint8(c.green);
+    concatBytes(res,a,1);
+    freeBytes(a);
+    
+    a = bytesUint8(c.blue);
+    concatBytes(res,a,2);
+    freeBytes(a);
+
+    return res;
+}
+
+tuple_obj_bytes nextColor(bytes bytes) {
+    tuple_obj_bytes res;
+
+    color* c = malloc(sizeof(color));
+
+    tuple_obj_bytes a = nextUint8(bytes);
+    c->red = *((__uint8_t*)a.object);
+    bytes = a.bytes;
+    free(a.object);
+
+    a = nextUint8(bytes);
+    c->green = *((__uint8_t*)a.object);
+    bytes = a.bytes;
+    free(a.object);
+
+    a = nextUint8(bytes);
+    c->blue = *((__uint8_t*)a.object);
+    bytes = a.bytes;
+    free(a.object);
+
+    res.object = (object)c;
+    res.bytes = bytes;
+
+    return res;
+}
+
+bytes bytesCompleteMap(completeMap* cmap) {
+    bytes bytes_str;
+
+    bytes bytes_map = bytesMap(cmap->map);
+
+    bytes_str.bytes = calloc(1 + bytes_map.size + FLOAT_BITS_NBR/8 + cmap->height*cmap->width * (FLOAT_BITS_NBR/8 + 3), sizeof(byte));
+    bytes_str.size = 1 + bytes_map.size + FLOAT_BITS_NBR/8 + cmap->height*cmap->width * (FLOAT_BITS_NBR/8 + 3);
+    bytes_str.start = 0;
+
+    bytes_str.bytes[0] = COMPLETE_MAP_ENCODING;
+
+    concatBytes(bytes_str,bytes_map,1);
+    freeBytes(bytes_map);
+
+    bytes a = bytesDouble(cmap->sea_level);
+    concatBytes(bytes_str, a, 1+bytes_map.size);
+    freeBytes(a);
+
+    for (int i=0; i<cmap->height; i++) {
+        for (int j=0; j<cmap->width; j++) {
+            a = bytesDouble(*getCompleteMapSeaValue(cmap,j,i));
+            concatBytes(bytes_str, a, 1+bytes_map.size+FLOAT_BITS_NBR/8 + (FLOAT_BITS_NBR/8+3)*(i*cmap->width+j));
+            freeBytes(a);
+            a = bytesColor(*getCompleteMapColor(cmap,j,i));
+            concatBytes(bytes_str, a, 1+bytes_map.size+2*FLOAT_BITS_NBR/8 + (FLOAT_BITS_NBR/8+3)*(i*cmap->width+j));
+            freeBytes(a);
+        }
+    }
+
+    return bytes_str;
+
+}
+
+tuple_obj_bytes nextCompleteMap(bytes bytes) {
+    tuple_obj_bytes res;
+
+    if (bytes.bytes[bytes.start]==COMPLETE_MAP_ENCODING) {
+        bytes.start += 1;
+
+        completeMap* cmap = calloc(1,sizeof(completeMap));
+
+        tuple_obj_bytes a = nextMap(bytes);
+        cmap->map = ((map*)a.object);
+        bytes = a.bytes;
+
+        cmap->height = cmap->map->chunk_height * cmap->map->map_height;
+        cmap->width = cmap->map->chunk_width * cmap->map->map_width;
+
+        a = nextDouble(bytes);
+        cmap->sea_level = *((double*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+
+        cmap->color_map = calloc(cmap->height*cmap->width,sizeof(color*));
+        cmap->sea_values = calloc(cmap->height*cmap->width,sizeof(double));
+
+        for (int i=0; i<cmap->height; i++) {
+            for (int j=0; j<cmap->width; j++) {
+                a = nextDouble(bytes);
+                *getCompleteMapSeaValue(cmap,j,i) = *((double*)a.object);
+                bytes = a.bytes;
+                free(a.object);
+                a = nextColor(bytes);
+                cmap->color_map[i*cmap->width+j] = ((color*)a.object);
+                bytes = a.bytes;
+            }
+        }
+
+        res.object = (object) cmap;
+        res.bytes = bytes;
+    }
+
+    return res;
+}
+
+
+
 void writeSeaMapFile(completeMap* completeMap, char path[])
 {
     FILE* f = NULL;
@@ -565,7 +678,7 @@ void writeSeaMapFile(completeMap* completeMap, char path[])
 
 
 
-void writeColorIntMapFile(color** color_map, int width, int height, char path[])
+void writeColorMapFile(int width, int height, color* color_map[width * height], char path[])
 {
     FILE* f = NULL;
 
@@ -573,7 +686,7 @@ void writeColorIntMapFile(color** color_map, int width, int height, char path[])
 
     if (f != NULL)
     {
-        fprintf(f, "Color Int Map\n");
+        fprintf(f, "Color Map\n");
 
         // Writing the parameters
         fprintf(f, "width=%d\nheight=%d\n", width, height);
@@ -587,53 +700,11 @@ void writeColorIntMapFile(color** color_map, int width, int height, char path[])
 
                 if (j != width - 1)
                 {
-                    fprintf(f, "(%d,%d,%d)\t", color->red_int, color->green_int, color->blue_int);
+                    fprintf(f, "(%3d,%3d,%3d)\t", color->red, color->green, color->blue);
                 }
                 else
                 {
-                    fprintf(f, "(%d,%d,%d)\n", color->red_int, color->green_int, color->blue_int);
-                }
-            }
-        }
-
-        fclose(f);
-    }
-    else
-    {
-        printf("%sERROR : could not open file in writing mode at path '%s'%s\n", RED_COLOR, path, DEFAULT_COLOR);
-        return;
-    }
-}
-
-
-
-void writeColorFloatMapFile(color** color_map, int width, int height, char path[])
-{
-    FILE* f = NULL;
-
-    f = fopen(path, "w");
-
-    if (f != NULL)
-    {
-        fprintf(f, "Color Float Map\n");
-
-        // Writing the parameters
-        fprintf(f, "width=%d\nheight=%d\n", width, height);
-
-        // Writing the vectors
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                color* color = color_map[j + i * width];
-
-                if (j != width - 1)
-                {
-                    fprintf(f, "(%.4f,%.4f,%.4f)\t", color->red_float, color->green_float, color->blue_float);
-                }
-                else
-                {
-                    fprintf(f, "(%.4f,%.4f,%.4f)\n", color->red_float, color->green_float, color->blue_float);
+                    fprintf(f, "(%3d,%3d,%3d)\n", color->red, color->green, color->blue);
                 }
             }
         }
@@ -658,7 +729,7 @@ void writeCompleteMapFiles(completeMap* complete_map, char folder_path[])
     // Generates a directory if it does not exist
     if (stat(folder_path, &st) == -1)
     {
-        // Should check what 0700 permissions are exactly, but that's how it works to create a directory.
+        // 0700 is rwx permission for owner only.
         mkdir(folder_path, 0700);
     }
 
@@ -668,16 +739,10 @@ void writeCompleteMapFiles(completeMap* complete_map, char folder_path[])
     writeSeaMapFile(complete_map, sea_map_path);
 
 
-    // Generates the color int map file
-    char color_int_path[200] = "";
-    snprintf(color_int_path, sizeof(color_int_path), "%scolor_int_map.txt", folder_path);
-    writeColorIntMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_int_path);
-
-
-    // Generates the color float map file
-    char color_float_path[200] = "";
-    snprintf(color_float_path, sizeof(color_float_path), "%scolor_float_map.txt", folder_path);
-    writeColorFloatMapFile(complete_map->color_map, complete_map->width, complete_map->height, color_float_path);
+    // Generates the color map file
+    char color_path[200] = "";
+    snprintf(color_path, sizeof(color_path), "%scolor_map.txt", folder_path);
+    writeColorMapFile(complete_map->width, complete_map->height, complete_map->color_map, color_path);
 }
 
 

@@ -11,6 +11,7 @@ from gradientGrid import GradientGrid
 from layer import Layer
 from chunk import Chunk
 from map import Map
+import interpreter as interp
 
 class CompleteMap:
     """
@@ -21,6 +22,8 @@ class CompleteMap:
     
     
     #? -------------------------- Static ------------------------- #
+    
+    COMPLETE_MAP_ENCODING = b'\x04'
     
     @staticmethod
     def colorize(value: float, sea_level: float, min_value: float, max_value: float) -> tuple[float]:
@@ -42,14 +45,14 @@ class CompleteMap:
         
         #? Show red dots on zero values. Could be removed.
         if value == 0:
-            return (1., 0., 0.)
+            return (255, 0, 0)
         elif value <= sea_level:
-            blue = int((value - min_value) * 200. / (sea_level - min_value)) / 255
-            o = 50 / 255
+            blue = int((value - min_value) * 200. / (sea_level - min_value))
+            o = 50
             return (o, o, blue)
         else:
-            green = int((value - min_value) * 255. / (max_value - min_value)) / 255
-            o = 50 / 255
+            green = int((value - min_value) * 255. / (max_value - min_value))
+            o = 50
             return (o, green, o)
     
     
@@ -95,26 +98,93 @@ class CompleteMap:
     
     
     @staticmethod
-    def write(path: str, complete_map: CompleteMap) -> None:
-        #TODO
-        pass
+    def write(complete_map: CompleteMap, path: str=None, append: bool=False) -> bytes:
+        """Encodes a CompleteMap object into a binary file or string.
+
+        Args:
+            complete_map (CompleteMap): the complete map object to encode
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
+        bytes_str : bytes = b''
+        bytes_str += CompleteMap.COMPLETE_MAP_ENCODING
+        bytes_str += Map.write(complete_map.map)
+        bytes_str += interp.bytesNumber(complete_map.sea_level)
+        height = complete_map.map.map_height * complete_map.map.chunk_height
+        width = complete_map.map.map_width * complete_map.map.chunk_width
+        for i in range(height):
+            for j in range(width):
+                bytes_str += interp.bytesNumber(complete_map.sea_values[i,j])
+                bytes_str += interp.bytesNumber(complete_map.color_map[i,j,0])
+                bytes_str += interp.bytesNumber(complete_map.color_map[i,j,1])
+                bytes_str += interp.bytesNumber(complete_map.color_map[i,j,2])
+        if path!=None:
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
+            f.write(bytes_str)
+            f.close()
+        return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> CompleteMap:
-        #TODO
-        return None
+    def read(path: str, bytes_in : bytes=None) -> tuple[CompleteMap, bytes]:
+        """Decodes a CompleteMap object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+
+        Returns:
+            tuple[CompleteMap, bytes]: the complete map object and remaining bytes
+        """
+        bytes_str : bytes
+        if path!=None:
+            f=open(path,'rb')
+            bytes_str=f.read()
+            f.close()
+            if bytes_str[0:1]==CompleteMap.COMPLETE_MAP_ENCODING: bytes_str=bytes_str[1:]
+            else: bytes_str=None
+        elif bytes_in!=None and bytes_in[0:1]==CompleteMap.COMPLETE_MAP_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        complete_map : CompleteMap
+        
+        if bytes_str!=None:
+            map,bytes_str = Map.read(None, bytes_str)
+            height = map.map_height * map.chunk_height
+            width = map.map_width * map.chunk_width
+            sea_level, bytes_str = interp.nextFloat(bytes_str)
+            sea_values = np.zeros((height,width))
+            color_map = np.zeros((height,width,3),np.uint8)
+            for i in range(height):
+                for j in range(width):
+                    sea_values[i,j], bytes_str = interp.nextFloat(bytes_str)
+                    color_map[i,j,0], bytes_str = interp.nextUInt8(bytes_str)
+                    color_map[i,j,1], bytes_str = interp.nextUInt8(bytes_str)
+                    color_map[i,j,2], bytes_str = interp.nextUInt8(bytes_str)
+            complete_map = CompleteMap(map,sea_level,False)
+            complete_map.sea_values = sea_values
+            complete_map.color_map = color_map
+
+        else: complete_map = None
+        
+        return complete_map, bytes_str
     
     
     #? ------------------------ Instances ------------------------ #
     
-    def __init__(self, map: Map, sea_level: float) -> None:
+    def __init__(self, map: Map, sea_level: float, regenerate: bool = True) -> None:
         """Initialize a CompleteMap structure based on the given Map and sea altitude.
 
         Args:
             map (Map): the map structure to build the complete map from.
             sea_level (float): the altitude of the sea.
+            regenerate (bool, optional): should sea map and color map be (re)generated
         """
         
         self.map = None
@@ -129,13 +199,16 @@ class CompleteMap:
         self.map = map
         self.sea_level = sea_level
         
-        if type(map.altitude) == np.ndarray:
-            alt = map.altitude
-        else:
-            alt = np.array(map.altitude)
-        self.sea_values = np.where(alt >= sea_level, alt, sea_level)
-        
-        self.generateColorMap()
+        if regenerate:
+            alt = self.map.getFullMap()
+            
+            if type(alt) == np.ndarray:
+                pass
+            else:
+                alt = np.array(alt)
+            self.sea_values = np.where(alt >= sea_level, alt, sea_level)
+            
+            self.generateColorMap()
     
     
     
@@ -146,19 +219,23 @@ class CompleteMap:
         width = self.map.map_width * self.map.chunk_width
         height = self.map.map_height * self.map.chunk_height
         
-        if type(self.map.altitude) == np.ndarray:
-            alt = self.map.altitude
+        alt = self.map.getFullMap()
+        
+        if type(alt) == np.ndarray:
+            pass
         else:
-            alt = np.array(self.map.altitude)
+            alt = np.array(alt)
         
         max_alt = np.max(alt)
         min_alt = np.min(alt)
         
-        self.color_map = [[(0, 0, 0) for j in range(width)] for i in range(height)]
+        color_map = [[(0, 0, 0) for j in range(width)] for i in range(height)]
         
         for i in range(height):
             for j in range(width):
-                self.color_map[i][j] = CompleteMap.colorize(alt[i][j], self.sea_level, min_alt, max_alt)
+                color_map[i][j] = CompleteMap.colorize(alt[i][j], self.sea_level, min_alt, max_alt)
+        
+        self.color_map = np.array(color_map, dtype=np.uint8)
         
         
         
@@ -420,8 +497,30 @@ class MapGenerator:
         y = np.linspace(0, map_size[1], chunk_size[1] * map_size[1])
         x, y = np.meshgrid(x, y)
         
+        
+        if not type(complete_map.color_map) == np.ndarray:
+            print("Color map should be an numpy array.")
+        
+        
+        
+        
+        
+        if np.issubdtype(complete_map.color_map.dtype, np.integer):
+            cmap = complete_map.color_map.astype(np.float32)
+            cmap /= 255
+        elif not np.issubdtype(complete_map.color_map.dtype, np.floating):
+            # WHAT ARE YOU TRYING TO DO ???
+            print("Error : cmap can only be integers in [0, 255] or floating point values in [0., 1.]")
+            print("You tried to use : ", complete_map.color_map.dtype)
+            cmap = complete_map.color_map
+        else:
+            cmap = complete_map.color_map
+        
+        
+        
+        
         # print(np.shape(y), np.shape(x), np.shape(complete_map.sea_values), np.shape(complete_map.color_map))
-        surf = ax3D.plot_surface(y, x, np.array(complete_map.sea_values), facecolors=np.array(complete_map.color_map))
+        surf = ax3D.plot_surface(y, x, np.array(complete_map.sea_values), facecolors=np.array(cmap))
         
         xylim = max(map_size[0], map_size[1])
         ax3D.set_xlim(0, xylim)
@@ -470,6 +569,10 @@ if __name__ == "__main__":
     
     
     MapGenerator.plotCompleteMap(complete_map)
+    
+    print("\nTesting completeMap encoding: ")
+    print(CompleteMap.write(complete_map,"../saves/test_completeMap.data"))
+    MapGenerator.plotCompleteMap(CompleteMap.read("../saves/test_completeMap.data")[0])
     
     
     

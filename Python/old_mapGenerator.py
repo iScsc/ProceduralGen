@@ -584,7 +584,7 @@ class mapGenerator:
                 return
             
             # Description line
-            if "Color Float Map" not in lines[0]:
+            if "Color Map" not in lines[0]:
                 print(RED_COLOR + "Color float map does not contain the correct first line" + DEFAULT_COLOR)
             
             # Parameters
@@ -627,28 +627,28 @@ class mapGenerator:
                     vector_parts = parts[j].split(",")
                     
                     try:
-                        r = float(vector_parts[0])
+                        r = int(vector_parts[0])
                     except:
-                        print(RED_COLOR + "Could not convert '{}' into a float for red value at indexes i={} j={} !".format(vector_parts[0], i, j) + DEFAULT_COLOR)
+                        print(RED_COLOR + "Could not convert '{}' into an int for red value at indexes i={} j={} !".format(vector_parts[0], i, j) + DEFAULT_COLOR)
                         return
                     
                     try:
-                        g = float(vector_parts[1])
+                        g = int(vector_parts[1])
                     except:
-                        print(RED_COLOR + "Could not convert '{}' into a float for green value at indexes i={} j={} !".format(vector_parts[1], i, j) + DEFAULT_COLOR)
+                        print(RED_COLOR + "Could not convert '{}' into an int for green value at indexes i={} j={} !".format(vector_parts[1], i, j) + DEFAULT_COLOR)
                         return
                     
                     try:
-                        b = float(vector_parts[2])
+                        b = int(vector_parts[2])
                     except:
-                        print(RED_COLOR + "Could not convert '{}' into a float for blue value at indexes i={} j={} !".format(vector_parts[2], i, j) + DEFAULT_COLOR)
+                        print(RED_COLOR + "Could not convert '{}' into an int for blue value at indexes i={} j={} !".format(vector_parts[2], i, j) + DEFAULT_COLOR)
                         return
                     
                     
                     
                     color_map[i][j] = (r, g, b)
             
-            return np.array(color_map)
+            return np.array(color_map)/255
         
         else:
             raise FileNotFoundError(RED_COLOR + "File '{}' was not found!".format(color_map_path) + DEFAULT_COLOR)
@@ -679,7 +679,7 @@ class mapGenerator:
         if os.path.isdir(folder_path):
             sea_map_path = os.path.join(folder_path, "sea_map.txt")
             
-            color_map_path = os.path.join(folder_path, "color_float_map.txt")
+            color_map_path = os.path.join(folder_path, "color_map.txt")
             
             sea_map, map_width_in_points, map_height_in_points, sea_level, map_width_in_chunks, map_height_in_chunks = mapGenerator.loadSeaMap(sea_map_path)
             

@@ -2,8 +2,8 @@
  * @file layer.c
  * @author Zyno and BlueNZ
  * @brief layer structure and functions implementation
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-28
  * 
  */
 
@@ -103,7 +103,10 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx)
             return NULL;
         }
 
-        layer_value = (layer->values) + height_idx * width + width_idx;
+        if (layer->values != NULL)
+        {
+            layer_value = (layer->values) + height_idx * width + width_idx;
+        }
     }
 
     return layer_value;
@@ -113,7 +116,7 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx)
 
 
 
-layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsigned int display_loading)
+layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, bool altitude, unsigned int display_loading)
 {
     clock_t start_time = clock();
 
@@ -126,7 +129,8 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsign
 
     // Initialization
     layer* new_layer = calloc(1, sizeof(layer));
-    double* values = calloc(width * height, sizeof(double));
+    double* values = NULL;
+    if (altitude) values = calloc(width * height, sizeof(double));
 
     new_layer->width = width;
     new_layer->height = height;
@@ -137,21 +141,23 @@ layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsign
     new_layer->values = values;
 
     // Setting correct double values
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
+    if (altitude) {
+        for (int i = 0; i < height; i++)
         {
-            double* value = getLayerValue(new_layer, j, i);
-
-            *value = perlin((double) j/size_factor, (double) i/size_factor, gradient_grid);
-
-            if (display_loading != 0)
+            for (int j = 0; j < width; j++)
             {
-                int nb_indents = display_loading - 1;
+                double* value = getLayerValue(new_layer, j, i);
 
-                char base_str[100] = "Generating layer...                ";
+                *value = perlin((double) j/size_factor, (double) i/size_factor, gradient_grid);
 
-                predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                if (display_loading != 0)
+                {
+                    int nb_indents = display_loading - 1;
+
+                    char base_str[100] = "Generating layer...                ";
+
+                    predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+                }
             }
         }
     }
@@ -170,7 +176,7 @@ layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsign
     gradientGrid* gradient_grid = newRandomGradGrid(gradGrid_width, gradGrid_height, g_loading);
 
     // Generating layer from the new gradientGrid
-    return newLayerFromGradient(gradient_grid, size_factor, g_loading);
+    return newLayerFromGradient(gradient_grid, size_factor, true, g_loading);
 }
 
 
@@ -201,6 +207,83 @@ layer* copyLayer(layer * p_layer)
 }
 
 
+
+
+bytes bytesLayer(layer* layer, bool altitude) {
+    bytes bytes_grid = bytesGradientGrid(layer->gradient_grid);
+
+    bytes bytes_str;
+    bytes_str.bytes = malloc(2+INT_BITS_NBR/8+(altitude?(layer->height*layer->width):(0))*FLOAT_BITS_NBR/8+bytes_grid.size);
+    bytes_str.size = 2+INT_BITS_NBR/8+(altitude?(layer->height*layer->width):(0))*FLOAT_BITS_NBR/8+bytes_grid.size;
+    bytes_str.start = 0;
+
+    bytes_str.bytes[0] = LAYER_ENCODING;
+
+    bytes a = bytesInt(layer->size_factor);
+    concatBytes(bytes_str, a, 1);
+    freeBytes(a);
+    concatBytes(bytes_str, bytes_grid, 1+FLOAT_BITS_NBR/8);
+
+    if (altitude) {
+        bytes_str.bytes[1 + bytes_grid.size + INT_BITS_NBR/8] = BYTE_TRUE;
+        for (int i=0; i<layer->height; i++) {
+            for (int j=0; j<layer->width; j++) {
+                a = bytesDouble(*getLayerValue(layer,j,i));
+                concatBytes(bytes_str, a, 2 + INT_BITS_NBR/8 + bytes_grid.size + (i * layer->width + j) * FLOAT_BITS_NBR/8);
+                freeBytes(a);
+            }
+        }
+    }
+    else bytes_str.bytes[1 + bytes_grid.size + FLOAT_BITS_NBR/8] = BYTE_FALSE;
+    
+    freeBytes(bytes_grid);
+
+    return bytes_str;
+
+}
+
+tuple_obj_bytes nextLayer(bytes bytes, bool altitude) {
+    tuple_obj_bytes res;
+
+    if (bytes.bytes[bytes.start]==LAYER_ENCODING) {
+        bytes.start += 1;
+
+        tuple_obj_bytes a = nextInt(bytes);
+        int sf = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+
+        tuple_obj_bytes temp = nextGradientGrid(bytes);
+        gradientGrid* grid = ((gradientGrid*)temp.object);
+        bytes = temp.bytes;
+
+        layer * obj;
+
+        if (bytes.bytes[bytes.start]==BYTE_TRUE) {
+            bytes.start += 1;
+            obj = newLayerFromGradient(grid,sf,false,0);
+            if (altitude) obj->values = calloc(obj->width * obj->height, sizeof(double));
+            for (int i=0; i<obj->height; i++) {
+                for (int j=0; j<obj->width; j++) {
+                    a = nextDouble(bytes);
+                    if (altitude) *getLayerValue(obj,j,i) = *((double*)a.object);
+                    bytes = a.bytes;
+                    free(a.object);
+                }
+            }
+        }
+        else {
+            bytes.start += 1;
+            if (altitude) obj = newLayerFromGradient(grid,sf,true,0);
+            else obj = newLayerFromGradient(grid,sf,false,0);
+        }
+
+        res.object = (object) obj;
+        res.bytes = bytes;
+    }
+
+    return res;
+}
 
 
 
@@ -264,16 +347,20 @@ void printLayer(layer* layer)
     printf("-------------------------------------------\n");
     printf("Printing layer of size = (%d, %d)\n\n", height, width);
 
-    for (int i = 0; i < height; i++)
+    if (layer->values!=NULL) 
     {
-        for (int j = 0; j < width; j++)
+        for (int i = 0; i < height; i++)
         {
-            double* value = getLayerValue(layer, j, i);
+            for (int j = 0; j < width; j++)
+            {
+                double* value = getLayerValue(layer, j, i);
 
-            printf("%lf   ", *value);
+                printf("%lf   ", *value);
+            }
+            printf("\n");
         }
-        printf("\n");
     }
+    else printf("Null values\n");
 
     printf("-------------------------------------------\n");
 }

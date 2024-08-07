@@ -6,7 +6,7 @@ from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
 from gradientGrid import GradientGrid
-
+import interpreter as interp
 
 
 
@@ -22,6 +22,7 @@ class Layer:
     
     #? -------------------------- Static ------------------------- #
     
+    LAYER_ENCODING = b'\x02'
     
     ALT_PRINTING_DECIMALS = 4
     ALT_PRINTING_FORMAT = " {{: .{}f}} ".format(ALT_PRINTING_DECIMALS)
@@ -169,22 +170,91 @@ class Layer:
     
     
     @staticmethod
-    def write(path: str, layer: Layer) -> None:
-        #TODO
-        pass
+    def write(layer: Layer, altitude: bool=False, path: str=None, append: bool=False) -> bytes:
+        """Encodes a Layer object into a binary file or string.
+
+        Args:
+            layer (Layer): the layer object to encode
+            altitude (bool, optional): should the altitude be encoded. Defaults to False.
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
+        bytes_str : bytes = b''
+        bytes_str += Layer.LAYER_ENCODING
+        bytes_str += interp.bytesNumber(layer.size_factor)
+        bytes_str += GradientGrid.write(layer.grid)
+        if altitude: #altitude values (optional)
+            bytes_str += interp.BYTES_TRUE
+            for i in range(layer.height):
+                for j in range(layer.width):
+                    bytes_str += interp.bytesNumber(layer.altitude[i,j])
+        else: bytes_str += interp.BYTES_FALSE
+        if path!=None:
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
+            f.write(bytes_str)
+            f.close()
+        return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> Layer:
-        #TODO
-        return None
+    def read(path: str = None, bytes_in: bytes=None, altitude: bool=False) -> tuple[Layer, bytes]:
+        """Decodes a Layer object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+            altitude (bool, optional): should eventual altitude values be decoded or regenerated. Defaults to False.
+
+        Returns:
+            tuple[Layer, bytes]: the layer object and remaining bytes
+        """
+        bytes_str : bytes
+        if path!=None:
+            f=open(path,'rb')
+            bytes_str=f.read()
+            f.close()
+            if bytes_str[0:1]==Layer.LAYER_ENCODING: bytes_str=bytes_str[1:]
+            else: bytes_str=None
+        elif bytes_in!=None and bytes_in[0:1]==Layer.LAYER_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        layer : Layer
+        
+        if bytes_str!=None:
+            size_factor, bytes_str = interp.nextInt(bytes_str)
+            grid, bytes_str = GradientGrid.read(None,bytes_str)
+            if bytes_str[0:1]==interp.BYTES_TRUE: #altitude values encoded
+                bytes_str=bytes_str[1:]
+                layer = Layer(grid,size_factor,False)
+                if altitude: #decoding altitude values
+                    layer.altitude=np.zeros((layer.height,layer.width))
+                    for i in range(layer.height):
+                        for j in range(layer.width):
+                            layer.altitude[i,j], bytes_str = interp.nextFloat(bytes_str)
+                else: #getting rid of altitude values
+                    for i in range(layer.height):
+                        for j in range(layer.width):
+                            _, bytes_str = interp.nextFloat(bytes_str)
+            else: #altitude values not encoded, eventually regenerated
+                bytes_str=bytes_str[1:]
+                layer = Layer(grid,size_factor,altitude)
+                
+            
+        else: layer = None
+        
+        return layer, bytes_str
     
     
     #? ------------------------ Instances ------------------------ #
     
     
-    def __init__(self, grid: GradientGrid, size_factor: int) -> None:
+    def __init__(self, grid: GradientGrid, size_factor: int, regenerate: bool=True) -> None:
         """Initializes a new layer instance from an already existing GradientGrid and a size factor.
         If no gradient grid are already generated, please use the designated static method `generateLayerFromScratch` to generate the
         appropriate GradientGrid and then generate the layer structure.
@@ -193,6 +263,7 @@ class Layer:
             `grid` (GradientGrid): the gradient grid to build the layer from.
             `size_factor` (int): the size factor to be used to generate the layer. The layer dimensions will be
                                  `(gradient_grid_dimensions - 1) * size_factor`.
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         self.grid = None
@@ -212,7 +283,7 @@ class Layer:
         self.grid = grid
         self.size_factor = size_factor
         
-        self.regenerate()
+        self.regenerate(regenerate)
     
     
     
@@ -225,21 +296,28 @@ class Layer:
         """
         final_str = "-----------------------------------------\n"
         final_str += "Layer of dimensions {} x {} :\n".format(self.width, self.height)
-        for i in range(self.height):
+        
+        if type(self.altitude)==np.ndarray:
             
-            for j in range(self.width):
-                alt = self.altitude[i, j]
-                final_str += Layer.ALT_PRINTING_FORMAT.format(alt)
-            
-            final_str += "\n"
+            for i in range(self.height):
+                
+                for j in range(self.width):
+                    alt = self.altitude[i, j]
+                    final_str += Layer.ALT_PRINTING_FORMAT.format(alt)
+                
+                final_str += "\n"
+                
         final_str += "-----------------------------------------\n"
         
         return final_str
     
     
     
-    def regenerate(self) -> None:
+    def regenerate(self, regenerate: bool=True) -> None:
         """Regenerates the altitude values of the layer based on its `grid` and `size_factor` parameters.
+        
+        Args:
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         if not (type(self.grid) is GradientGrid and type(self.size_factor) is int and self.size_factor > 1):
@@ -249,12 +327,15 @@ class Layer:
         self.width = (self.grid.width - 1) * self.size_factor
         self.height = (self.grid.height - 1) * self.size_factor
         
-        self.altitude = np.zeros((self.height, self.width))
         
-        for i in range(self.height):
-            for j in range(self.width):
-                
-                self.altitude[i, j] = Layer.perlin(i/self.size_factor, j/self.size_factor, self.grid)
+        if regenerate:
+            self.altitude = np.zeros((self.height, self.width))
+            for i in range(self.height):
+                for j in range(self.width):
+                    
+                    self.altitude[i, j] = Layer.perlin(i/self.size_factor, j/self.size_factor, self.grid)
+        else:
+            self.altitude = None
 
 
 
@@ -278,6 +359,14 @@ if __name__ == "__main__":
     grid.regenerate()
     layer.regenerate()
     print(layer)
+    
+    print("\nTrying to encode and decode the layer :")
+    print("\tWithout altitude :")
+    print(Layer.write(layer))
+    print(Layer.read(None, Layer.write(layer))[0])
+    print("\n\tWith altitude :")
+    print(Layer.write(layer,True))
+    print(Layer.read(None, Layer.write(layer,True), True)[0])
     
     
     

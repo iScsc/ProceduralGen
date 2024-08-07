@@ -11,6 +11,7 @@
 #define MAP
 
 #include "chunk.h"
+#include "interpreter.h"
 
 // ----- Structure definition -----
 
@@ -31,7 +32,7 @@ struct map
 
     int chunk_width; /**< the width of each chunk*/
     int chunk_height; /**< the height of each chunk*/
-    double* map_values; /**< the array of altitude values. Its size is `map_width * chunk_width` x `map_height * chunk_height`*/
+    // double* map_values; /**< the array of altitude values. Its size is `map_width * chunk_width` x `map_height * chunk_height`*/
 };
 
 typedef struct map map;
@@ -39,12 +40,13 @@ typedef struct map map;
 // ----- Functions -----
 
 /**
- * @brief Get the pointer to the altitude value at given width and height indexes in the given map structure
+ * @brief Get the pointer to the altitude value at given width and height indexes in the given map structure.
+ * This points to the altitude value in the correct chunk.
  * 
  * @param map (map*) : the pointer to the map structure.
  * @param width_idx (int) : the width index of the wanted value.
  * @param height_idx (int) : the height index of the wanted value.
- * @return double* : the pointer to the map altitude value.
+ * @return double* : the pointer to the map altitude value in the correct chunk structure.
  */
 double* getMapValue(map* map, int width_idx, int height_idx);
 
@@ -73,6 +75,17 @@ chunk* getVirtualChunk(map* map, int width_idx, int height_idx);
 
 
 /**
+ * @brief Get the full map altitude values built from concatenation of each chunk altitude value.
+ * 
+ * @param map (map*) : the pointer to the map to get the full map altitude from.
+ * @return double* : the pointer to the full altitude array. It is of size 
+ * `map.map_width * map.chunk_width * map.map_height * map.chunk_height`.
+ */
+double* getFullMap(map* map);
+
+
+
+/**
  * @brief Interpolates the given values in 2d in order to get a smooth 2d interpolation.
  * 
  * @param a1 (double) : the first altitude value, located in `(0, 0)`.
@@ -86,7 +99,7 @@ chunk* getVirtualChunk(map* map, int width_idx, int height_idx);
 double interpolate2D(double a1, double a2, double a3, double a4, double x, double y);
 
 /**
- * @brief Modifies the given map to process each chunk's base altitude and adapt the final altitude values of the given map.
+ * @brief Modifies the chunks of the given map to process each chunk's base altitude and adapt the final altitude values of each chunk.
  * 
  * @param p_map (map*) : the pointer to the original untreated map.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
@@ -105,6 +118,7 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading);
  * @param map_height (int) : number of chunks in height.
  * @param chunks (chunk**) : array of size `map_width * map_height` of pointers to the chunk structures.
  * @param virtual_chunks (chunk**) : array of size `(map_height+2 + map_width+2)*2 - 4` of pointers to the virtual chunk structures.
+ * @param regenerate (bool) : should altitude values be initialised and regenerated (adds base altitude to its chunks' altitude values).
  * @param display_loading (unsigned int) : the given value defines the behaviour.
  *                                         * If `0` the loading bars won't be printed.
  *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.
@@ -112,7 +126,7 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading);
  * 
  * @note The chunks array does not need to be dynamically allocated and its content will be copied in the structure.
  */
-map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], unsigned int display_loading);
+map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], bool regenerate, unsigned int display_loading);
 
 /**
  * @brief Creates a new map from scratch with the given parameters.
@@ -147,6 +161,24 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
  * @return map* : the pointer to the deep copy of the initial map.
  */
 map* copyMap(map* p_map) ;
+
+
+
+/**
+ * @brief Encodes a map struct in a binary format.
+ * 
+ * @param map (map*) : a pointer to the map struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
+bytes bytesMap(map* map);
+
+/**
+ * @brief Decodes a map struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @return tuple_obj_bytes : the decoded map and the byte string (with the start index updated).
+ */
+tuple_obj_bytes nextMap(bytes bytes);
 
 
 

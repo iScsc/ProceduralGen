@@ -10,6 +10,7 @@ import copy
 from gradientGrid import GradientGrid
 from layer import Layer
 from chunk import Chunk
+import interpreter as interp
 
 
 class Map:
@@ -17,11 +18,15 @@ class Map:
     Map :
     -------------
     The Map class used to generate large terrain by gathering chunks.
+    
+    Note :
+        A Map structure does not contain the complete map array. Use method `getFullMap()` on a map structure to get it.
     """
     
     
     #? -------------------------- Static ------------------------- #
     
+    MAP_ENCODING = b'\x04'
     
     ALT_PRINTING_DECIMALS = 4
     ALT_PRINTING_FORMAT = " {{: .{}f}} ".format(ALT_PRINTING_DECIMALS)
@@ -109,16 +114,79 @@ class Map:
     
     
     @staticmethod
-    def write(path: str, map: Map) -> None:
-        #TODO
-        pass
+    def write(map: Map, path: str=None, append: bool=False) -> bytes:
+        """Encodes a Map object into a binary file or string.
+
+        Args:
+            map (Map): the map object to encode
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
+        bytes_str : bytes = b''
+        bytes_str += Map.MAP_ENCODING
+        bytes_str += interp.bytesNumber(map.map_height)
+        bytes_str += interp.bytesNumber(map.map_width)
+        for i in range(map.map_height): #proper chunks
+            for j in range(map.map_width):
+                bytes_str += Chunk.write(map.chunks[i][j])
+        n = 2 * (map.map_width+2) + 2 * map.map_height #nbr of virtual chunks
+        for i in range(n): #virtual chunks
+            bytes_str += Chunk.write(map.virtual_chunks[i],True)
+        if path!=None:
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
+            f.write(bytes_str)
+            f.close()
+        return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> Map:
-        #TODO
-        return None
+    def read(path: str, bytes_in : bytes=None) -> tuple[Map, bytes]:
+        """Decodes a Map object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+
+        Returns:
+            tuple[Map, bytes]: the map object and remaining bytes
+        """
+        bytes_str : bytes
+        if path!=None:
+            f=open(path,'rb')
+            bytes_str=f.read()
+            f.close()
+            if bytes_str[0:1]==Map.MAP_ENCODING: bytes_str=bytes_str[1:]
+            else: bytes_str=None
+        elif bytes_in!=None and bytes_in[0:1]==Map.MAP_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        map : Map
+        
+        if bytes_str!=None:
+            height, bytes_str = interp.nextInt(bytes_str)
+            width, bytes_str = interp.nextInt(bytes_str)
+            chunks: list[list[Chunk]] = []
+            virtual_chunks: list[Chunk] = []
+            for i in range(height):
+                chunks.append([])
+                for _ in range(width):
+                    x, bytes_str = Chunk.read(None, bytes_str)
+                    chunks[i].append(x)
+            n = 2 * (width+2) + 2 * height #nbr of virtual chunks
+            for _ in range(n):
+                x, bytes_str = Chunk.read(None, bytes_str)
+                virtual_chunks.append(x)
+            map = Map(width,height,chunks,virtual_chunks,False)
+
+        else: map = None
+        
+        return map, bytes_str
     
     
     
@@ -156,7 +224,7 @@ class Map:
     
     
     
-    def __init__(self, map_width: int, map_height: int, chunks: list[list[Chunk]], virtual_chunks: list[Chunk]) -> None:
+    def __init__(self, map_width: int, map_height: int, chunks: list[list[Chunk]], virtual_chunks: list[Chunk], regenerate: bool = True) -> None:
         """Initializes a new Map structure from the given list of already existing chunks and virtual chunks.
         If chunks should be generated in the process, please use one of the designated static methods.
 
@@ -166,6 +234,7 @@ class Map:
             `chunks` (list[list[Chunk]]): two-dimension matrix-like structure of chunks. First dimension is height, second is width.
             `virtual_chunks` (list[Chunk]): list of virtual chunks to generate the map altitudes. Virtual chunks should be stored in the following order :
                                             `Column0, ColumnN, Row0, RowN` without any repetition of the corners.
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         
@@ -175,7 +244,7 @@ class Map:
         self.chunk_width = 0
         self.chunk_height = 0
         
-        self.altitude = None
+        # self.altitude = None
         self.chunks = None
         self.virtual_chunks = None
         
@@ -196,7 +265,7 @@ class Map:
         self.chunks = copy.deepcopy(chunks) #? To keep both dimensions copied. Or use an np.ndarray ?
         self.virtual_chunks = virtual_chunks.copy()
         
-        self.regenerate()
+        self.regenerate(regenerate)
     
     
     
@@ -210,22 +279,17 @@ class Map:
         final_str = "-----------------------------------------\n"
         final_str += "Map of {} x {} chunks of dimension {} x {}\n"\
             .format(self.map_width, self.map_height, self.chunk_width, self.chunk_height)
-        # final_str += "\nAltitude values :\n"
-        # for i in range(self.height):
-            
-        #     for j in range(self.width):
-        #         alt = self.altitude[i, j]
-        #         final_str += Layer.ALT_PRINTING_FORMAT.format(alt)
-            
-        #     final_str += "\n"
         final_str += "-----------------------------------------\n"
         
         return final_str
     
     
     
-    def regenerate(self) -> None:
+    def regenerate(self, regenerate: bool = True) -> None:
         """Regenerates the altitude values of the map based on its chunks.
+        
+        Args:
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         #* -------------- Verifications : Begin --------------
@@ -234,20 +298,20 @@ class Map:
         
         #* -------------- Verifications : End   --------------
         
-        width = self.map_width * self.chunk_width
-        height = self.map_height * self.chunk_height
+        # width = self.map_width * self.chunk_width
+        # height = self.map_height * self.chunk_height
         
-        self.altitude = np.zeros((height, width))
+        # self.altitude = np.zeros((height, width))
         
-        # First copies altitudes from chunks
-        for i in range(height):
-            for j in range(width):
+        # # First copies altitudes from chunks
+        # for i in range(height):
+        #     for j in range(width):
                 
-                current_chunk = self.chunks[i//self.chunk_height][j//self.chunk_width]
-                self.altitude[i][j] = current_chunk.altitude[i%self.chunk_height][j%self.chunk_width]
+        #         current_chunk = self.chunks[i//self.chunk_height][j//self.chunk_width]
+        #         self.altitude[i][j] = current_chunk.altitude[i%self.chunk_height][j%self.chunk_width]
         
-        
-        self.applyMeanAltitude()
+        if regenerate:
+            self.applyMeanAltitude()
     
     
     
@@ -296,10 +360,36 @@ class Map:
                             
                             alt_i = pi + math.floor((i-0.5)*chunk_height)
                             alt_j = pj + math.floor((j-0.5)*chunk_width)
+                            
                             if alt_i < 0 or alt_j < 0:
                                 print("Warning alt i and j are : ", alt_i, alt_j)
                             
-                            self.altitude[alt_i][alt_j] += alt
+                            current_chunk = self.chunks[alt_i//chunk_height][alt_j//chunk_width]
+                            
+                            
+                            current_chunk.altitude[alt_i%chunk_height][alt_j%chunk_width] += alt
+    
+    
+    
+    def getFullMap(self) -> np.ndarray:
+        """Get the full map altitude from the contained chunks.
+
+        Returns:
+            `np.ndarray`: the complete altitude array from the map.
+        """
+        
+        width = self.map_width * self.chunk_width
+        height = self.map_height * self.chunk_height
+        
+        altitude = np.zeros((height, width))
+        
+        for i in range(height):
+            for j in range(width):
+                
+                current_chunk = self.chunks[i//self.chunk_height][j//self.chunk_width]
+                altitude[i][j] = current_chunk.altitude[i%self.chunk_height][j%self.chunk_width]
+        
+        return altitude
 
 
 
@@ -350,4 +440,8 @@ if __name__ == "__main__":
     map = Map.generateMapFromScratch(grid_dim, grid_dim, size_factors, layer_factors, map_dimensions[0], map_dimensions[1])
     
     print(map)
+    
+    print("\nTesting map encoding: ")
+    print(Map.write(map))
+    print(Map.read(None,Map.write(map))[0])
     

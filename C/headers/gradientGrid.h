@@ -10,6 +10,8 @@
 #ifndef GRADIENT_GRID
 #define GRADIENT_GRID
 
+#include "interpreter.h"
+
 // ----- Structure definition -----
 
 /**
@@ -143,6 +145,23 @@ void writeGradientGridFile(gradientGrid* gradGrid, char path[]);
  */
 gradientGrid* readGradientGridFile(char path[]);
 
+
+
+/**
+ * @brief Encodes a gradient grid struct in a binary format.
+ * 
+ * @param gradGrid (gradientGrid*) : a pointer to the gradient grid struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
+bytes bytesGradientGrid(gradientGrid* grid);
+
+/**
+ * @brief Decodes a gradient grid struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @return tuple_obj_bytes : the decoded gradient grid and the byte string (with the start index updated).
+ */
+tuple_obj_bytes nextGradientGrid(bytes bytes);
 
 
 /**

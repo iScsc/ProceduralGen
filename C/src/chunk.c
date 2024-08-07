@@ -2,8 +2,8 @@
  * @file chunk.c
  * @author Zyno and BlueNZ
  * @brief chunk structure and functions implementation
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-27
  * 
  */
 
@@ -86,6 +86,13 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
 
 
 
+double generateBaseAltitude()
+{
+    return -0.5+2*rand()*1./RAND_MAX;
+}
+
+
+
 void regenerateChunk(chunk* chunk, unsigned int display_loading)
 {
     clock_t start_time = clock();
@@ -137,7 +144,16 @@ void regenerateChunk(chunk* chunk, unsigned int display_loading)
             *value /= divisor;
         }
     }
-    chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
+
+    chunk->base_altitude=generateBaseAltitude();
+
+    // Frees layer altitude arrays
+
+    for (int k = 0; k < nblayers; k++)
+    {
+        free(layers[k]->values);
+        layers[k]->values = NULL;
+    }
 }
 
 
@@ -181,7 +197,7 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
         }
 
         // Size_factors should match gradient_grids dimensions - 1
-        layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], g_loading);
+        layers[i] = newLayerFromGradient(gradient_grids[i], size_factors[i], true, g_loading);
 
 
         if (display_loading != 0)
@@ -256,32 +272,25 @@ chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int
 
 
 
-//TODO ? signature could be changed to avoid passing useless parameters -> `chunk_width` and `chunk_height` instead of `gradGrids_width`, `gradGrids_height` and `size_factors`
-chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], double layers_factors[number_of_layers])
+chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenerate)
 {
     chunk* new_chunk = calloc(1, sizeof(chunk));
 
-    new_chunk->number_of_layers = number_of_layers;
+    new_chunk->number_of_layers = 0;
 
     // size_factors should match gradient_grids dimensions - 1
-    int width = (gradGrids_width[0] - 1) * size_factors[0];
-    int height = (gradGrids_height[0] - 1) * size_factors[0];
+    int width = chunk_width;
+    int height = chunk_height;
     new_chunk->width = width;
     new_chunk->height = height;
 
-    // copy layer factors to ensure dynamic allocation
-    double* factors = calloc(number_of_layers, sizeof(double));
-    for (int i = 0; i < number_of_layers; i++)
-    {
-        factors[i] = layers_factors[i];
-    }
-    new_chunk->layers_factors = factors;
+    new_chunk->layers_factors = NULL;
 
     new_chunk->chunk_values = NULL;
 
     new_chunk->layers = NULL;
 
-    new_chunk->base_altitude=-0.5+2*rand()*1./RAND_MAX;
+    if (regenerate) new_chunk->base_altitude=generateBaseAltitude();
 
     return new_chunk;
 }
@@ -474,6 +483,163 @@ chunk* copyChunk(chunk* p_chunk)
 
 
 
+bytes bytesChunk(chunk* chk) {
+    bytes bytes_str;
+
+    if (chk->chunk_values==NULL) { //virtual chunk
+        bytes_str.bytes = malloc(2 + 2*INT_BITS_NBR/8 + FLOAT_BITS_NBR/8);
+        bytes_str.size = 2 + 2*INT_BITS_NBR/8 + FLOAT_BITS_NBR/8;
+        bytes_str.start = 0;
+
+        bytes_str.bytes[0] = CHUNK_ENCODING;
+
+        bytes a = bytesDouble(chk->base_altitude);
+        concatBytes(bytes_str, a, 1);
+        freeBytes(a);
+        a = bytesInt(chk->width);
+        concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8);
+        freeBytes(a);
+        a = bytesInt(chk->height);
+        concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8+INT_BITS_NBR/8);
+        freeBytes(a);
+
+        bytes_str.bytes[1+FLOAT_BITS_NBR/8+2*INT_BITS_NBR/8] = BYTE_TRUE;
+    }
+    else {
+        bytes* bytes_layers[chk->number_of_layers];
+        int layer_size=0;
+        for (int i=0; i<chk->number_of_layers; i++) {
+            bytes bytes_lay = (bytesLayer(chk->layers[i],false));
+            bytes_layers[i] = malloc(sizeof(bytes_lay));
+            *bytes_layers[i] = bytes_lay;
+            layer_size += bytes_lay.size;
+        }
+
+        bytes_str.bytes = malloc(2 + 3*INT_BITS_NBR/8 + (chk->height*chk->width+1+chk->number_of_layers)*FLOAT_BITS_NBR/8 + layer_size);
+        bytes_str.size = 2 + 3*INT_BITS_NBR/8 + (chk->height*chk->width+1+chk->number_of_layers)*FLOAT_BITS_NBR/8 + layer_size;
+        bytes_str.start = 0;
+
+        bytes_str.bytes[0] = CHUNK_ENCODING;
+
+        bytes a = bytesDouble(chk->base_altitude);
+        concatBytes(bytes_str, a, 1);
+        freeBytes(a);
+        a = bytesInt(chk->height);
+        concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8);
+        freeBytes(a);
+        a = bytesInt(chk->width);
+        concatBytes(bytes_str, a, 1+FLOAT_BITS_NBR/8+INT_BITS_NBR/8);
+        freeBytes(a);
+
+        bytes_str.bytes[1+FLOAT_BITS_NBR/8+2*INT_BITS_NBR/8] = BYTE_FALSE;
+
+        a = bytesInt(chk->number_of_layers);
+        concatBytes(bytes_str, a, 2+FLOAT_BITS_NBR/8+2*INT_BITS_NBR/8);
+        freeBytes(a);
+
+        for (int i=0; i<chk->number_of_layers; i++) {
+            a = bytesDouble(chk->layers_factors[i]);
+            concatBytes(bytes_str, a, 2+(i+1)*(FLOAT_BITS_NBR/8)+3*(INT_BITS_NBR/8));
+            freeBytes(a);
+        }
+
+        layer_size=0;
+        for (int i=0; i<chk->number_of_layers; i++) {
+            concatBytes(bytes_str, *(bytes_layers[i]), 2+(chk->number_of_layers+1)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8+layer_size);
+            layer_size += (bytes_layers[i])->size;
+            freeBytes(*(bytes_layers[i]));
+            free(bytes_layers[i]);
+        }
+
+        for (int i=0; i<chk->height; i++) {
+            for (int j=0; j<chk->width; j++) {
+                a = bytesDouble(*getChunkValue(chk,j,i));
+                concatBytes(bytes_str, a, 2+(chk->number_of_layers+1+i*chk->width+j)*FLOAT_BITS_NBR/8+3*INT_BITS_NBR/8+layer_size);
+                freeBytes(a);
+            }
+        }
+    }
+
+    return bytes_str;
+
+}
+
+tuple_obj_bytes nextChunk(bytes bytes) {
+    tuple_obj_bytes res;
+
+    if (bytes.bytes[bytes.start]==CHUNK_ENCODING) {
+        bytes.start += 1;
+
+        tuple_obj_bytes a = nextDouble(bytes);
+        double base_altitude = *((double*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
+        int h = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
+        int w = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+
+        chunk* obj;
+
+        if (bytes.bytes[bytes.start]==BYTE_TRUE) {
+            bytes.start+=1;
+            obj = newVirtualChunk(w,h,false);
+            obj->base_altitude=base_altitude;
+        }
+        else {
+            bytes.start+=1;
+            obj = newVirtualChunk(w,h,false);
+            obj->base_altitude=base_altitude;
+
+            a = nextInt(bytes);
+            int nbr = *((int*)a.object);
+            bytes = a.bytes;
+            free(a.object);
+            obj->number_of_layers = nbr;
+
+            double* layer_factors = calloc(nbr, sizeof(double));
+            for (int i=0; i<nbr; i++) {
+                a = nextDouble(bytes);
+                layer_factors[i]=*((double*)a.object);
+                bytes = a.bytes;
+                free(a.object);
+            }
+            obj->layers_factors = layer_factors;
+
+            layer** layers = calloc(nbr, sizeof(layer*));
+            for (int i=0; i<nbr; i++) {
+                a = nextLayer(bytes,false);
+                layers[i]=((layer*)a.object);
+                bytes = a.bytes;
+            }
+            obj->layers = layers;
+
+            double* chunk_values = calloc(w * h, sizeof(double));
+            obj->chunk_values = chunk_values;
+            for (int i=0; i<h; i++) {
+                for (int j=0; j<w; j++) {
+                    a = nextDouble(bytes);
+                    *getChunkValue(obj,j,i)=*((double*)a.object);
+                    bytes = a.bytes;
+                    free(a.object);
+                }
+            }
+
+        }
+
+        res.object = (object) obj;
+        res.bytes = bytes;
+    }
+
+    return res;
+}
+
+
+
 void writeChunkFile(chunk* chunk, char path[])
 {
     FILE* f = NULL;
@@ -542,31 +708,35 @@ void printChunk(chunk* chunk)
     printf("-------------------------------------------\n");
     printf("Printing chunk of size = (%d, %d)\n", height, width);
 
-    printf("It has %d layers with factors : {", nb_layer);
+    if (nb_layer>0) {
 
-    for (int k = 0; k < nb_layer; k++)
-    {
-        if (k < nb_layer - 1)
-        {
-            printf("%lf, ", factors[k]);
-        }
-        else
-        {
-            printf("%lf}\n", factors[k]);
-        }
-    }
-    printf("\n");
+        printf("It has %d layers with factors : {", nb_layer);
 
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
+        for (int k = 0; k < nb_layer; k++)
         {
-            double* value = getChunkValue(chunk, j, i);
-
-            printf("%lf   ", *value);
+            if (k < nb_layer - 1)
+            {
+                printf("%lf, ", factors[k]);
+            }
+            else
+            {
+                printf("%lf}\n", factors[k]);
+            }
         }
         printf("\n");
+
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                double* value = getChunkValue(chunk, j, i);
+
+                printf("%lf   ", *value);
+            }
+            printf("\n");
+        }
     }
+    else printf("virtual chunk\n");
 
     printf("-------------------------------------------\n");
 }

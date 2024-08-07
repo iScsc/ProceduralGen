@@ -10,7 +10,10 @@
 #ifndef LAYER
 #define LAYER
 
+#include <stdbool.h>
+
 #include "gradientGrid.h"
+#include "interpreter.h"
 
 // ----- Structure definition -----
 
@@ -95,6 +98,7 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx);
  * 
  * @param gradient_grid (gradientGrid*) : the pointer to the gradientGrid structure to build the layer from.
  * @param size_factor (int) : the size_factor to rescale the layer's dimensions.
+ * @param altitude (bool) : should altitude values be initialised and generated.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
  *                                         * If `0` the loading bars won't be printed.
  *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.
@@ -103,7 +107,7 @@ double* getLayerValue(layer* layer, int width_idx, int height_idx);
  * 
  * @note Please be aware that the layer's dimensions are `(gradGrid_dimensions - 1) * size_factor`
  */
-layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, unsigned int display_loading);
+layer* newLayerFromGradient(gradientGrid* gradient_grid, int size_factor, bool altitude, unsigned int display_loading);
 
 /**
  * @brief Generates a new layer structure from scratch with the given parameters.
@@ -129,6 +133,26 @@ layer* newLayer(int gradGrid_width, int gradGrid_height, int size_factor, unsign
  * @return layer* : the pointer to the deep copy of the initial layer.
  */
 layer* copyLayer(layer * p_layer);
+
+
+
+/**
+ * @brief Encodes a layer struct in a binary format.
+ * 
+ * @param layer (layer*) : a pointer to the layer struct.
+ * @param altitude (bool) : should altitude values be encoded.
+ * @return bytes : the byte string representing the encoded struct.
+ */
+bytes bytesLayer(layer* layer, bool altitude);
+
+/**
+ * @brief Decodes a layer struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @param altitude (bool) : should altitude values be initialised and decoded (or regenerated) or not.
+ * @return tuple_obj_bytes : the decoded layer and the byte string (with the start index updated).
+ */
+tuple_obj_bytes nextLayer(bytes bytes, bool altitude);
 
 
 

@@ -50,10 +50,10 @@ int main()
                                                     layer_height1, layer_width1,
                                                     layer_height2, layer_width2);
 
-    layer* layer1 = newLayerFromGradient(gradGrid1, sizeFactor1, display_loading);
+    layer* layer1 = newLayerFromGradient(gradGrid1, sizeFactor1, true, display_loading);
     // printLayer(layer1);
     
-    layer* layer2 = newLayerFromGradient(gradGrid2, sizeFactor2, display_loading);
+    layer* layer2 = newLayerFromGradient(gradGrid2, sizeFactor2, true, display_loading);
     // printLayer(layer2);
 
 
