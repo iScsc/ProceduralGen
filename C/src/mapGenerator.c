@@ -729,7 +729,7 @@ void writeCompleteMapFiles(completeMap* complete_map, char folder_path[])
     // Generates a directory if it does not exist
     if (stat(folder_path, &st) == -1)
     {
-        // Should check what 0700 permissions are exactly, but that's how it works to create a directory.
+        // 0700 is rwx permission for owner only.
         mkdir(folder_path, 0700);
     }
 

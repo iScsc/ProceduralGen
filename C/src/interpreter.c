@@ -9,6 +9,7 @@
 
 #include <bits/types.h>
 #include <malloc.h>
+#include <sys/stat.h>
 
 #include "map.h"
 #include "interpreter.h"
@@ -198,4 +199,31 @@ tuple_obj_bytes nextDouble(bytes bytes) {
     res.bytes.start += FLOAT_BITS_NBR/8;
 
     return res;
+}
+
+
+void writeBytesFile(bytes bytes, char* path, char* name) {
+    struct stat st = {0};
+
+    // Generates a directory if it does not exist
+    if (stat(path, &st) == -1)
+    {
+        // 0700 is rwx permission for owner only
+        mkdir(path, 0700);
+    }
+
+    // Generates the sea map file
+    char file_path[200] = "";
+    snprintf(file_path, sizeof(file_path), "%s/%s", path, name);
+
+    // Creates and opens the file (overrides already existing content)
+    FILE* f = NULL;
+    f = fopen(path, "w");
+
+    if (f != NULL)
+    {
+        // Writes bytes (unsigned char) in the file 
+        fprintf(f, bytes.bytes);
+        fclose(f);
+    }
 }
