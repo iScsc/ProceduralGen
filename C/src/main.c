@@ -1,9 +1,9 @@
 /**
  * @file main.c
- * @author Zyno
- * @brief main code to generate a new complete map
- * @version 0.1
- * @date 2024-07-04
+ * @author Zyno and BlueNZ
+ * @brief main code to generate and save a new complete map
+ * @version 0.2
+ * @date 2024-08-07
  * 
  */
 
