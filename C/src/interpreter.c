@@ -216,14 +216,14 @@ void writeBytesFile(bytes bytes, char* path, char* name) {
     char file_path[200] = "";
     snprintf(file_path, sizeof(file_path), "%s/%s", path, name);
 
-    // Creates and opens the file (overrides already existing content)
+    // Creates and/or opens the binary file (overrides already existing content)
     FILE* f = NULL;
-    f = fopen(path, "w");
+    f = fopen(file_path, "wb");
 
     if (f != NULL)
     {
         // Writes bytes (unsigned char) in the file 
-        fprintf(f, bytes.bytes);
+        fwrite(bytes.bytes, bytes.size, 1, f);
         fclose(f);
     }
 }

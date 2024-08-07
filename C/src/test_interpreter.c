@@ -137,6 +137,11 @@ int main() {
 
 
 
+    printf("\n\n\tTesting file writing...\n");
+    writeBytesFile(cmapb, "../saves","test.data");
+
+
+
     printf("\n\nDeallocating...\n");
     free(od);
     free(oa);
