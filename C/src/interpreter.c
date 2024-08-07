@@ -227,3 +227,28 @@ void writeBytesFile(bytes bytes, char* path, char* name) {
         fclose(f);
     }
 }
+
+bytes readBytesFile(char* path) {
+    // Opens file
+    FILE* f = NULL;
+    f = fopen(path, "rb");
+    bytes b;
+
+    if (f != NULL)
+    {
+        // Get file size
+        fseek(f, 0, SEEK_END); // seek to end of file
+        long size = ftell(f); // get current file pointer
+        fseek(f, 0, SEEK_SET); // seek back to beginning of file
+
+        // Read bytes (unsigned char) in the file 
+        b.size = size;
+        b.start = 0;
+        b.bytes = malloc(size*sizeof(byte));
+        fread(b.bytes, b.size, 1, f);
+
+        fclose(f);
+    }
+
+    return b;
+}

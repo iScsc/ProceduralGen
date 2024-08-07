@@ -162,6 +162,14 @@ tuple_obj_bytes nextDouble(bytes bytes);
  */
 void writeBytesFile(bytes bytes, char* path, char* name);
 
+/**
+ * @brief Read bytes from a specified file
+ * 
+ * @param path (char*) : the file path.
+ * @return (bytes) : read bytes
+ */
+bytes readBytesFile(char* path);
+
 
 
 
