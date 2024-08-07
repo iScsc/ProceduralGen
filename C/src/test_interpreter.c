@@ -185,6 +185,7 @@ int main() {
     freeCompleteMap(cmap);
     freeBytes(cmapb);
     freeCompleteMap(cmapd);
+    freeBytes(cmapbr);
 
     return 0;
 }

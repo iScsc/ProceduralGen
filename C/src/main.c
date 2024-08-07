@@ -439,20 +439,89 @@ int main(int argc, char* argv[argc])
     printf("The whole map generation took a total of %lf second(s) in CPU time\n", total_time);
 
 
-    // TODO : Ask for a path to save the map
+    // TODO : Ask for a path to save the map// Whether to display loading bars or not
+
+    int save_map = -1; // boolean
+
+    // Reset tracking parameters
+    temp = -1;
+    nb_associated = 0;
+    snprintf(line, sizeof(line), "");
+
+    while ( temp != 0 && temp != 1 )
+    {
+        printf("Do you want to save the generated map ? (1 for Yes, 0 for No)   ->   ");
+        
+        fgets(line, INPUT_MAX_SIZE, stdin);
+
+        nb_associated = sscanf(line, " %d", &temp);
+        if (nb_associated == 0)
+        {
+            printf("%s/!\\ Input Error : could not convert line '%s' as an integer value. /!\\%s\n", RED_COLOR, line, DEFAULT_COLOR);
+        }
+        else if (temp != 0 && temp != 1)
+        {
+            printf("%s/!\\ Value Error : please enter 0 to hide loading bars or 1 to show them. /!\\%s\n", RED_COLOR, DEFAULT_COLOR);
+        }
+    }
+
+    save_map = temp;
 
 
-    //? Comment this if you don't want to save it in a file.
-    //! WARNING : ../saves/ the folder must exist for it to work properly
-    printf("File creation...\n");
-    start_time = clock();
+    if (save_map==1) {
+        printf("Save file creation : \n");
+        start_time = clock();
+        
+        // Get folder name
+        temp = -1;
+        nb_associated = 0;
+        snprintf(line, sizeof(line), "");
 
-    char folder_path[200] = "../saves/completeMap_test/";
+        char folder_path[100] = "../saves";
 
-    writeCompleteMapFiles(new_complete_map, folder_path);
+        printf("Folder name (defaults to %s)   ->   ", folder_path);
+        fgets(line, INPUT_MAX_SIZE, stdin);
+        nb_associated = sscanf(line, " %s", &folder_path);
+        if (nb_associated == 0)
+        {
+            printf("%s/!\\ Input Error : could not convert line '%s' as a path name. /!\\%s\n", RED_COLOR, line, DEFAULT_COLOR);
+        }
+        
+        // Get file name
+        temp = -1;
+        nb_associated = 0;
+        snprintf(line, sizeof(line), "");
 
-    total_time = (double) (clock() - start_time) / CLOCKS_PER_SEC;
-    printf("The map saving took a total of %lf second(s) in CPU time\n", total_time);
+        char name[100] = "save.data";
+
+        printf("File name (defaults to %s)   ->   ", name);
+        fgets(line, INPUT_MAX_SIZE, stdin);
+
+        nb_associated = sscanf(line, " %s", &name);
+        if (nb_associated == 0)
+        {
+            printf("%s/!\\ Input Error : could not convert line '%s' as a file name. /!\\%s\n", RED_COLOR, line, DEFAULT_COLOR);
+        }
+
+        // Get bytes
+        bytes b;
+        bytes cb = bytesCompleteMap(new_complete_map);
+        b.size = cb.size +1;
+        b.start = 0;
+        b.bytes = malloc(b.size * sizeof(byte));
+        b.bytes[0] = BYTES_VERSION;
+        concatBytes(b,cb,1);
+
+        // Write binary file
+        writeBytesFile(b,folder_path,name);
+
+        // Deallocating
+        freeBytes(b);
+        freeBytes(cb);
+
+        total_time = (double) (clock() - start_time) / CLOCKS_PER_SEC;
+        printf("The map saving took a total of %lf second(s) in CPU time\n", total_time);
+    }
 
 
 
