@@ -441,7 +441,7 @@ int main(int argc, char* argv[argc])
     printf("The whole map generation took a total of %lf second(s) in CPU time\n", total_time);
 
 
-    // TODO : Ask for a path to save the map// Whether to display loading bars or not
+    // Whether to save the file or not
 
     int save_map = -1; // boolean
 
