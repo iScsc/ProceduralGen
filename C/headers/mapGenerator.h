@@ -2,8 +2,8 @@
  * @file mapGenerator.h
  * @author Zyno and BlueNZ
  * @brief Header to mapGenerator structure and functions
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-31
  * 
  */
 
@@ -11,6 +11,7 @@
 #define MAP_GENERATOR
 
 #include "map.h"
+#include "interpreter.h"
 
 // ----- Structure definition -----
 
@@ -20,13 +21,9 @@
  */
 struct color
 {
-    int red_int; /**< the red int value in [0, 255]*/
-    int green_int; /**< the green int value in [0, 255]*/
-    int blue_int; /**< the blue int value in [0, 255]*/
-
-    float red_float; /**< the red float value in [0, 1]*/
-    float green_float; /**< the green float value in [0, 1]*/
-    float blue_float; /**< the blue float value in [0, 1]*/
+    __uint8_t red;      /**< the red integer value in [0, 255]  */
+    __uint8_t green;    /**< the green integer value in [0, 255]*/
+    __uint8_t blue;     /**< the blue integer value in [0, 255] */
 };
 
 typedef struct color color;
@@ -234,6 +231,34 @@ void printCompleteMap(completeMap* completeMap);
 
 
 /**
+ * @brief Encodes a color struct in a binary format.
+ * 
+ * @param c (color) : a color struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
+bytes bytesColor(color c);
+
+tuple_obj_bytes nextColor(bytes bytes);
+
+/**
+ * @brief Encodes a compltet map struct in a binary format.
+ * 
+ * @param cmap (completeMap*) : a pointer to the complete map struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
+bytes bytesCompleteMap(completeMap* cmap);
+
+/**
+ * @brief Decodes a complete map struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @return tuple_obj_bytes : the decoded complete map and the byte string (with the start index updated).
+ */
+tuple_obj_bytes nextCompleteMap(bytes bytes);
+
+
+
+/**
  * @brief Writes the sea_map in a file at the given path.
  * 
  * @param completeMap (completeMap*) : the pointer to the completeMap structure containing the sea map to be written.
@@ -242,14 +267,14 @@ void printCompleteMap(completeMap* completeMap);
 void writeSeaMapFile(completeMap* completeMap, char path[]);
 
 /**
- * @brief TODO : Writes both color_map structures in two different files.
+ * @brief Writes the color_map in a file at the given path.
  * 
  * @param width (int) : the width of the color map
  * @param height (int) : the height of the color map.
  * @param color_map (color**) : the array of pointers to the color structures representing the color map.
  * @param path (char[]) : the path where the file shall be written.
  */
-void writeColorMapFiles(int width, int height, color* color_map[width * height], char path[]);
+void writeColorMapFile(int width, int height, color* color_map[width * height], char path[]);
 
 /**
  * @brief Writes every required files to save the completeMap structure.

@@ -38,7 +38,10 @@ double* getMapValue(map* map, int width_idx, int height_idx)
             return NULL;
         }
 
-        map_value = (map->map_values) + height_idx * width + width_idx;
+
+        chunk* current_chunk = getChunk(map, width_idx/map->chunk_width, height_idx/map->chunk_height);
+
+        map_value = getChunkValue(current_chunk, width_idx%map->chunk_width, height_idx%map->chunk_height);
     }
 
     return map_value;
@@ -79,6 +82,33 @@ chunk* getVirtualChunk(map* map, int width_idx, int height_idx)
     else if (height_idx==height-1) return map->virtual_chunks[2*height+width-3+width_idx];
 
     return NULL;
+}
+
+
+
+
+
+double* getFullMap(map* map)
+{
+    double* altitude = NULL;
+
+    if (map != NULL)
+    {
+        int width = map->map_width * map->chunk_width;
+        int height = map->map_height * map->chunk_height;
+
+        altitude = calloc(width * height, sizeof(double));
+
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                altitude[i*width + j] = *getMapValue(map, j, i);
+            }
+        }
+    }
+
+    return altitude;
 }
 
 
@@ -159,18 +189,19 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
 
 
     clock_t start_adding_time = clock();
-    for (int i=0; i<map_width+1; i++)
+    for (int j=0; j<map_height+1; j++)
     {
-        for (int j=0; j<map_height+1; j++)
+        for (int i=0; i<map_width+1; i++)
         {
             double a1=altitude[i][j];
             double a2=altitude[i+1][j];
             double a3=altitude[i][j+1];
             double a4=altitude[i+1][j+1];
 
-            for (int pi=0; pi<chunk_width; pi++)
+
+            for (int pj=0; pj<chunk_height; pj++)
             {
-                for (int pj=0; pj<chunk_height; pj++)
+                for (int pi=0; pi<chunk_width; pi++)
                 {
                     if ((i<map_width || pi<chunk_width*0.5) && (j<map_height || pj<chunk_height*0.5)
                             && (i!=0 || pi>=chunk_width*0.5) && (j!=0 || pj>=chunk_height*0.5)) 
@@ -196,9 +227,11 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
         }
     }
 
-    display_loading-=2;
     if (display_loading != 0)
     {
+        display_loading-=2;
+
+        
         double total_time = (double) (clock() - start_time)/CLOCKS_PER_SEC;
         char final_string[200] = "";
 
@@ -219,9 +252,9 @@ map* addMeanAltitude(map* p_map, unsigned int display_loading)
 
 
 
-map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], unsigned int display_loading)
+map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * map_height], chunk* virtual_chunks[(map_height+2+map_width+2)*2-4], bool regenerate, unsigned int display_loading)
 {
-    clock_t start_time = clock();
+    // clock_t start_time = clock();
 
     if (chunks != NULL && map_width > 0 && map_height > 0)
     {
@@ -260,35 +293,35 @@ map* newMapFromChunks(int map_width, int map_height, chunk* chunks[map_width * m
         new_map->chunk_height = chunk_height;
 
 
-        int width = map_width * chunk_width;
-        int height = map_height * chunk_height;
-        double* map_values = calloc(width * height, sizeof(double));
+        // int width = map_width * chunk_width;
+        // int height = map_height * chunk_height;
+        // double* map_values = calloc(width * height, sizeof(double));
 
-        new_map->map_values = map_values;
+        // new_map->map_values = map_values;
 
-        // Copy the correct altitude values
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                double* value = getMapValue(new_map, j, i);
-                chunk* current_chunk = getChunk(new_map, j/chunk_width, i/chunk_height);
+        // // Copy the correct altitude values
+        // for (int i = 0; i < height; i++)
+        // {
+        //     for (int j = 0; j < width; j++)
+        //     {
+        //         double* value = getMapValue(new_map, j, i);
+        //         chunk* current_chunk = getChunk(new_map, j/chunk_width, i/chunk_height);
 
-                *value = *getChunkValue(current_chunk, j%chunk_width, i%chunk_height);
+        //         *value = *getChunkValue(current_chunk, j%chunk_width, i%chunk_height);
                 
-                if (display_loading != 0)
-                {
-                    int nb_indents = display_loading - 1;
+        //         if (display_loading != 0)
+        //         {
+        //             int nb_indents = display_loading - 1;
 
-                    char base_str[100] = "Generating map values...           ";
+        //             char base_str[100] = "Generating map values...           ";
 
-                    predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
-                }
-            }
-        }
+        //             predefined_loading_bar(j + i * width, width * height - 1, NUMBER_OF_SEGMENTS, base_str, nb_indents, start_time);
+        //         }
+        //     }
+        // }
 
 
-        new_map = addMeanAltitude(new_map,display_loading);
+        if (regenerate) new_map = addMeanAltitude(new_map,display_loading);
 
         return new_map;
     }
@@ -389,13 +422,16 @@ map* newMap(int number_of_layers, int gradGrids_width[number_of_layers], int gra
             predefined_loading_bar(j+1,(map_height+2+map_width+2)*2-4, NUMBER_OF_SEGMENTS, base_str, nb_indents, v_start_time);
         }
 
-        current_chunk = newVirtualChunk(number_of_layers, gradGrids_width, gradGrids_height, size_factors, layers_factors);
+        int width = (gradGrids_width[0] - 1) * size_factors[0];
+        int height = (gradGrids_height[0] - 1) * size_factors[0];
+
+        current_chunk = newVirtualChunk(width, height, true);
 
         virtual_chunks[j] = current_chunk;
     }
 
     // Generating the map from the new chunks
-    map* new_map = newMapFromChunks(map_width, map_height, chunks, virtual_chunks, display_loading);
+    map* new_map = newMapFromChunks(map_width, map_height, chunks, virtual_chunks, true, display_loading);
 
     if (display_loading == 1)
     {
@@ -434,23 +470,130 @@ map* copyMap(map* p_map)
         }
     }
 
-    int n = res->chunk_width*res->map_width;
-    int m = res->chunk_height*res->map_height;
+    // int n = res->chunk_width*res->map_width;
+    // int m = res->chunk_height*res->map_height;
 
-    res->map_values = calloc(n*m, sizeof(double));
+    // res->map_values = calloc(n*m, sizeof(double));
 
-    for (int i=0; i<n; i++)
-    {
-        for (int j=0; j<m; j++)
-        {
-            *getMapValue(res,i,j)=*getMapValue(p_map,i,j);
-        }
-    }
+    // for (int i=0; i<n; i++)
+    // {
+    //     for (int j=0; j<m; j++)
+    //     {
+    //         *getMapValue(res,i,j)=*getMapValue(p_map,i,j);
+    //     }
+    // }
 
     return res;
 }
 
 
+
+
+
+bytes bytesMap(map* map) {
+    bytes bytes_str;
+
+    bytes* bytes_chunks[map->map_width * map->map_height];
+    int chunk_size=0;
+    for (int i=0; i<map->map_height; i++) {
+        for (int j=0; j<map->map_width; j++) {
+            bytes bytes_chunk = (bytesChunk(getChunk(map,j,i)));
+            bytes_chunks[i*map->map_width+j] = calloc(1,sizeof(bytes_chunk));
+            *bytes_chunks[i*map->map_width+j] = bytes_chunk;
+            chunk_size += bytes_chunk.size;
+        }
+    }
+    
+    int nbr = (map->map_height+2+map->map_width+2)*2-4;
+    bytes* bytes_vchunks[nbr];
+    int vchunk_size=0;
+    chunk** virtual_chunks = map->virtual_chunks; //! map->vitual_chunks changes value during execution (???)
+    for (int i=0; i<nbr; i++) {
+        // printf("%d - %d - %p - %p\n",nbr,i,map->virtual_chunks,virtual_chunks);
+        bytes bytes_vchunk = (bytesChunk(virtual_chunks[i]));
+        bytes_vchunks[i] = calloc(1,sizeof(bytes_vchunk));
+        *bytes_vchunks[i] = bytes_vchunk;
+        vchunk_size += bytes_vchunk.size;
+    }
+
+    bytes_str.bytes = calloc(1 + 2*INT_BITS_NBR/8 + chunk_size + vchunk_size, sizeof(byte));
+    bytes_str.size = 1 + 2*INT_BITS_NBR/8 + chunk_size + vchunk_size;
+    bytes_str.start = 0;
+
+    bytes_str.bytes[0] = MAP_ENCODING;
+
+    bytes a = bytesInt(map->map_height);
+    concatBytes(bytes_str, a, 1);
+    freeBytes(a);
+    a = bytesInt(map->map_width);
+    concatBytes(bytes_str, a, 1+INT_BITS_NBR/8);
+    freeBytes(a);
+
+    chunk_size=0;
+    for (int i=0; i<map->map_height; i++) {
+        for (int j=0; j<map->map_width; j++) {
+            concatBytes(bytes_str, *(bytes_chunks[i*map->map_width+j]), 1+2*INT_BITS_NBR/8+chunk_size);
+            chunk_size += (bytes_chunks[i*map->map_width+j])->size;
+            freeBytes(*(bytes_chunks[i*map->map_width+j]));
+            free(bytes_chunks[i*map->map_width+j]);
+        }
+    }
+
+    vchunk_size=0;
+    for (int i=0; i<nbr; i++) {
+        concatBytes(bytes_str, *(bytes_vchunks[i]), 1+2*INT_BITS_NBR/8+chunk_size+vchunk_size);
+        vchunk_size += (bytes_vchunks[i])->size;
+        freeBytes(*(bytes_vchunks[i]));
+        free(bytes_vchunks[i]);
+    }
+
+    return bytes_str;
+
+}
+
+tuple_obj_bytes nextMap(bytes bytes) {
+    tuple_obj_bytes res;
+
+    if (bytes.bytes[bytes.start]==MAP_ENCODING) {
+        bytes.start += 1;
+
+        tuple_obj_bytes a = nextInt(bytes);
+        int map_height = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+        a = nextInt(bytes);
+        int map_width = *((int*)a.object);
+        bytes = a.bytes;
+        free(a.object);
+
+        int nbr = (map_height+2+map_width+2)*2-4;
+
+        chunk* chunks [map_height*map_width];
+
+        chunk* vchunks [nbr];
+
+        for (int i=0; i<map_height; i++) {
+            for (int j=0; j<map_width; j++) {
+                a = nextChunk(bytes);
+                chunks[i*map_width+j] = ((chunk*)a.object);
+                bytes = a.bytes;
+            }
+        }
+
+        for (int i=0; i<nbr; i++) {
+            a = nextChunk(bytes);
+            vchunks[i] = ((chunk*)a.object);
+            bytes = a.bytes;
+        }
+
+        map* obj = newMapFromChunks(map_width,map_height,chunks,vchunks,false,0);
+
+        res.object = (object) obj;
+        res.bytes = bytes;
+    }
+
+    return res;
+}
 
 
 
@@ -562,10 +705,10 @@ void freeMap(map* map)
         int map_width = map->map_width;
         int map_height = map->map_height;
 
-        if (map->map_values != NULL)
-        {
-            free(map->map_values);
-        }
+        // if (map->map_values != NULL)
+        // {
+        //     free(map->map_values);
+        // }
 
 
         if (map->chunks != NULL)

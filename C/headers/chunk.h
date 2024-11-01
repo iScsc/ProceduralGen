@@ -2,8 +2,8 @@
  * @file chunk.h
  * @author Zyno and BlueNZ
  * @brief Header to chunk structure and functions
- * @version 0.2
- * @date 2024-06-19
+ * @version 0.3
+ * @date 2024-07-29
  * 
  */
 
@@ -101,12 +101,21 @@ chunk* initChunk(int width, int height, int number_of_layers, double layers_fact
 
 
 /**
+ * @brief Generates a new base altitude to be set to a chunk.
+ * 
+ * @return double : the base_altitude value.
+ */
+double generateBaseAltitude();
+
+/**
  * @brief Regenerates the given chunk final altitude values from its layers and layers factors.
  * 
  * @param chunk (chunk*) : the pointer to the initialized chunk structure to regenerate the altitude values.
  * @param display_loading (unsigned int) : the given value defines the behaviour.
  *                                         * If `0` the loading bars won't be printed.
  *                                         * If `> 0` the loading bars will be printed with a number of indent equal to `display_loading - 1`.
+ *
+ * @note each layer will see its values free'd at this point. They can still be regenerated if needed using the dedicated function.
  */
 void regenerateChunk(chunk* chunk, unsigned int display_loading);
 
@@ -174,26 +183,17 @@ chunk* newChunkFromGradients(int width, int height, int number_of_layers, gradie
 chunk* newChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers], 
                         double layers_factors[number_of_layers], unsigned int display_loading);
 
-//TODO ? signature could be changed to avoid passing useless parameters -> `chunk_width` and `chunk_height` instead of `gradGrids_width`, `gradGrids_height` and `size_factors`
 /**
  * @brief Generates a new virtual chunk structure with the given parameters. It does not possess any altitude values and is used as a way to store
  * the data of boundary conditions with its `base_altitude` parameter.
  * 
- * @param number_of_layers (int) : the number of layers passed.
- * @param gradGrids_width (int[number_of_layers]) : the array of gradientGrid width to compute the final width this virtual chunk should have.
- * @param gradGrids_height (int[number_of_layers]) : the array of gradientGrid height to compute the final height this virtual chunk should have.
- * @param size_factors (int[number_of_layers]) : the array of size factors to compute the final dimensions of this virtual chunk.
- * @param layers_factors (double[number_of_layers]) : the array of layers factors to be stored in the virtual chunk.
+ * @param chunk_width (int) : the width size of the virtuak chunk if it had altitude values.
+ * @param chunk_height (int) : the height size of the virtuak chunk if it had altitude values.
+ * @param regenerate (bool) : should the base altitude value be generated.
+ * 
  * @return chunk* : the pointer to the newly generated virtual chunk structure.
- * 
- * @warning The `size_factors` array should match the `gradGrids_width` and `gradGrids_height` arrays such that
- *          `(gradGrid_dimensions - 1) * size_factor = constant`. In case it would not be the case, the chunk structure will still 
- *          be generated but its dimensions will be wrong : it will simply use the first value. 
- * 
- * @note The arrays does not need to be dynamically allocated and their content will be copied in the structure.
  */
-chunk* newVirtualChunk(int number_of_layers, int gradGrids_width[number_of_layers], int gradGrids_height[number_of_layers], int size_factors[number_of_layers],
-                                double layers_factors[number_of_layers]);
+chunk* newVirtualChunk(int chunk_width, int chunk_height, bool regenerate);
 
 
 /**
@@ -221,6 +221,23 @@ chunk* newAdjacentChunk(chunk* north_chunk, chunk* west_chunk, unsigned int disp
  * @return chunk* : the pointer to the deep copy of the initial chunk.
  */
 chunk* copyChunk(chunk* p_chunk);
+
+
+/**
+ * @brief Encodes a chunk struct in a binary format.
+ * 
+ * @param chk (chunk*) : a pointer to the chunk struct.
+ * @return bytes : the byte string representing the encoded struct.
+ */
+bytes bytesChunk(chunk* chk);
+
+/**
+ * @brief Decodes a chunk struct from a formatted byte string.
+ * 
+ * @param bytes (bytes) : the formatted byte string.
+ * @return tuple_obj_bytes : the decoded chunk and the byte string (with the start index updated).
+ */
+tuple_obj_bytes nextChunk(bytes bytes);
 
 
 

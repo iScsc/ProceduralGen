@@ -8,6 +8,7 @@ import numpy as np
 import random as rd
 from gradientGrid import GradientGrid
 from layer import Layer
+import interpreter as interp
 
 
 
@@ -17,11 +18,15 @@ class Chunk:
     Chunk :
     -------------
     The Chunk class used to generate an altitude map by superposition of multiple layers.
+    
+    Note :
+        Layers' altitude values are then free'd.
     """
     
     
     #? -------------------------- Static ------------------------- #
     
+    CHUNK_ENCODING = b'\x03'
     
     ALT_PRINTING_DECIMALS = 4
     ALT_PRINTING_FORMAT = " {{: .{}f}} ".format(ALT_PRINTING_DECIMALS)
@@ -240,7 +245,7 @@ class Chunk:
     
     
     @staticmethod
-    def newVirtualChunk(chunk_width: int, chunk_height: int) -> Chunk:
+    def newVirtualChunk(chunk_width: int, chunk_height: int, base_altitude: int = None) -> Chunk:
         """Generates a new virtual chunk.
 
         Args:
@@ -257,7 +262,8 @@ class Chunk:
         virtual_chunk.width = chunk_width
         virtual_chunk.height = chunk_height
         
-        virtual_chunk.base_altitude = Chunk.generateBaseAltitude()
+        if base_altitude!=None:  virtual_chunk.base_altitude = base_altitude
+        else: virtual_chunk.base_altitude = Chunk.generateBaseAltitude()
         
         return virtual_chunk
     
@@ -265,28 +271,108 @@ class Chunk:
     
     
     @staticmethod
-    def write(path: str, chunk: Chunk) -> None:
-        #TODO
-        pass
+    def write(chunk: Chunk, virtual: bool=False, path: str=None, append: bool=False) -> bytes:
+        """Encodes a Chunk object into a binary file or string.
+
+        Args:
+            chunk (Chunk): the chunk object to encode
+            virtual (bool): is it a virtual chunk. Defaults to False.
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
+        bytes_str : bytes = b''
+        bytes_str += Chunk.CHUNK_ENCODING
+        bytes_str += interp.bytesNumber(chunk.base_altitude)
+        bytes_str += interp.bytesNumber(chunk.height)
+        bytes_str += interp.bytesNumber(chunk.width)
+        if virtual: #uninitialised values
+            bytes_str += interp.BYTES_TRUE
+        else:
+            bytes_str += interp.BYTES_FALSE
+            bytes_str += interp.bytesNumber(len(chunk.layers_factors))
+            for x in chunk.layers_factors: 
+                bytes_str += interp.bytesNumber(float(x))
+            for x in chunk.layers: 
+                bytes_str += Layer.write(x)
+            for i in range(chunk.height):
+                for j in range(chunk.width):
+                    bytes_str += interp.bytesNumber(chunk.altitude[i,j])
+        if path!=None:
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
+            f.write(bytes_str)
+            f.close()
+        return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> Chunk:
-        #TODO
-        return None
+    def read(path: str, bytes_in : bytes=None) -> tuple[Chunk, bytes]:
+        """Decodes a Chunk object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+
+        Returns:
+            tuple[Chunk, bytes]: the chunk object and remaining bytes
+        """
+        bytes_str : bytes
+        if path!=None:
+            f=open(path,'rb')
+            bytes_str=f.read()
+            f.close()
+            if bytes_str[0:1]==Chunk.CHUNK_ENCODING: bytes_str=bytes_str[1:]
+            else: bytes_str=None
+        elif bytes_in!=None and bytes_in[0:1]==Chunk.CHUNK_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        chunk : Chunk
+        
+        if bytes_str!=None:
+            base_altitude, bytes_str = interp.nextFloat(bytes_str)
+            height, bytes_str = interp.nextInt(bytes_str)
+            width, bytes_str = interp.nextInt(bytes_str)
+            if bytes_str[0:1]==interp.BYTES_TRUE: #is virtual chunk
+                chunk = Chunk.newVirtualChunk(width, height, base_altitude)
+                bytes_str = bytes_str[1:]
+            else: #is proper chunk
+                bytes_str = bytes_str[1:]
+                layer_number, bytes_str = interp.nextInt(bytes_str)
+                layers: list[Layer] = []
+                layer_factors: list[float] = []
+                for _ in range(layer_number):
+                    x, bytes_str = interp.nextFloat(bytes_str)
+                    layer_factors.append(x)
+                for _ in range(layer_number):
+                    x, bytes_str = Layer.read(None,bytes_str)
+                    layers.append(x)
+                chunk = Chunk(layers, layer_factors, False)
+                chunk.altitude = np.zeros((chunk.height,chunk.width))
+                for i in range(chunk.height):
+                    for j in range(chunk.width):
+                        chunk.altitude[i,j], bytes_str = interp.nextFloat(bytes_str)
+            
+        else: chunk = None
+        
+        return chunk, bytes_str
     
     
     #? ------------------------ Instances ------------------------ #
     
     
-    def __init__(self, layers: list[Layer], layers_factors: list[float]) -> None:
+    def __init__(self, layers: list[Layer], layers_factors: list[float], regenerate: bool = True) -> None:
         """Initializes a new Chunk structure from the given list of already existing layers and factors.
         If layers should be generated in the process, please use one of the designated static methods.
 
         Args:
-            `layers` (list[Layer], optional): the list of existing chunks to be averaged to generate the chunk.
-            `layers_factors` (list[float], optional): the list of factors to be used in the weighted average to generate the chunk.
+            `layers` (list[Layer]): the list of existing chunks to be averaged to generate the chunk.
+            `layers_factors` (list[float]): the list of factors to be used in the weighted average to generate the chunk.
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         self.layers_factors = None
@@ -335,7 +421,7 @@ class Chunk:
         self.layers_factors = layers_factors.copy()
         
         # Compute altitude
-        self.regenerate()
+        self.regenerate(regenerate)
     
     
     
@@ -364,8 +450,11 @@ class Chunk:
     
     
     
-    def regenerate(self) -> None:
+    def regenerate(self, regenerate: bool = True) -> None:
         """Regenerates the altitude values of the chunk based on its `layers` and `layer_factors` parameters.
+        
+        Args:
+            `regenerate`(bool, optional): should altitude values be (re)generated. Defaults to `True`.
         """
         
         #* -------------- Verifications : Begin --------------
@@ -416,17 +505,21 @@ class Chunk:
         #* -------------- Verifications : End --------------
         
         
-        
-        self.altitude = np.zeros((self.height, self.width))
+        if (regenerate):
+            self.altitude = np.zeros((self.height, self.width))
+            
+            for i in range(len_fac):
+                fac = self.layers_factors[i]
+                layer = self.layers[i]
+                
+                self.altitude += fac * layer.altitude
+            
+            self.altitude /= factor_sum
+            self.base_altitude = Chunk.generateBaseAltitude()
         
         for i in range(len_fac):
-            fac = self.layers_factors[i]
             layer = self.layers[i]
-            
-            self.altitude += fac * layer.altitude
-        
-        self.altitude /= factor_sum
-        self.base_altitude = Chunk.generateBaseAltitude()
+            layer.altitude = None # Free memory now
 
 
 
@@ -454,6 +547,9 @@ if __name__ == "__main__":
     print(chunk)
     
     
+    print("\nTesting chunk encoding: ")
+    print(Chunk.write(chunk))
+    print(Chunk.read(None,Chunk.write(chunk))[0])
     
     
     print("Generating a south chunk from gradient grids structures :")

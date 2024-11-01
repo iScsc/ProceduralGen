@@ -6,7 +6,7 @@ from __future__ import annotations          #? Python 3.7+
 
 import numpy as np
 import random as rd
-
+import interpreter as interp
 
 
 
@@ -28,6 +28,7 @@ class GradientGrid:
     
     #? -------------------------- Static ------------------------- #
     
+    GRID_ENCODING = b'\x01'
     
     MAX_INT_SEED = 1000000000000    # Maximum integer for the automatic random seed generation
     CURRENT_SEED = "a simple seed"  # Current seed used by the randomizer
@@ -52,22 +53,76 @@ class GradientGrid:
     
     
     @staticmethod
-    def write(path: str, grid: GradientGrid) -> None:
-        #TODO
-        pass
+    def write(grid: GradientGrid, path: str=None, append: bool=False) -> bytes:
+        """Encodes a GradientGrid object into a binary file or string.
+
+        Args:
+            grid (GradientGrid): the grid object to encode
+            path (str, optional): path to the file. Defaults to None.
+            append (bool, optional): should it append the binary string to the end of the file. Defaults to False.
+
+        Returns:
+            bytes: the encoded bytes
+        """
+        bytes_str : bytes = b''
+        bytes_str += GradientGrid.GRID_ENCODING
+        bytes_str += interp.bytesNumber(grid.height)
+        bytes_str += interp.bytesNumber(grid.width)
+        for i in range(grid.height):
+            for j in range(grid.width):
+                bytes_str += interp.bytesNumber(grid.vectors[i,j,0])
+                bytes_str += interp.bytesNumber(grid.vectors[i,j,1])
+        if path!=None:
+            if append: f=open(path,"ab")
+            else: f=open(path,"wb")
+            f.write(bytes_str)
+            f.close()
+        return bytes_str
     
     
     
     @staticmethod
-    def read(path: str) -> GradientGrid:
-        #TODO
-        return None
+    def read(path: str=None, bytes_in : bytes=None) -> tuple[GradientGrid, bytes]:
+        """Decodes a GradientGrid object from a binary file or a bytes string.
+
+        Args:
+            path (str, optional): path to the binary file. Defaults to None.
+            bytes_in (bytes, optional): encoded bytes. Defaults to None.
+
+        Returns:
+            tuple[GradientGrid, bytes]: the grid object and remaining bytes
+        """
+        bytes_str : bytes
+        if path!=None:
+            f=open(path,'rb')
+            bytes_str=f.read()
+            f.close()
+            if bytes_str[0:1]==GradientGrid.GRID_ENCODING: bytes_str=bytes_str[1:]
+            else: bytes_str=None
+        elif bytes_in!=None and bytes_in[0:1]==GradientGrid.GRID_ENCODING:
+            bytes_str=bytes_in[1:]
+        else: bytes_str=None
+        
+        grid : GradientGrid
+        
+        if bytes_str!=None:
+            height, bytes_str = interp.nextInt(bytes_str)
+            width, bytes_str = interp.nextInt(bytes_str)
+            grid = GradientGrid(width,height,False)
+            for i in range(grid.height):
+                for j in range(grid.width):
+                    grid.vectors[i,j,0], bytes_str = interp.nextFloat(bytes_str)
+                    grid.vectors[i,j,1], bytes_str = interp.nextFloat(bytes_str)
+            
+        else: grid = None
+        
+        return grid, bytes_str
     
     
     #? ------------------------ Instances ------------------------ #
     
     
-    def __init__(self, width: int = 2, height: int = 2, adjacent_grids: tuple = (None, None, None, None)) -> None:
+    def __init__(self, width: int = 2, height: int = 2, regenerate: bool = True, adjacent_grids: tuple = (None, None, None, None)) -> None:
         """Initialize a new random GradientGrid instance with given width and height values.
         Should be of size `2 x 2` at minimum.
         A tuple of adjacent GradientGrids can additionally be provided to apply the corresponding boundary conditions with the following order :
@@ -76,6 +131,7 @@ class GradientGrid:
         Args:
             `width` (int, optional): the width of the generated random GradientGrid. Defaults to `2`.
             `height` (int, optional): the height of the generated random GradientGrid. Defaults to `2`.
+            `regenerate`(bool, optional): if the grid should be (re)generated or not. Defaults to `True`.
             `adjacent_grids` (tuple, optional): the tuple of adjacent GradientGrids to generate a smooth transition in terrain with correct
                                                 boundary conditions.
                                                 The tuple is in order `(NORTH, EAST, SOUTH, WEST)`.
@@ -86,7 +142,7 @@ class GradientGrid:
         self.width = width
         self.height = height
         self.vectors = np.array([[np.zeros((2)) for j in range(self.width)] for i in range(self.height)])
-        self.regenerate(adjacent_grids)
+        if regenerate: self.regenerate(adjacent_grids)
     
     
     
@@ -181,7 +237,7 @@ if __name__ == "__main__":
     
     GradientGrid.setRandomSeed("seed")
     
-    grid = GradientGrid(5, 5)
+    grid = GradientGrid(5, 3)
     print(grid)
     
     
@@ -190,6 +246,9 @@ if __name__ == "__main__":
     grid.regenerate()
     print(grid)
     
+    print("\nTrying to encode and decode the grid :")
+    print(GradientGrid.write(grid,"../saves/test_completeMap.data"))
+    print(GradientGrid.read("../saves/test_completeMap.data")[0])
     
     
     print("Trying to generate a grid at the north of the first one :")
