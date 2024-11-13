@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://xmfi7bamixo0"]
+[gd_scene load_steps=9 format=4 uid="uid://xmfi7bamixo0"]
 
 [ext_resource type="PackedScene" uid="uid://d3ic0m4kpv565" path="res://scenes/moving_camera.tscn" id="1_6co22"]
 [ext_resource type="Script" path="res://scripts/testing.gd" id="1_fjd3g"]
@@ -13,11 +13,11 @@ _surfaces = [{
 "aabb": AABB(0, 0, 0, 3, 1.00001, 3),
 "format": 34359742465,
 "index_count": 6,
-"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0),
+"index_data": PackedByteArray("AAABAAIAAwAEAAUA"),
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
 "vertex_count": 9,
-"vertex_data": PackedByteArray(0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64)
+"vertex_data": PackedByteArray("AAAAAAAAgD8AAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAQAAAgD8AAAAAAABAQAAAAAAAAAAAAAAAQAAAAAAAAIA/AAAAAAAAgD8AAABAAACAPwAAAAAAAABAAAAAAAAAAAAAAEBA")
 }]
 
 [node name="Testing" type="Node" node_paths=PackedStringArray("testing_mesh")]
